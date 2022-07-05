@@ -1,0 +1,236 @@
+{% load static %}
+{% load i18n %}
+
+{% load bootstrap4 %}
+{% block header %}
+<link rel="icon"
+      type="image/png"
+      href="https://genomes.cnag.cat/static/favicon.ico">
+<link rel="stylesheet" href="/static/css/sidebar.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+{% endblock %}
+<!-- <script src="https://unpkg.com/@popperjs/core@2"></script> -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Wruczek/Bootstrap-Cookie-Alert@gh-pages/cookiealert.css">
+
+<!-- Our Custom CSS -->
+<link rel="stylesheet" href="/static/css/sidebar.css">
+<!-- <link rel="stylesheet" href="/static/css/loader.css"> -->
+<!-- Scrollbar Custom CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.css">
+
+<!-- Font Awesome JS -->
+<script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
+<script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY" crossorigin="anonymous"></script>
+<script src="https://kit.fontawesome.com/0636c1cb0c.js" crossorigin="anonymous"></script>
+
+<style>
+body {
+ padding-bottom: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+}
+.footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  background-color: #DDD;
+  color: black;
+  text-align: center;
+}
+</style>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{% url 'home' %}"><img src="{% static "inCREDBle.png" %}" width=150 alt="inCREDBle"></a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+          <a class="nav-link" id="samplelink" href="{% url 'sample_list' %}"><i id=samplespinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Samples</a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" id="assemblylink" href="{% url 'assembly_list' %}"><i id=assemblyspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Assemblies</a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" id="scaffoldlink" href="{% url 'scaffold_list' %}"><i id=scaffoldspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Scaffolds</a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" id="genelink" href="{% url 'gene_list' %}"><i id=genespinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Genes</a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" id="maplink" href="{% url 'spain_map_filter' %}"><i id=mapspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Map</a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" id="chartlink" href="{% url 'charts' %}"><i id=chartspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Charts</a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" id="anilink" href="{% url 'ani_networks' %}"><i id=anispinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>ANI</a>
+          </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="{% url 'blast' %}">BLAST</a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="{% url 'upload' %}">MASH</a>
+        </li>
+      </ul>
+        <!-- <ul class="navbar-nav ml-auto">
+        {% if user.is_authenticated %}
+        <li class="nav-item">
+          <p class="navbar-text">Logged in as <strong>{{ user.username }}</strong>.</p>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="{% url 'account_logout' %}">Logout</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="{% url 'account_email' %}">Change E-mail</a>
+          </li>
+          {% else %}
+          <li class="nav-item active">
+          <a class="nav-link" href="{% url 'account_login' %}">Login/Register</a>
+          </li>
+          {% endif %}
+      </ul> -->
+    </div>
+  </div>
+
+</nav>
+<div class="row">
+<div class="content container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+		<div id="content">
+			{% block content %}{% endblock %}
+		</div>
+	    </div>
+	</div>
+</div>
+</div>
+<div class="row">
+<div class="container-fluid">
+  {% block page_content %}{% endblock %}
+</div>
+</div>
+{% if messages %}
+<div class="row">
+  <div class="col-md-12">
+    <div class="card mb-2">
+      <div class="card-body">
+      <h5 class="card-title"><strong>Messages</strong></h5>
+      <ul>
+        {% for message in messages %}
+        <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+      </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+<!-- Footer -->
+<div class="footer"> <!-- class="page-footer font-small blue pt-4">  -->
+
+  <!-- Footer Links -->
+<div class="container-fluid text-center text-md-left">
+
+    <!-- Grid row -->
+    <div class="row mt-1 mb-1">
+
+      <!-- Grid column -->
+      <div class="col-md-12">
+	<!-- <h5 class="text-uppercase">Collaborators</h5> -->
+        <div class="row">
+        <!-- Content -->
+        <div class="col-sm-3 my-auto text-center"><img src="/static/CNAG_logo.png" ></div>
+        <div class="col-sm-3 my-auto text-center"><img src="/static/logo_crg.png" height=50></div>
+        <hr class="clearfix w-100 d-md-none pb-3">
+        <div class="col-sm-3 my-auto text-center"><img src="/static/sergas.png" height=50></div>
+        <div class="col-sm-3 my-auto text-center"><img src="/static/roche.png" height=50></div>
+      </div>
+      </div>
+      <!-- Grid column -->
+
+    </div>
+    <!-- Grid row -->
+
+  </div>
+  <!-- Footer Links -->
+<!-- START Bootstrap-Cookie-Alert -->
+<div class="alert text-center cookiealert" role="alert">
+    <b>Do you like cookies?</b> &#x1F36A; We use cookies to ensure you get the best experience on our website. <a href="https://cookiesandyou.com/" target="_blank">Learn more</a>
+
+    <button type="button" class="btn btn-primary btn-sm acceptcookies" aria-label="Close">
+        I agree
+    </button>
+</div>
+<!-- END Bootstrap-Cookie-Alert -->
+</div>
+<!-- Footer -->
+<script src="https://cdn.jsdelivr.net/gh/Wruczek/Bootstrap-Cookie-Alert@gh-pages/cookiealert.js"></script>
+
+
+<!-- jQuery CDN - Slim version (=without AJAX) -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+
+ <!-- jQuery Custom Scroller CDN -->
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.concat.min.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#sidebar").mCustomScrollbar({
+            theme: "minimal"
+        });
+
+        $('#dismiss, .overlay').on('click', function () {
+            $('#sidebar').removeClass('active');
+            $('.overlay').removeClass('active');
+        });
+
+        $('#sidebarCollapse').on('click', function () {
+            $('#sidebar').addClass('active');
+            $('.overlay').addClass('active');
+            $('.collapse.in').toggleClass('in');
+            $('a[aria-expanded=true]').attr('aria-expanded', 'false');
+        });
+    });
+
+    function spinner() {
+    	// const spinnerDisplayer = document.querySelector('.spinner-displayer');
+    	const anilink = document.getElementById('anilink');
+    	anilink.addEventListener('click', () => {
+        $("#anispinner").show();
+      })
+      const samplelink = document.getElementById('samplelink');
+      samplelink.addEventListener('click', () => {
+        $("#samplespinner").show();
+      })
+      const assemblylink = document.getElementById('assemblylink');
+      assemblylink.addEventListener('click', () => {
+        $("#assemblyspinner").show();
+      })
+      const scaffoldlink = document.getElementById('scaffoldlink');
+      scaffoldlink.addEventListener('click', () => {
+        $("#scaffoldspinner").show();
+      })
+      const genelink = document.getElementById('genelink');
+      genelink.addEventListener('click', () => {
+        $("#genespinner").show();
+      })
+      const maplink = document.getElementById('maplink');
+      maplink.addEventListener('click', () => {
+        $("#mapspinner").show();
+      })
+      const chartlink = document.getElementById('chartlink');
+      chartlink.addEventListener('click', () => {
+        $("#chartspinner").show();
+      })
+    }
+
+    spinner();
+</script>

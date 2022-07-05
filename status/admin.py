@@ -1,3 +1,36 @@
 from django.contrib import admin
+from django.contrib.admin.decorators import register
+from resistome.models import *
+from django.http import HttpResponse
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
+
+def export_csv(modeladmin, request, queryset):
+    import csv
+    from django.utils.encoding import smart_str
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=samples.csv'
+    writer = csv.writer(response, csv.excel)
+    response.write(u'\ufeff'.encode('utf8')) # BOM (optional...Excel needs it to open UTF-8 file properly)
+    #field_names = queryset.keys()
+    for obj in queryset:
+        row =[]
+        for name in obj._meta.fields:
+            try:
+                row.append(str(getattr(property, name)))
+            except:
+                row.append(" ")
+        writer.writerow(row)
+    return response
+export_csv.short_description = "Export CSV"
 
 # Register your models here.
+@register(TargetSpecies)
+class TargetSpeciesAdmin(admin.ModelAdmin):
+    list_display = (
+        'name',
+        'tolid_prefix'
+    )
+
+admin.site.unregister(User)
+admin.site.register(User, MyUserAdmin)

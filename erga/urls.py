@@ -15,8 +15,20 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic.base import RedirectView
+from django.conf import settings
+from django.conf.urls.static import static
+from rest_framework import routers
+from status import api
+from django.conf.urls import url
+# API Endpoints
+router = routers.DefaultRouter()
+router.register(r'species', api.TargetSpeciesViewSet)
 
 urlpatterns = [
+    url(r'^api/', include(router.urls)),
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('', include('status.urls')),
     path('admin/', admin.site.urls),
-]
+    url(r'^accounts/', include('allauth.urls')),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
