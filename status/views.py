@@ -44,5 +44,5 @@ class TargetSpeciesListView(ExportMixin, SingleTableMixin, FilterView):
     model = TargetSpecies
     table_class = TargetSpeciesTable
     template_name = 'targetspecies.html'
-    filterset_class = SpeciesFilter
+    #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 15}
