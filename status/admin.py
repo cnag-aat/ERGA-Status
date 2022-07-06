@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.admin.decorators import register
-from resistome.models import *
+from status.models import *
 from django.http import HttpResponse
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
@@ -31,6 +31,15 @@ class TargetSpeciesAdmin(admin.ModelAdmin):
         'name',
         'tolid_prefix'
     )
+class MyUserAdmin(UserAdmin):
+    def group(self, user):
+        groups = []
+        for group in user.groups.all():
+            groups.append(group.name)
+        return ' '.join(groups)
+    group.short_description = 'Groups'
+    list_filter = UserAdmin.list_filter + ('groups__name',)
+    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'group')
 
 admin.site.unregister(User)
 admin.site.register(User, MyUserAdmin)
