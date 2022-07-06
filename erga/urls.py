@@ -28,7 +28,7 @@ router.register(r'species', api.TargetSpeciesViewSet)
 urlpatterns = [
     url(r'^api/', include(router.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('', include('status.urls')),
-    path('admin/', admin.site.urls),
+    path('erga-status/', include('status.urls')),
+    path('erga-status/admin/', admin.site.urls),
     url(r'^accounts/', include('allauth.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
