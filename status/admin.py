@@ -44,6 +44,22 @@ class TargetSpeciesAdmin(admin.ModelAdmin):
         'c_value',
         'genome_size'
     )
+
+# Register your models here.
+@register(CommonNames)
+class CommonNamesAdmin(admin.ModelAdmin):
+    list_display = (
+        'species',
+        'name'
+    )
+
+@register(Synonyms)
+class SynonymsAdmin(admin.ModelAdmin):
+    list_display = (
+        'species',
+        'name'
+    )
+
 class MyUserAdmin(UserAdmin):
     def group(self, user):
         groups = []

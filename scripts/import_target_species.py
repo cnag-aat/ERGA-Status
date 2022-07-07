@@ -97,6 +97,7 @@ with open(args.csv_file) as csvfile:
 
             if row['synonym'] or None:
                 for syn in row['synonym'].split(','):
+                    print(syn)
                     try:
                         species_synonyms = Synonyms.objects.get(name=syn)
                     except Synonyms.DoesNotExist:
