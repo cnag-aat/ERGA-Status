@@ -95,21 +95,24 @@ with open(args.csv_file) as csvfile:
                 targetspecies, _ = TargetSpecies.objects.get_or_create(
                     taxon_id=row['taxon_id'])
 
-            for syn in row['synonym'].split(','):
-                try:
-                    species_synonyms = Synonyms.objects.get(name=syn)
-                except Synonyms.DoesNotExist:
-                    species_synonyms, _ = Synonyms.objects.get_or_create(name=syn)
+            if row['synonym'] or None:
+                for syn in row['synonym'].split(','):
+                    try:
+                        species_synonyms = Synonyms.objects.get(name=syn)
+                    except Synonyms.DoesNotExist:
+                        species_synonyms, _ = Synonyms.objects.get_or_create(name=syn)
 
-                species_synonyms.species = targetspecies
+                    species_synonyms.species = targetspecies
 
-            for com_name in row['common_name'].split(','):
-                try:
-                    species_comnames = CommonNames.objects.get(name=com_name)
-                except Synonyms.DoesNotExist:
-                    species_comnames, _ = CommonNames.objects.get_or_create(name=com_name)
 
-                species_comnames.species = targetspecies
+            if row['common_name'] or None:
+                for com_name in row['common_name'].split(','):
+                    try:
+                        species_comnames = CommonNames.objects.get(name=com_name)
+                    except Synonyms.DoesNotExist:
+                        species_comnames, _ = CommonNames.objects.get_or_create(name=com_name)
+
+                    species_comnames.species = targetspecies
 
             targetspecies.scientific_name = row['scientific_name'] or None
             targetspecies.tolid_prefix = row['tolid_prefix'] or None
