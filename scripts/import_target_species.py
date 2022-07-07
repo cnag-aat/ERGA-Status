@@ -113,13 +113,10 @@ with open(args.csv_file) as csvfile:
             targetspecies.save()
             if row['synonym'] or None:
                 for syn in row['synonym'].split(','):
-                    print(syn)
-                    try:
-                        species_synonyms = Synonyms.objects.get(name=syn)
-                    except Synonyms.DoesNotExist:
-                        species_synonyms, _ = Synonyms.objects.get_or_create(name=syn)
-
-                    species_synonyms.species = targetspecies
+                    species_synonyms, created = Synonyms.objects.get_or_create(
+                        name=syn,
+                        species=targetspecies
+                    )
 
 
             if row['common_name'] or None:
