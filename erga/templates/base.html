@@ -52,31 +52,7 @@ body {
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
         <li class="nav-item active">
-          <a class="nav-link" id="samplelink" href="{% url 'sample_list' %}"><i id=samplespinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Samples</a>
-        </li>
-        <li class="nav-item active">
-          <a class="nav-link" id="assemblylink" href="{% url 'assembly_list' %}"><i id=assemblyspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Assemblies</a>
-        </li>
-        <li class="nav-item active">
-          <a class="nav-link" id="scaffoldlink" href="{% url 'scaffold_list' %}"><i id=scaffoldspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Scaffolds</a>
-        </li>
-        <li class="nav-item active">
-          <a class="nav-link" id="genelink" href="{% url 'gene_list' %}"><i id=genespinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Genes</a>
-        </li>
-        <li class="nav-item active">
-          <a class="nav-link" id="maplink" href="{% url 'spain_map_filter' %}"><i id=mapspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Map</a>
-        </li>
-        <li class="nav-item active">
-          <a class="nav-link" id="chartlink" href="{% url 'charts' %}"><i id=chartspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Charts</a>
-        </li>
-        <li class="nav-item active">
-          <a class="nav-link" id="anilink" href="{% url 'ani_networks' %}"><i id=anispinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>ANI</a>
-          </li>
-        <li class="nav-item active">
-          <a class="nav-link" href="{% url 'blast' %}">BLAST</a>
-        </li>
-        <li class="nav-item active">
-          <a class="nav-link" href="{% url 'upload' %}">MASH</a>
+          <a class="nav-link" id="specieslink" href="{% url 'species_list' %}"><i id=speciesspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Target Species</a>
         </li>
       </ul>
         <!-- <ul class="navbar-nav ml-auto">
@@ -202,33 +178,9 @@ body {
 
     function spinner() {
     	// const spinnerDisplayer = document.querySelector('.spinner-displayer');
-    	const anilink = document.getElementById('anilink');
+    	const specieslink = document.getElementById('specieslink');
     	anilink.addEventListener('click', () => {
-        $("#anispinner").show();
-      })
-      const samplelink = document.getElementById('samplelink');
-      samplelink.addEventListener('click', () => {
-        $("#samplespinner").show();
-      })
-      const assemblylink = document.getElementById('assemblylink');
-      assemblylink.addEventListener('click', () => {
-        $("#assemblyspinner").show();
-      })
-      const scaffoldlink = document.getElementById('scaffoldlink');
-      scaffoldlink.addEventListener('click', () => {
-        $("#scaffoldspinner").show();
-      })
-      const genelink = document.getElementById('genelink');
-      genelink.addEventListener('click', () => {
-        $("#genespinner").show();
-      })
-      const maplink = document.getElementById('maplink');
-      maplink.addEventListener('click', () => {
-        $("#mapspinner").show();
-      })
-      const chartlink = document.getElementById('chartlink');
-      chartlink.addEventListener('click', () => {
-        $("#chartspinner").show();
+        $("#speciesspinner").show();
       })
     }
 
