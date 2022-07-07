@@ -3,12 +3,12 @@
 import django
 django.setup()
 
-from resistome.models import *
+from status.models import *
 import csv
 import argparse
 
 parser = argparse.ArgumentParser(
-    description='Add records to inCREDBle scaffold table.')
+    description='Add records to ERGA target species table.')
 parser.add_argument('csv_file', metavar='csv',
                     help='a CSV formatted file')
 args = parser.parse_args()
@@ -16,123 +16,114 @@ with open(args.csv_file) as csvfile:
     csvreader = csv.DictReader(csvfile, delimiter='\t')
 
     for row in csvreader:
-        if row['barcode'] or None:
+        if row['taxon_id'] or None:
             print(row)
-            print(row['barcode'] or None)
+            print(row['taxon_id'] or None)
 
             #if row['with_data'] != '1':
             #    print('with_data:' + row['with_data'])
             #    print("Skipped")
             #    continue
 
-            biological_sample_of_isolation = None
-            if row['Sample of isolation']:
-                biological_sample_of_isolation, _ = BiologicalSampleOfIsolation.objects.get_or_create(
-                    name=row['Sample of isolation'],
+            t_kingdom = None
+            if row['kingdom']:
+                t_kingdom, _ = TaxonKingdom.objects.get_or_create(
+                    name=row['kingdom'],
                 )
 
-            hospital_admission_unit = None
-            if row['Hospital admission unit']:
-                hospital_admission_unit, _ = HospitalAdmissionUnit.objects.get_or_create(
-                    name=row['Hospital admission unit'],
+            t_phylum = None
+            if row['phylum']:
+                t_phylum, _ = TaxonPhylum.objects.get_or_create(
+                    name=row['phylum'],
+                    taxon_kingdom=t_kingdom
                 )
 
-            # isolation_location = None
-            # if row['Hospital/City where strain was isolated']:
-            #     isolation_location, _ = IsolationLocation.objects.get_or_create(
-            #         name=row['Hospital/City where strain was isolated'],
+            t_class = None
+            if row['class']:
+                t_class, _ = TaxonClass.objects.get_or_create(
+                    name=row['class'],
+                    taxon_kingdom=t_kingdom,
+                    taxon_phylum=t_phylum,
+                )
+
+            t_order = None
+            if row['order']:
+                t_phylum, _ = TaxonOrder.objects.get_or_create(
+                    name=row['order'],
+                    taxon_kingdom=t_kingdom
+                    taxon_phylum=t_phylum,
+                    taxon_class=t_class,
+                )
+
+            t_family = None
+            if row['family']:
+                t_family, _ = TaxonFamily.objects.get_or_create(
+                    name=row['family'],
+                    taxon_kingdom=t_kingdom
+                    taxon_phylum=t_phylum,
+                    taxon_class=t_class,
+                    taxon_order=t_order,
+                )
+
+            t_genus = None
+            if row['genus']:
+                t_genus, _ = TaxonGenus.objects.get_or_create(
+                    name=row['genus'],
+                    taxon_kingdom=t_kingdom
+                    taxon_phylum=t_phylum,
+                    taxon_class=t_class,
+                    taxon_order=t_order,
+                    taxon_family=t_family,
+                )
+
+            # t_species = None
+            # if row['species']:
+            #     t_species, _ = TaxonSpecies.objects.get_or_create(
+            #         name=row['species'],
+            #         taxon_kingdom=t_kingdom
+            #         taxon_phylum=t_phylum,
+            #         taxon_class=t_class,
+            #         taxon_order=t_order,
+            #         taxon_family=t_family,
+            #         taxon_genus=t_genus,
             #     )
 
-            try:
-                sample = Sample.objects.get(barcode=row['barcode'])
-            except Sample.DoesNotExist:
-                sample, _ = Sample.objects.get_or_create(
-                    barcode=row['barcode'])
-            #sample.coruna_code = row['coruna_code'] or None
-
-            for carb in row['Carba_final'].split(','):
-                carbapenemase = None
-                carbapenemase, _ = Carbapenemase.objects.get_or_create(name=carb)
-                sample.carbapenemase.add(carbapenemase)
-
-            sample.collection = row['collection'] or None
-            sample.isolation_year = row['isolation_year'] or None
-            sample.edta_assay = row['edta_assay'] or None
-            sample.pcr = row['pcr'] or None
-            sample.biological_sample_of_isolation = biological_sample_of_isolation
-
-            sample.infection_or_colonization = row['Infection/Colonization'].replace("Infection","I").replace("Colonization","C") or None
-            sample.hospital_admission_unit = hospital_admission_unit
-            # sample.isolation_location = isolation_location
-            sample.acquisition = row['Community/Hospital/LTCF acquisition'] or None
-            #sample.type_of_infection = row['type_of_infection'] or None
-            #sample.outbreak = row['outbreak'] or None
-            sample.patient_data_sex = row['Sex'] or None
-            sample.patient_data_age = row['Age'] or None
-            # sample.pt = row['P/T'] or None
-            # sample.ctx = row['CTX'] or None
-            # sample.caz = row['CAZ'] or None
-            # sample.caz_avi = row['CAZ-AVI'] or None
-            # sample.cef = row['CEF'] or None
-            # sample.azt = row['AZT'] or None
-            # sample.ert = row['ERT'] or None
-            # sample.mem = row['MEM'] or None
-            # sample.imi = row['IMI'] or None
-            # sample.imi_rele = row['IMI-RELE'] or None
-            # sample.amk = row['AMK'] or None
-            # sample.cip = row['CIP'] or None
-            # sample.colis = row['COLIS'] or None
-            # sample.fosfo_nueva = row['FOSFO'] or None
-            # sample.genta = row['GENTA'] or None
-            # sample.tobra = row['TOBRA'] or None
-            sample.save()
 
             try:
-                clsi = CLSI.objects.get(sample=sample)
-            except CLSI.DoesNotExist:
-                clsi, _ = CLSI.objects.get_or_create(sample=sample)
+                targetspecies = TargetSpecies.objects.get(taxon_id=row['taxon_id'])
+            except TargetSpecies.DoesNotExist:
+                targetspecies, _ = TargetSpecies.objects.get_or_create(
+                    taxon_id=row['taxon_id'])
 
-            clsi.piper = row['P_CLSI'] or None
-            clsi.pt = row['P/T_CLSI'] or None
-            clsi.ctx = row['CTX_CLSI'] or None
-            clsi.caz = row['CAZ_CLSI'] or None
-            clsi.caz_avi = row['CAZ-AVI_CLSI'] or None
-            clsi.cef = row['CEF_CLSI'] or None
-            clsi.azt = row['AZT_CLSI'] or None
-            clsi.mem = row['MEM_CLSI'] or None
-            clsi.imi = row['IMI_CLSI'] or None
-            clsi.imi_rele = row['IMI-RELE_CLSI'] or None
-            clsi.ert = row['ERT_CLSI'] or None
-            clsi.fosfo = row['FOSFO_CLSI'] or None
-            clsi.genta = row['GENTA_CLSI'] or None
-            clsi.tobra = row['TOBRA_CLSI'] or None
-            clsi.amk = row['AMK_CLSI'] or None
-            clsi.cip = row['CIP_CLSI'] or None
-            clsi.colis = row['COLIS_CLSI'] or None
-            clsi.save()
+            for syn in row['synonym'].split(','):
+                try:
+                    species_synonyms = Synonyms.objects.get(name=syn)
+                except Synonyms.DoesNotExist:
+                    species_synonyms, _ = Synonyms.objects.get_or_create(name=syn)
 
-            try:
-                eucast = EUCAST.objects.get(sample=sample)
-            except EUCAST.DoesNotExist:
-                eucast, _ = EUCAST.objects.get_or_create(sample=sample)
+                species_synonyms.species = targetspecies
 
-            eucast.piper = row['P_EUCAST'] or None
-            eucast.pt = row['P/T_EUCAST'] or None
-            eucast.ctx = row['CTX_EUCAST'] or None
-            eucast.caz = row['CAZ_EUCAST'] or None
-            eucast.caz_avi = row['CAZ-AVI_EUCAST'] or None
-            eucast.cef = row['CEF_EUCAST'] or None
-            eucast.azt = row['AZT_EUCAST'] or None
-            eucast.mem = row['MEM_EUCAST'] or None
-            eucast.imi = row['IMI_EUCAST'] or None
-            eucast.imi_rele = row['IMI-RELE_EUCAST'] or None
-            eucast.ert = row['ERT_EUCAST'] or None
-            eucast.fosfo = row['FOSFO_EUCAST'] or None
-            eucast.genta = row['GENTA_EUCAST'] or None
-            eucast.tobra = row['TOBRA_EUCAST'] or None
-            eucast.amk = row['AMK_EUCAST'] or None
-            eucast.cip = row['CIP_EUCAST'] or None
-            eucast.colis = row['COLIS_EUCAST'] or None
-            eucast.save()
+            for com_name in row['common_name'].split(','):
+                try:
+                    species_comnames = CommonNames.objects.get(name=com_name)
+                except Synonyms.DoesNotExist:
+                    species_comnames, _ = CommonNames.objects.get_or_create(name=com_name)
+
+                species_comnames.species = targetspecies
+
+            targetspecies.scientific_name = row['scientific_name'] or None
+            targetspecies.tolid_prefix = row['tolid_prefix'] or None
+            targetspecies.chromosome_number = row['chromosome_number'] or None
+            targetspecies.haploid_number = row['haploid_number'] or None
+            targetspecies.ploidy = row['ploidy'] or None
+            targetspecies.c_value = row['c_value'] or None
+            targetspecies.genome_size = row['genome_size'] or None
+            targetspecies.taxon_kingdom = t_kingdom or None
+            targetspecies.taxon_phylum = t_phylum or None
+            targetspecies.taxon_class = t_class or None
+            targetspecies.taxon_order = t_order or None
+            targetspecies.taxon_family = t_family or None
+            targetspecies.taxon_genus = t_genus or None
+            targetspecies.save()
 
 print("Finished OK")
