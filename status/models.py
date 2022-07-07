@@ -103,7 +103,7 @@ class TargetSpecies(models.Model):
         verbose_name_plural = 'species'
 
     def __str__(self):
-        return self.name
+        return self.tolid_prefix
 
 class CommonNames(models.Model):
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="Genus/species")
