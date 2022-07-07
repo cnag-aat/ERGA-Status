@@ -91,7 +91,7 @@ class TargetSpecies(models.Model):
     taxon_order = models.ForeignKey(TaxonOrder, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Order")
     taxon_family = models.ForeignKey(TaxonFamily, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Family")
     taxon_genus = models.ForeignKey(TaxonGenus, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Genus")
-    taxon_species = models.ForeignKey(TaxonSpecies, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Species")
+    # taxon_species = models.ForeignKey(TaxonSpecies, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Species")
     chromosome_number = models.IntegerField(null=True, blank=True)
     haploid_number = models.IntegerField(null=True, blank=True)
     ploidy = models.IntegerField(null=True, blank=True)
