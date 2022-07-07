@@ -95,6 +95,22 @@ with open(args.csv_file) as csvfile:
                 targetspecies, _ = TargetSpecies.objects.get_or_create(
                     taxon_id=row['taxon_id'])
 
+
+
+            targetspecies.scientific_name = row['scientific_name'] or None
+            targetspecies.tolid_prefix = row['tolid_prefix'] or None
+            targetspecies.chromosome_number = row['chromosome_number'] or None
+            targetspecies.haploid_number = row['haploid_number'] or None
+            targetspecies.ploidy = row['ploidy'] or None
+            targetspecies.c_value = row['c_value'] or None
+            targetspecies.genome_size = row['genome_size'] or None
+            targetspecies.taxon_kingdom = t_kingdom or None
+            targetspecies.taxon_phylum = t_phylum or None
+            targetspecies.taxon_class = t_class or None
+            targetspecies.taxon_order = t_order or None
+            targetspecies.taxon_family = t_family or None
+            targetspecies.taxon_genus = t_genus or None
+            targetspecies.save()
             if row['synonym'] or None:
                 for syn in row['synonym'].split(','):
                     print(syn)
@@ -114,20 +130,4 @@ with open(args.csv_file) as csvfile:
                         species_comnames, _ = CommonNames.objects.get_or_create(name=com_name)
 
                     species_comnames.species = targetspecies
-
-            targetspecies.scientific_name = row['scientific_name'] or None
-            targetspecies.tolid_prefix = row['tolid_prefix'] or None
-            targetspecies.chromosome_number = row['chromosome_number'] or None
-            targetspecies.haploid_number = row['haploid_number'] or None
-            targetspecies.ploidy = row['ploidy'] or None
-            targetspecies.c_value = row['c_value'] or None
-            targetspecies.genome_size = row['genome_size'] or None
-            targetspecies.taxon_kingdom = t_kingdom or None
-            targetspecies.taxon_phylum = t_phylum or None
-            targetspecies.taxon_class = t_class or None
-            targetspecies.taxon_order = t_order or None
-            targetspecies.taxon_family = t_family or None
-            targetspecies.taxon_genus = t_genus or None
-            targetspecies.save()
-
 print("Finished OK")
