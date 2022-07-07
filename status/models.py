@@ -95,7 +95,7 @@ class TargetSpecies(models.Model):
     chromosome_number = models.IntegerField(null=True, blank=True)
     haploid_number = models.IntegerField(null=True, blank=True)
     ploidy = models.IntegerField(null=True, blank=True)
-    taxon_id = models.IntegerField(null=True, blank=True)
+    taxon_id = models.IntegerField(unique=True, db_index=True)
     c_value = models.DecimalField(max_digits=8, decimal_places=3, null=True, blank=True, verbose_name="C-value")
     genome_size = models.IntegerField(null=True, blank=True)
 
