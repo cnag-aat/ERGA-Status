@@ -28,8 +28,21 @@ export_csv.short_description = "Export CSV"
 @register(TargetSpecies)
 class TargetSpeciesAdmin(admin.ModelAdmin):
     list_display = (
-        'name',
-        'tolid_prefix'
+        'scientific_name',
+        'tolid_prefix',
+        'taxon_kingdom',
+        'taxon_phylum',
+        'taxon_class',
+        'taxon_order',
+        'taxon_family',
+        'taxon_genus',
+        'taxon_species',
+        'chromosome_number',
+        'haploid_number',
+        'ploidy',
+        'taxon_id',
+        'c_value',
+        'genome_size'
     )
 class MyUserAdmin(UserAdmin):
     def group(self, user):
