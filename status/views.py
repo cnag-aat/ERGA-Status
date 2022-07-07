@@ -37,6 +37,10 @@ logger = logging.getLogger(__name__)
 
 def index(request):
     return HttpResponse("Hello, world. You're at the status index.")
+
+class HomeView(TemplateView):
+    template_name = 'index.html'
+
 # Create your views here.
 class TargetSpeciesListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
