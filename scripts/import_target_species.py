@@ -50,7 +50,7 @@ with open(args.csv_file) as csvfile:
             if row['order']:
                 t_phylum, _ = TaxonOrder.objects.get_or_create(
                     name=row['order'],
-                    taxon_kingdom=t_kingdom
+                    taxon_kingdom=t_kingdom,
                     taxon_phylum=t_phylum,
                     taxon_class=t_class,
                 )
@@ -59,7 +59,7 @@ with open(args.csv_file) as csvfile:
             if row['family']:
                 t_family, _ = TaxonFamily.objects.get_or_create(
                     name=row['family'],
-                    taxon_kingdom=t_kingdom
+                    taxon_kingdom=t_kingdom,
                     taxon_phylum=t_phylum,
                     taxon_class=t_class,
                     taxon_order=t_order,
@@ -69,7 +69,7 @@ with open(args.csv_file) as csvfile:
             if row['genus']:
                 t_genus, _ = TaxonGenus.objects.get_or_create(
                     name=row['genus'],
-                    taxon_kingdom=t_kingdom
+                    taxon_kingdom=t_kingdom,
                     taxon_phylum=t_phylum,
                     taxon_class=t_class,
                     taxon_order=t_order,
