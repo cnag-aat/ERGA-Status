@@ -5,5 +5,5 @@ from status.views import TargetSpeciesListView
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path("species/", SampleListView.as_view(), name="species_list"),
+    path("species/", TargetSpeciesListView.as_view(), name="species_list"),
 ]
