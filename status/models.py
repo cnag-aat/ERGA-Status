@@ -97,7 +97,7 @@ class TargetSpecies(models.Model):
     ploidy = models.IntegerField(null=True, blank=True)
     taxon_id = models.IntegerField(unique=True, db_index=True)
     c_value = models.DecimalField(max_digits=8, decimal_places=3, null=True, blank=True, verbose_name="C-value")
-    genome_size = models.IntegerField(null=True, blank=True)
+    genome_size = models.BigIntegerField(null=True, blank=True)
 
     class Meta:
         verbose_name_plural = 'species'
