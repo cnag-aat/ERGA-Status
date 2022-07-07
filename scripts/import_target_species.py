@@ -118,13 +118,11 @@ with open(args.csv_file) as csvfile:
                         species=targetspecies
                     )
 
-
             if row['common_name'] or None:
-                for com_name in row['common_name'].split(','):
-                    try:
-                        species_comnames = CommonNames.objects.get(name=com_name)
-                    except Synonyms.DoesNotExist:
-                        species_comnames, _ = CommonNames.objects.get_or_create(name=com_name)
+                for cname in row['common_name'].split(','):
+                    species_cnames, created = CommonNames.objects.get_or_create(
+                        name=cname,
+                        species=targetspecies
+                    )
 
-                    species_comnames.species = targetspecies
 print("Finished OK")
