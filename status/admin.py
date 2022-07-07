@@ -36,7 +36,7 @@ class TargetSpeciesAdmin(admin.ModelAdmin):
         'taxon_order',
         'taxon_family',
         'taxon_genus',
-        'taxon_species',
+        # 'taxon_species',
         'chromosome_number',
         'haploid_number',
         'ploidy',
