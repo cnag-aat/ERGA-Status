@@ -48,7 +48,7 @@ with open(args.csv_file) as csvfile:
 
             t_order = None
             if row['order']:
-                t_phylum, _ = TaxonOrder.objects.get_or_create(
+                t_order, _ = TaxonOrder.objects.get_or_create(
                     name=row['order'],
                     taxon_kingdom=t_kingdom,
                     taxon_phylum=t_phylum,
