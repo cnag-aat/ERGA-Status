@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     #'allauth.socialaccount.providers.google',
     'erga',
     'django_registration',
-    'status', 
+    'status',
     'rest_framework',
     'django_filters',
     'django_tables2',
@@ -74,7 +74,7 @@ ROOT_URLCONF = 'erga.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        "DIRS": ["/home/www/resistome.cnag.cat/status/erga/erga/templates","/home/www/resistome.cnag.cat/status/erga/erga/templates/account/","/status/erga/tracking/templates/","/status/erga/erga/templates/"],
+        "DIRS": ["/home/www/resistome.cnag.cat/erga/erga/templates","/home/www/resistome.cnag.cat/erga/erga/templates/account/","/erga/status/templates/","/erga/erga/templates/"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
