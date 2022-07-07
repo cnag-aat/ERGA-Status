@@ -86,18 +86,18 @@ class TargetSpecies(models.Model):
     scientific_name = models.CharField(max_length=201, blank=True, null=True)
     tolid_prefix = models.CharField(max_length=12, blank=True, null=True)
     taxon_kingdom = models.ForeignKey(TaxonKingdom, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Kingdom")
-    taxon_phylum = models.ForeignKey(TaxonPhylum, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Kingdom")
-    taxon_class = models.ForeignKey(TaxonClass, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Kingdom")
-    taxon_order = models.ForeignKey(TaxonOrder, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Kingdom")
-    taxon_family = models.ForeignKey(TaxonFamily, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Kingdom")
-    taxon_genus = models.ForeignKey(TaxonGenus, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Kingdom")
-    taxon_species = models.ForeignKey(TaxonSpecies, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Kingdom")
-    chromosome_number = models.CharField(max_length=200, blank=True, null=True)
-    haploid_number = models.CharField(max_length=200, blank=True, null=True)
-    ploidy = models.CharField(max_length=200, blank=True, null=True)
+    taxon_phylum = models.ForeignKey(TaxonPhylum, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Phylum")
+    taxon_class = models.ForeignKey(TaxonClass, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Class")
+    taxon_order = models.ForeignKey(TaxonOrder, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Order")
+    taxon_family = models.ForeignKey(TaxonFamily, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Family")
+    taxon_genus = models.ForeignKey(TaxonGenus, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Genus")
+    taxon_species = models.ForeignKey(TaxonSpecies, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Species")
+    chromosome_number = models.IntegerField(null=True, blank=True)
+    haploid_number = models.IntegerField(null=True, blank=True)
+    ploidy = models.IntegerField(null=True, blank=True)
     taxon_id = models.CharField(max_length=200, blank=True, null=True)
-    c_value = models.CharField(max_length=200, blank=True, null=True)
-    genome_size = models.CharField(max_length=200, blank=True, null=True)
+    c_value = models.DecimalField(max_digits=8, decimal_places=3, null=True, blank=True, verbose_name="C-value")
+    genome_size = models.IntegerField(null=True, blank=True)
 
     class Meta:
         verbose_name_plural = 'species'
@@ -107,7 +107,7 @@ class TargetSpecies(models.Model):
 
 class CommonNames(models.Model):
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="Genus/species")
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
         verbose_name_plural = 'common names'
@@ -117,7 +117,7 @@ class CommonNames(models.Model):
 
 class Synonyms(models.Model):
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="Genus/species")
-    name = models.CharField(max_length=201)
+    name = models.CharField(max_length=201, blank=True, null=True)
 
     class Meta:
         verbose_name_plural = 'synonyms'
