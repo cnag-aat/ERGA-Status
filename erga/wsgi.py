@@ -20,6 +20,7 @@ sys.path.append('/home/www/resistome.cnag.cat/status/erga/erga')
 sys.path.append('/home/www/resistome.cnag.cat/virtualenvs/incredble_venv/lib/python3.6/site-packages/')
 
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'erga.settings')
+#os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'erga.settings')
+os.environ['DJANGO_SETTINGS_MODULE'] = 'erga.settings'
 
 application = get_wsgi_application()
