@@ -16,6 +16,7 @@ from django.core.wsgi import get_wsgi_application
 
 sys.path.append('/home/www/resistome.cnag.cat/httpdocs/incredible')
 sys.path.append('/home/www/resistome.cnag.cat/httpdocs/erga')
+sys.path.remove('/home/www/resistome.cnag.cat/incredible/incredible')
 sys.path.append('/home/www/resistome.cnag.cat/status/erga/erga')
 sys.path.append('/home/www/resistome.cnag.cat/virtualenvs/incredble_venv/lib/python3.6/site-packages/')
 
