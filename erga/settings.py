@@ -188,13 +188,12 @@ ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = "https://genomes.cnag.cat/erga/erga/accounts/login/"
 LOGIN_URL="/erga/accounts/login/"
 
-#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_USE_TLS = True
-EMAIL_HOST = 'smtp.crg.es'
-EMAIL_PORT = 587
+#EMAIL_USE_TLS = False
+EMAIL_HOST = 'smtp.crg.eu'
+EMAIL_PORT = 25
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+#EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
 
