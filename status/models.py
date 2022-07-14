@@ -185,7 +185,7 @@ class AssemblyProject(models.Model):
     status = models.CharField(max_length=1, help_text='Status', choices=STATUS_CHOICES, default='W')
 
     class Meta:
-        verbose_name_plural = 'assembly status'
+        verbose_name_plural = 'assembly projects'
 
     def __str__(self):
         return self.species.tolid_prefix + ' project'
