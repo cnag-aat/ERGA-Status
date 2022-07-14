@@ -124,8 +124,8 @@ class TargetSpecies(models.Model):
         ordering = ['taxon_kingdom', 'taxon_phylum', 'taxon_class', 'taxon_order','taxon_family','taxon_genus','scientific_name']
 
     def __str__(self):
-        return self.scientific_name +" (" + self.tolid_prefix + ")"
-
+        return self.scientific_name
+        #return self.scientific_name +" (" + self.tolid_prefix + ")"
 class CommonNames(models.Model):
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="Genus/species")
     name = models.CharField(max_length=100, blank=True, null=True)
