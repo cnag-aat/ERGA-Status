@@ -171,7 +171,7 @@ class AssemblyTeam(models.Model):
 
 class SampleCollection(models.Model):
     sample_coordinator = models.ForeignKey(SampleCoordinator, on_delete=models.CASCADE, verbose_name="sample coordinators")
-    species = = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
+    species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
 
     class Meta:
         verbose_name_plural = 'collections'
