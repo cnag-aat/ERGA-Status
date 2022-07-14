@@ -72,6 +72,8 @@ admin.site.register(AssemblyProject)
 admin.site.register(Assembly)
 admin.site.register(SampleCollection)
 admin.site.register(SampleCoordinator)
+admin.site.register(BUSCOdb)
+admin.site.register(BUSCOversion)
 
 admin.site.unregister(User)
 admin.site.register(User, MyUserAdmin)
