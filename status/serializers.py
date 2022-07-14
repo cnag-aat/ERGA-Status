@@ -47,7 +47,7 @@ class AssemblyProjectSerializer(BulkSerializerMixin, serializers.HyperlinkedMode
         model = AssemblyProject
         fields = '__all__'
 
-class AssemblySerializerSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+class AssemblySerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Assembly
         fields = '__all__'
