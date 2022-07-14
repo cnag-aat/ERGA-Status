@@ -7,3 +7,8 @@ class TargetSpeciesSerializer(BulkSerializerMixin, serializers.HyperlinkedModelS
     class Meta:
         model = TargetSpecies
         fields = '__all__'
+
+class AssemblySerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Assembly
+        fields = '__all__'
