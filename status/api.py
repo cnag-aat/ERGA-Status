@@ -5,7 +5,7 @@ from rest_framework_bulk import BulkModelViewSet
 
 class TaxonKingdomViewSet(BulkModelViewSet):
     """
-    API endpoint that allows assemblies to be viewed or edited.
+    API endpoint that allows kingdoms to be viewed or edited.
     """
     queryset = TaxonKingdom.objects.all()
     serializer_class = TaxonKingdomSerializer
@@ -13,7 +13,7 @@ class TaxonKingdomViewSet(BulkModelViewSet):
 
 class TaxonPhylumViewSet(BulkModelViewSet):
     """
-    API endpoint that allows assemblies to be viewed or edited.
+    API endpoint that allows phyla to be viewed or edited.
     """
     queryset = TaxonPhylum.objects.all()
     serializer_class = TaxonPhylumSerializer
@@ -21,7 +21,7 @@ class TaxonPhylumViewSet(BulkModelViewSet):
 
 class TaxonClassViewSet(BulkModelViewSet):
     """
-    API endpoint that allows assemblies to be viewed or edited.
+    API endpoint that allows classes to be viewed or edited.
     """
     queryset = TaxonClass.objects.all()
     serializer_class = TaxonClassSerializer
@@ -29,7 +29,7 @@ class TaxonClassViewSet(BulkModelViewSet):
 
 class TaxonOrderViewSet(BulkModelViewSet):
     """
-    API endpoint that allows assemblies to be viewed or edited.
+    API endpoint that allows orders to be viewed or edited.
     """
     queryset = TaxonOrder.objects.all()
     serializer_class = TaxonOrderSerializer
@@ -37,7 +37,7 @@ class TaxonOrderViewSet(BulkModelViewSet):
 
 class TaxonFamilyViewSet(BulkModelViewSet):
     """
-    API endpoint that allows assemblies to be viewed or edited.
+    API endpoint that allows families to be viewed or edited.
     """
     queryset = TaxonFamily.objects.all()
     serializer_class = TaxonFamilySerializer
@@ -45,7 +45,7 @@ class TaxonFamilyViewSet(BulkModelViewSet):
 
 class TaxonGenusViewSet(BulkModelViewSet):
     """
-    API endpoint that allows assemblies to be viewed or edited.
+    API endpoint that allows genera to be viewed or edited.
     """
     queryset = TaxonGenus.objects.all()
     serializer_class = TaxonGenusSerializer
@@ -63,7 +63,7 @@ class TargetSpeciesViewSet(BulkModelViewSet):
 
 class AssemblyTeamViewSet(BulkModelViewSet):
     """
-    API endpoint that allows assemblies to be viewed or edited.
+    API endpoint that allows assembly teams to be viewed or edited.
     """
     queryset = AssemblyTeam.objects.all()
     serializer_class = AssemblyTeamSerializer
@@ -71,7 +71,7 @@ class AssemblyTeamViewSet(BulkModelViewSet):
 
 class AssemblyProjectViewSet(BulkModelViewSet):
     """
-    API endpoint that allows assemblies to be viewed or edited.
+    API endpoint that allows assembly projects to be viewed or edited.
     """
     queryset = AssemblyProject.objects.all()
     serializer_class = AssemblyProjectSerializer
