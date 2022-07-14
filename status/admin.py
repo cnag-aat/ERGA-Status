@@ -25,40 +25,15 @@ def export_csv(modeladmin, request, queryset):
 export_csv.short_description = "Export CSV"
 
 # Register your models here.
-@register(TargetSpecies)
-class TargetSpeciesAdmin(admin.ModelAdmin):
-    list_display = (
-        'scientific_name',
-        'tolid_prefix',
-        'taxon_kingdom',
-        'taxon_phylum',
-        'taxon_class',
-        'taxon_order',
-        'taxon_family',
-        'taxon_genus',
-        # 'taxon_species',
-        'chromosome_number',
-        'haploid_number',
-        'ploidy',
-        'taxon_id',
-        'c_value',
-        'genome_size'
-    )
 
-# Register your models here.
-@register(CommonNames)
-class CommonNamesAdmin(admin.ModelAdmin):
-    list_display = (
-        'species',
-        'name'
-    )
+# @register(CommonNames)
+# class CommonNamesAdmin(admin.ModelAdmin):
+#     list_display = (
+#         'species',
+#         'name'
+#     )
 
-@register(Synonyms)
-class SynonymsAdmin(admin.ModelAdmin):
-    list_display = (
-        'species',
-        'name'
-    )
+
 
 class MyUserAdmin(UserAdmin):
     def group(self, user):
@@ -70,8 +45,14 @@ class MyUserAdmin(UserAdmin):
     list_filter = UserAdmin.list_filter + ('groups__name',)
     list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'group')
 
-
+admin.site.register(TargetSpecies)
+admin.site.register(CommonNames)
+admin.site.register(Synonyms)
 admin.site.register(AssemblyTeam)
+admin.site.register(AssemblyProject)
+admin.site.register(Assembly)
+admin.site.register(SampleCollection)
+admin.site.register(SampleCoordinator)
 
 admin.site.unregister(User)
 admin.site.register(User, MyUserAdmin)
