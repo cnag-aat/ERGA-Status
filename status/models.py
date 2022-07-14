@@ -126,6 +126,7 @@ class TargetSpecies(models.Model):
     def __str__(self):
         return self.scientific_name
         #return self.scientific_name +" (" + self.tolid_prefix + ")"
+
 class CommonNames(models.Model):
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="Genus/species")
     name = models.CharField(max_length=100, blank=True, null=True)
