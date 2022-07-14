@@ -4,6 +4,26 @@ from django.conf import settings
 
 
 # Create your models here.
+STATUS_CHOICES = (
+    ('W', 'Waiting for input'),
+    ('R', 'Input received'),
+    ('P', 'Processing'),
+    ('D', 'Done'),
+    ('S', 'Sent')
+)
+
+ASSEMBLY_TYPE_CHOICES = (
+    ('Primary', 'Pseudohaploid Primary'),
+    ('Alternate', 'Pseudohaploid Alternate'),
+    ('Hap1', 'Phased Haplotype 1'),
+    ('Hap2', 'Phased Haplotype 2'),
+    ('Maternal', 'Trio-phased Maternal'),
+    ('Paternal', 'Trio-phased Paternal'),
+    ('MT', 'Mitogenome'),
+    ('Chloroplast', 'Chloroplast'),
+    ('Endosymbiont', 'Endosymbiont')
+)
+
 
 class TaxonKingdom(models.Model):
     name = models.CharField(max_length=100)
@@ -83,8 +103,8 @@ class TaxonGenus(models.Model):
 #         return self.name
 
 class TargetSpecies(models.Model):
-    scientific_name = models.CharField(max_length=201, blank=True, null=True)
-    tolid_prefix = models.CharField(max_length=12, blank=True, null=True)
+    scientific_name = models.CharField(max_length=201, blank=True, null=True, db_index=True)
+    tolid_prefix = models.CharField(max_length=12, blank=True, null=True, db_index=True)
     taxon_kingdom = models.ForeignKey(TaxonKingdom, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Kingdom")
     taxon_phylum = models.ForeignKey(TaxonPhylum, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Phylum")
     taxon_class = models.ForeignKey(TaxonClass, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Class")
@@ -125,3 +145,66 @@ class Synonyms(models.Model):
 
     def __str__(self):
         return self.name
+
+class SampleCoordinator(models.Model):
+    name = models.CharField(max_length=100)
+    affiliation = models.CharField(max_length=100)
+    email = models.CharField(max_length=100)
+
+    class Meta:
+        verbose_name_plural = 'sample coordinators'
+
+    def __str__(self):
+        return self.name
+
+class AssemblyTeam(models.Model):
+    name = models.CharField(max_length=100)
+    affiliation = models.CharField(max_length=100)
+    email = models.CharField(max_length=100)
+
+    class Meta:
+        verbose_name_plural = 'assembly teams'
+
+    def __str__(self):
+        return self.name
+
+
+class SampleCollection(models.Model):
+    sample_coordinator = models.ForeignKey(SampleCoordinator, on_delete=models.CASCADE, verbose_name="sample coordinators")
+    species = = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
+
+    class Meta:
+        verbose_name_plural = 'collections'
+
+    def __str__(self):
+        return self.name
+
+class AssemblyProject(models.Model):
+    team = models.ForeignKey(AssemblyTeam, on_delete=models.CASCADE, verbose_name="assembly team")
+    species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
+    status = models.CharField(max_length=1, help_text='Status', choices=STATUS_CHOICES, default='W')
+
+    class Meta:
+        verbose_name_plural = 'assembly status'
+
+    def __str__(self):
+        return self.species.tolid_prefix + ' project'
+
+class Assembly(models.Model):
+    description = models.CharField(null=True, blank=True, max_length=100)
+    project = models.ForeignKey(AssemblyProject, on_delete=models.CASCADE, verbose_name="assembly project")
+    contig_n50 = models.BigIntegerField(null=True, blank=True)
+    scaffold_n50 = models.BigIntegerField(null=True, blank=True)
+    chromosome_level =  models.NullBooleanField(blank=True, null=True)
+    percent_placed = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True, verbose_name="Percent placed into chromosomes")
+    busco = models.BigIntegerField(null=True, blank=True)
+    busco_db = models.CharField(null=True, blank=True, max_length=50)
+    busco_version = models.CharField(null=True, blank=True, max_length=10)
+    qv = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True, verbose_name="QV")
+    type = models.CharField(max_length=20, help_text='Type of assembly', choices=ASSEMBLY_TYPE_CHOICES, default='Primary')
+
+    class Meta:
+        verbose_name_plural = 'assemblies'
+
+    def __str__(self):
+        return self.project.species.tolid_prefix + '.' + self.type
