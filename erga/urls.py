@@ -23,7 +23,17 @@ from status import api
 from django.conf.urls import url
 # API Endpoints
 router = routers.DefaultRouter()
+router.register(r'kindom', api.TaxonKingdomViewSet)
+router.register(r'phylum', api.TaxonPhylumViewSet)
+router.register(r'class', api.TaxonClassViewSet)
+router.register(r'order', api.TaxonOrderViewSet)
+router.register(r'family', api.TaxonFamilyViewSet)
+router.register(r'genus', api.TaxonGenusViewSet)
 router.register(r'species', api.TargetSpeciesViewSet)
+router.register(r'assemblyteam', api.AssemblyTeamViewSet)
+router.register(r'assemblyproject', api.AssemblyProjectViewSet)
+router.register(r'assembly', api.AssemblyViewSet)
+
 
 urlpatterns = [
     url('api/', include(router.urls)),
