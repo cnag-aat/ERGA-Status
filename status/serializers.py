@@ -37,17 +37,17 @@ class TargetSpeciesSerializer(BulkSerializerMixin, serializers.HyperlinkedModelS
         model = TargetSpecies
         fields = '__all__'
 
-class AssemblyTeam(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+class AssemblyTeamSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = AssemblyTeam
         fields = '__all__'
 
-class AssemblyProject(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+class AssemblyProjectSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = AssemblyProject
         fields = '__all__'
 
-class AssemblySerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+class AssemblySerializerSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Assembly
         fields = '__all__'
