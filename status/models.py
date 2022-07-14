@@ -126,6 +126,7 @@ class TargetSpecies(models.Model):
     def __str__(self):
         return self.scientific_name
         #return self.scientific_name +" (" + self.tolid_prefix + ")"
+
 class CommonNames(models.Model):
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="Genus/species")
     name = models.CharField(max_length=100, blank=True, null=True)
@@ -214,8 +215,8 @@ class Assembly(models.Model):
     chromosome_level =  models.NullBooleanField(blank=True, null=True)
     percent_placed = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True, verbose_name="Percent placed into chromosomes")
     busco = models.CharField(null=True, blank=True, max_length=60)
-    busco_db = models.ForeignKey(BUSCOdb, on_delete=models.CASCADE, verbose_name="BUSCO db")
-    busco_version = models.ForeignKey(BUSCOversion, on_delete=models.CASCADE, verbose_name="BUSCO version")
+    busco_db = models.ForeignKey(BUSCOdb, on_delete=models.CASCADE, verbose_name="BUSCO db", null=True, blank=True)
+    busco_version = models.ForeignKey(BUSCOversion, on_delete=models.CASCADE, verbose_name="BUSCO version",null=True, blank=True)
     qv = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True, verbose_name="QV")
     type = models.CharField(max_length=20, help_text='Type of assembly', choices=ASSEMBLY_TYPE_CHOICES, default='Primary')
 
