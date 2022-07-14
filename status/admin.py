@@ -25,7 +25,27 @@ def export_csv(modeladmin, request, queryset):
 export_csv.short_description = "Export CSV"
 
 # Register your models here.
+@register(TargetSpecies)
+class TargetSpeciesAdmin(admin.ModelAdmin):
+    list_display = (
+        'scientific_name',
+        'tolid_prefix',
+        'taxon_kingdom',
+        'taxon_phylum',
+        'taxon_class',
+        'taxon_order',
+        'taxon_family',
+        'taxon_genus',
+        # 'taxon_species',
+        'chromosome_number',
+        'haploid_number',
+        'ploidy',
+        'taxon_id',
+        'c_value',
+        'genome_size'
+    )
 
+# Register your models here.
 # @register(CommonNames)
 # class CommonNamesAdmin(admin.ModelAdmin):
 #     list_display = (
@@ -45,7 +65,6 @@ class MyUserAdmin(UserAdmin):
     list_filter = UserAdmin.list_filter + ('groups__name',)
     list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'group')
 
-admin.site.register(TargetSpecies)
 admin.site.register(CommonNames)
 admin.site.register(Synonyms)
 admin.site.register(AssemblyTeam)
