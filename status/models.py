@@ -210,6 +210,7 @@ class BUSCOversion(models.Model):
 class Assembly(models.Model):
     description = models.CharField(null=True, blank=True, max_length=100)
     project = models.ForeignKey(AssemblyProject, on_delete=models.CASCADE, verbose_name="assembly project")
+    span = models.BigIntegerField(null=True, blank=True, verbose_name="Assembly span")
     contig_n50 = models.BigIntegerField(null=True, blank=True, verbose_name="Contig N50")
     scaffold_n50 = models.BigIntegerField(null=True, blank=True, verbose_name="Scaffold N50")
     chromosome_level =  models.NullBooleanField(blank=True, null=True)
