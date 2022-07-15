@@ -6,7 +6,7 @@ from django.views.generic import TemplateView
 from django_tables2 import SingleTableView
 from django_tables2 import RequestConfig
 
-from status.tables import TargetSpeciesTable
+from status.tables import *
 from django_tables2.export.views import ExportMixin
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
