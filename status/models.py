@@ -167,7 +167,7 @@ class AssemblyTeam(models.Model):
         verbose_name_plural = 'assembly teams'
 
     def __str__(self):
-        return self.name + " ("+self.affiation+")"
+        return self.name + " ("+self.affiliation+")"
 
 
 class SampleCollection(models.Model):
