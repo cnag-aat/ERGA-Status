@@ -25,7 +25,7 @@ class AssemblyTable(tables.Table):
 
 class AssemblyProjectTable(tables.Table):
     export_formats = ['csv', 'tsv']
-    assemblies = tables.TemplateColumn('<a href="{% url \'assembly_list\' %}?project={{record.pk}}>assemblies</a>',empty_values=(), verbose_name='Assemblies')
+    assemblies = tables.TemplateColumn('<a href="{% url \'assembly_list\' %}?project={{record.pk}}>assemblies</a>"',empty_values=(), verbose_name='Assemblies')
 
     class Meta:
         model = AssemblyProject
