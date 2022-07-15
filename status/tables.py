@@ -1,7 +1,7 @@
 # tables.py
 import django_tables2 as tables
 from django_tables2.utils import A
-from .models import TargetSpecies
+from .models import *
 import re
 from django.utils.safestring import mark_safe
 #import html
