@@ -57,7 +57,6 @@ INSTALLED_APPS = [
     'cookielaw',
     'crispy_forms',
     'qurl_templatetag',
-    'set_query_string_param'
 ]
 
 MIDDLEWARE = [

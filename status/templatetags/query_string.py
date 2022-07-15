@@ -5,7 +5,7 @@ register = template.Library()
 
 
 @register.tag
-def set_query_string_param(parser, token):
+def query_string(parser, token):
     """
     Django template tag to set/unset url query string parameter
     or replace parameter's value if it's already set

@@ -3,7 +3,6 @@
 {% load static %}
 {% load bootstrap4 %}
 {% block header %}
-{% load set_query_string_param %}
 {% load query_string %}
 <link rel="stylesheet" href="/static/css/sidebar.css">
 
@@ -31,7 +30,7 @@
       <button class="btn btn-link" onclick="openNav()">☰ Filters</button>
     </div>
     <div class="col d-flex justify-content-end">
-      <a href="{{ request.get_full_path }}{% set_query_string_param _export csv %}" class="btn btn-primary" role="button">Export CSV New</a>
+      <a href="{{ request.get_full_path }}{% query_string _export csv %}" class="btn btn-primary" role="button">Export CSV New</a>
       <a href="{{ request.get_full_path }}?_export=csv" class="btn btn-primary" role="button">Export CSV</a>
     </div>
   </div>
