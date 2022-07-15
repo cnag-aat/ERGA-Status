@@ -3,6 +3,8 @@
 {% load static %}
 {% load bootstrap4 %}
 {% block header %}
+{% load query_string %}
+
 <link rel="stylesheet" href="/static/css/sidebar.css">
 
 
@@ -29,7 +31,7 @@
       <button class="btn btn-link" onclick="openNav()">☰ Filters</button>
     </div>
     <div class="col d-flex justify-content-end">
-      <a href="{{ request.get_full_path }}&_export=csv" class="btn btn-primary" role="button">Export CSV</a>
+      <a href="{{ request.get_full_path }}{% query_string '_export' 'csv' %}" class="btn btn-primary" role="button">Export CSV</a>
     </div>
   </div>
   <div class=" row m-1">
