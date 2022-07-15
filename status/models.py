@@ -5,11 +5,11 @@ from django.conf import settings
 
 # Create your models here.
 STATUS_CHOICES = (
-    ('W', 'Waiting for input'),
-    ('R', 'Input received'),
-    ('P', 'Processing'),
-    ('D', 'Done'),
-    ('S', 'Sent')
+    ('Waiting', 'Waiting for input'),
+    ('Received', 'Input received'),
+    ('Processing', 'Processing'),
+    ('Done', 'Done'),
+    ('Sent', 'Sent')
 )
 
 ASSEMBLY_TYPE_CHOICES = (
@@ -173,6 +173,7 @@ class AssemblyTeam(models.Model):
 class SampleCollection(models.Model):
     sample_coordinator = models.ForeignKey(SampleCoordinator, on_delete=models.CASCADE, verbose_name="sample coordinators")
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
+    status = models.CharField(max_length=12, help_text='Status', choices=STATUS_CHOICES, default='Waiting')
 
     class Meta:
         verbose_name_plural = 'collections'
@@ -183,7 +184,7 @@ class SampleCollection(models.Model):
 class AssemblyProject(models.Model):
     team = models.ForeignKey(AssemblyTeam, on_delete=models.CASCADE, verbose_name="assembly team")
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
-    status = models.CharField(max_length=1, help_text='Status', choices=STATUS_CHOICES, default='W')
+    status = models.CharField(max_length=12, help_text='Status', choices=STATUS_CHOICES, default='Waiting')
 
     class Meta:
         verbose_name_plural = 'assembly projects'
