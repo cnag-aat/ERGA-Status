@@ -30,7 +30,7 @@
       <button class="btn btn-link" onclick="openNav()">☰ Filters</button>
     </div>
     <div class="col d-flex justify-content-end">
-      <a href="{{ url }}{% query_string _export csv %}" class="btn btn-primary" role="button">Export CSV New</a>
+      <a href="{{ request.get_full_path }}{% query_string '_export' 'csv' %}" class="btn btn-primary" role="button">Export CSV New</a>
       <a href="{{ request.get_full_path }}?_export=csv" class="btn btn-primary" role="button">Export CSV</a>
     </div>
   </div>
