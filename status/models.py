@@ -208,18 +208,18 @@ class BUSCOversion(models.Model):
         return self.version
 
 class Assembly(models.Model):
+    project = models.ForeignKey(AssemblyProject, on_delete=models.CASCADE, verbose_name="Assembly project")
     description = models.CharField(null=True, blank=True, max_length=100)
-    project = models.ForeignKey(AssemblyProject, on_delete=models.CASCADE, verbose_name="assembly project")
+    type = models.CharField(max_length=20, help_text='Type of assembly', choices=ASSEMBLY_TYPE_CHOICES, default='Primary')
     span = models.BigIntegerField(null=True, blank=True, verbose_name="Assembly span")
     contig_n50 = models.BigIntegerField(null=True, blank=True, verbose_name="Contig N50")
     scaffold_n50 = models.BigIntegerField(null=True, blank=True, verbose_name="Scaffold N50")
-    chromosome_level =  models.NullBooleanField(blank=True, null=True)
-    percent_placed = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True, verbose_name="Percent placed into chromosomes")
-    busco = models.CharField(null=True, blank=True, max_length=60)
+    chromosome_level =  models.NullBooleanField(blank=True, null=True, verbose_name="Chr level")
+    percent_placed = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True, verbose_name="% placed")
+    busco = models.CharField(null=True, blank=True, max_length=60, verbose_name="BUSCO")
     busco_db = models.ForeignKey(BUSCOdb, on_delete=models.CASCADE, verbose_name="BUSCO db", null=True, blank=True)
     busco_version = models.ForeignKey(BUSCOversion, on_delete=models.CASCADE, verbose_name="BUSCO version",null=True, blank=True)
     qv = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True, verbose_name="QV")
-    type = models.CharField(max_length=20, help_text='Type of assembly', choices=ASSEMBLY_TYPE_CHOICES, default='Primary')
 
     class Meta:
         verbose_name_plural = 'assemblies'
