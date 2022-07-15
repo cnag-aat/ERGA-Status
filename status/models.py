@@ -182,8 +182,8 @@ class SampleCollection(models.Model):
         return self.name
 
 class AssemblyProject(models.Model):
-    team = models.ForeignKey(AssemblyTeam, on_delete=models.CASCADE, verbose_name="assembly team")
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
+    team = models.ForeignKey(AssemblyTeam, on_delete=models.CASCADE, verbose_name="assembly team")
     status = models.CharField(max_length=12, help_text='Status', choices=STATUS_CHOICES, default='Waiting')
 
     class Meta:

@@ -25,6 +25,8 @@ class AssemblyTable(tables.Table):
 
 class AssemblyProjectTable(tables.Table):
     export_formats = ['csv', 'tsv']
+    assemblies = tables.TemplateColumn('<a href="{% url \'assemblies\' %}?project={{record.pk}}>assemblies</a>',empty_values=(), verbose_name='Assemblies')
+
     class Meta:
         model = AssemblyProject
         template_name = "django_tables2/bootstrap4.html"
