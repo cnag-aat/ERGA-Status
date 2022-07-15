@@ -54,6 +54,12 @@ body {
         <li class="nav-item active">
           <a class="nav-link" id="specieslink" href="{% url 'species_list' %}"><i id=speciesspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Target Species</a>
         </li>
+        <li class="nav-item active">
+          <a class="nav-link" id="projectlink" href="{% url 'assembly_project_list' %}"><i id=projectspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Assembly Projects</a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" id="assemblylink" href="{% url 'assembly_list' %}"><i id=assemblyspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Assemblies</a>
+        </li>
       </ul>
       <ul class="navbar-nav ml-auto">
         {% if user.is_authenticated %}
@@ -177,8 +183,16 @@ body {
     function spinner() {
     	// const spinnerDisplayer = document.querySelector('.spinner-displayer');
     	const specieslink = document.getElementById('specieslink');
-    	anilink.addEventListener('click', () => {
+    	specieslink.addEventListener('click', () => {
         $("#speciesspinner").show();
+      })
+      const projectlink = document.getElementById('projectlink');
+    	projectlink.addEventListener('click', () => {
+        $("#projectspinner").show();
+      })
+      const assemblylink = document.getElementById('assemblylink');
+    	assemblylink.addEventListener('click', () => {
+        $("#assemblyspinner").show();
       })
     }
 

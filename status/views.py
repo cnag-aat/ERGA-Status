@@ -50,3 +50,21 @@ class TargetSpeciesListView(ExportMixin, SingleTableMixin, FilterView):
     template_name = 'targetspecies.html'
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 15}
+
+class AssemblyProjectListView(ExportMixin, SingleTableMixin, FilterView):
+    # permission_required = "resistome.view_sample"
+    # login_url = "access_denied"
+    model = AssemblyProject
+    table_class = AssemblyProjectTable
+    template_name = 'assemblyproject.html'
+    #filterset_class = SpeciesFilter
+    table_pagination = {"per_page": 15}
+
+class AssemblyListView(ExportMixin, SingleTableMixin, FilterView):
+    # permission_required = "resistome.view_sample"
+    # login_url = "access_denied"
+    model = Assembly
+    table_class = AssemblyTable
+    template_name = 'assembly.html'
+    #filterset_class = SpeciesFilter
+    table_pagination = {"per_page": 15}

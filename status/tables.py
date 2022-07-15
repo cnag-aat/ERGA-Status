@@ -15,3 +15,17 @@ class TargetSpeciesTable(tables.Table):
         #fields = ('scaffold','start','end','orientation','roary_gene','gene','st')
         #fields = ("name", )
         #id = tables.Column(linkify=True)
+
+class AssemblyTable(tables.Table):
+    export_formats = ['csv', 'tsv']
+    class Meta:
+        model = Assembly
+        template_name = "django_tables2/bootstrap4.html"
+        paginate = {"per_page": 100}
+
+class AssemblyProjectTable(tables.Table):
+    export_formats = ['csv', 'tsv']
+    class Meta:
+        model = AssemblyProject
+        template_name = "django_tables2/bootstrap4.html"
+        paginate = {"per_page": 100}
