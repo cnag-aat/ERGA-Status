@@ -68,7 +68,12 @@ class MyUserAdmin(UserAdmin):
 admin.site.register(CommonNames)
 admin.site.register(Synonyms)
 admin.site.register(AssemblyTeam)
-admin.site.register(AssemblyProject)
+# admin.site.register(AssemblyProject)
+@register(AssemblyProject)
+class AssemblyProjectAdmin(admin.ModelAdmin):
+    list_display = ('team', 'species', 'status',)
+    search_fields = ['team', 'species', 'status',]
+
 admin.site.register(Assembly)
 admin.site.register(SampleCollection)
 admin.site.register(SampleCoordinator)
