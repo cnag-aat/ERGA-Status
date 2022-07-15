@@ -1,102 +1,166 @@
 from django import template
-from django.utils.safestring import mark_safe
-import datetime
+from collections import namedtuple
 
 register = template.Library()
 
+
 @register.tag
-def query_string(parser, token):
+def set_query_string_param(parser, token):
     """
-    Allows you too manipulate the query string of a page by adding and removing keywords.
-    If a given value is a context variable it will resolve it.
-    Based on similiar snippet by user "dnordberg".
-    
-    requires you to add:
-    
-    TEMPLATE_CONTEXT_PROCESSORS = (
-    'django.core.context_processors.request',
-    )
-    
-    to your django settings. 
-    
-    Usage:
-    http://www.url.com/{% query_string "param_to_add=value, param_to_add=value" "param_to_remove, params_to_remove" %}
-    
-    Example:
-    http://www.url.com/{% query_string "" "filter" %}filter={{new_filter}}
-    http://www.url.com/{% query_string "page=page_obj.number" "sort" %} 
-    
-    """
-    try:
-        tag_name, add_string,remove_string = token.split_contents()
-    except ValueError:
-        raise template.TemplateSyntaxError, "%r tag requires two arguments" % token.contents.split()[0]
-    if not (add_string[0] == add_string[-1] and add_string[0] in ('"', "'")) or not (remove_string[0] == remove_string[-1] and remove_string[0] in ('"', "'")):
-        raise template.TemplateSyntaxError, "%r tag's argument should be in quotes" % tag_name
-    
-    add = string_to_dict(add_string[1:-1])
-    remove = string_to_list(remove_string[1:-1])
-    
-    return QueryStringNode(add,remove)
+    Django template tag to set/unset url query string parameter
+    or replace parameter's value if it's already set
 
-class QueryStringNode(template.Node):
-    def __init__(self, add,remove):
-        self.add = add
-        self.remove = remove
-        
+    ---------
+    USAGE
+
+    {% set_query_string_param <param_1_name> <param_1_value> <param_2_name> <param_2_value> ... %}
+
+    tag takes even number of arguments
+
+    param names and values may be context variables or strings
+
+    if param value is empty string or None
+    or variable that contain empty string or None,
+    then that param will be removed from current url query string if present
+
+    ---------
+    EXAMPLE (page_num is context variable):
+
+    src="{% set_query_string_param 'page' page_num %}"
+
+
+    RESULT (if page_num = 3):
+
+    (if query string was ?gender=male)
+    src="?gender=male&page=3"
+
+    (if query string was ?gender=male&page=2)
+    src="?gender=male&page=3"
+
+    (if there was no query string)
+    src="?page=3"
+
+
+    OTHER EXAMPLES
+
+    src="{% set_query_string_param filter_name filter_value 'page' 3 %}"
+    (if filter_name = gender, filter_value = male)
+    src="?gender=male&page=3"
+
+    src="{% set_query_string_param filter_name None 'page' page_num %}"
+    (if filter_name = gender, page_num = 3, query string was ?gender=male&page=2)
+    src="?page=3"
+
+    ---------
+    CAUTION
+
+    if you remove all query string parameters through the tag, then it will
+    return empty string. Like this (suppouse current query str = ?gender=male)
+    <a href="{% set_query_string_param gender '' %}">
+        Click on me and nothing will change
+    </a>
+    so if you click on such link, query string will stay ?gender=male.
+
+    in such cases use it with {% url %} tag
+    <a href="{% url 'catalog:filter' %}{% set_query_string_param gender '' %}">
+        Click on me and reset filtering parameters
+    </a>
+
+    or tweak the script to return '?' instead of empty string - it will solve
+    the problem
+
+    ---------
+    REQUIRES to set this in settings.py:
+
+    TEMPLATES = [{
+        ...
+        'OPTIONS': {
+            ...
+            'context_processors': [
+                ...
+                'django.core.context_processors.request',
+                ...
+            ],
+            ...
+        },
+        ...
+    }]
+    """
+
+    params = get_tag_args(token)
+
+    return QueryStringSetValueNode(params)
+
+
+def get_tag_args(token):
+    arguments = token.split_contents()
+    del arguments[0]  # delete tag name
+
+    if len(arguments) < 2 or len(arguments) % 2 != 0:
+        raise template.TemplateSyntaxError(
+            "%r tag requires even number of argument (min 2)" % token.contents.split()[0]
+        )
+
+    TagArgsPair = namedtuple('TagArgsPair',
+        ['str_repr_of_name_param', 'str_repr_of_value_param'])
+
+    tag_args = [TagArgsPair(arguments[x], arguments[x + 1])
+        for x in range(0, len(arguments), 2)]
+
+    return tag_args
+
+
+class QueryStringSetValueNode(template.Node):
+    def __init__(self, tag_args):
+        self.tag_args = tag_args
+
+
     def render(self, context):
-        p = {}
-        for k, v in context["request"].GET.items():
-            p[k]=v
-        return get_query_string(p,self.add,self.remove,context)
+        query_string_params = context.request.GET.copy()
+        query_string_params_to_set = self.evaluate_query_string_params(context)
 
-def get_query_string(p, new_params, remove, context):
-    """
-    Add and remove query parameters. From `django.contrib.admin`.
-    """
-    for r in remove:
-        for k in p.keys():
-            if k.startswith(r):
-                del p[k]
-    for k, v in new_params.items():
-        if k in p and v is None:
-            del p[k]
-        elif v is not None:
-            p[k] = v
-            
-    for k, v in p.items():
-        try:
-            p[k] = template.Variable(v).resolve(context)
-        except:
-            p[k]=v
-                
-    return mark_safe('?' + '&amp;'.join([u'%s=%s' % (k, v) for k, v in p.items()]).replace(' ', '%20'))
+        return self.make_query_string(query_string_params, query_string_params_to_set)
 
-# Taken from lib/utils.py   
-def string_to_dict(string):
-    kwargs = {}
-    
-    if string:
-        string = str(string)
-        if ',' not in string:
-            # ensure at least one ','
-            string += ','
-        for arg in string.split(','):
-            arg = arg.strip()
-            if arg == '': continue
-            kw, val = arg.split('=', 1)
-            kwargs[kw] = val
-    return kwargs
 
-def string_to_list(string):
-    args = []
-    if string:
-        string = str(string)
-        if ',' not in string:
-            # ensure at least one ','
-            string += ','
-        for arg in string.split(','):
-            arg = arg.strip()
-            if arg == '': continue
-            args.append(arg)
-    return args
+    @staticmethod
+    def make_query_string(query_string_params, query_string_params_to_set):
+        for name, value in query_string_params_to_set.items():
+            if (value == '' or value is None):
+                query_string_params.pop(name, None)
+            else:
+                query_string_params[name] = value
+
+        if not query_string_params:
+            return ''
+        return '?' + query_string_params.urlencode()
+
+
+    def evaluate_query_string_params(self, context):
+        return {
+            self.evaluate_tag_arg(context, x.str_repr_of_name_param):
+            self.evaluate_tag_arg(context, x.str_repr_of_value_param)
+            for x in self.tag_args
+        }
+
+
+    def evaluate_tag_arg(self, context, tag_argument):
+        if self.represents_string(tag_argument):
+            value = tag_argument[1:-1]
+        else:
+            value = self.get_variable_value_from_template_context(context, tag_argument)
+
+        return value
+
+
+    @staticmethod
+    def represents_string(tag_argument):
+        if tag_argument[0] == tag_argument[-1] and tag_argument[0] in ('"', "'"):
+            return True
+        return False
+
+
+    @staticmethod
+    def get_variable_value_from_template_context(context, variable_name):
+        var = template.Variable(variable_name)
+
+        return var.resolve(context)
