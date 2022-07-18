@@ -84,3 +84,19 @@ class AssemblyViewSet(BulkModelViewSet):
     queryset = Assembly.objects.all()
     serializer_class = AssemblySerializer
     filter_fields = '__all__'
+
+class BUSCOversionViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows BUSCO versions to be viewed or edited.
+    """
+    queryset = BUSCOversion.objects.all()
+    serializer_class = BUSCOversionSerializer
+    filter_fields = '__all__'
+
+class BUSCOdbViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows BUSCO dbs to be viewed or edited.
+    """
+    queryset = BUSCOdb.objects.all()
+    serializer_class = BUSCOdbSerializer
+    filter_fields = '__all__'
