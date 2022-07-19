@@ -13,16 +13,24 @@ my $url="https://genomes.cnag.cat/erga-status/api";
 
 #### EXAMPLE TABLES ####
 
-#assemblies.tsv
-#Assembly project	Description	Type	Assembly span	Contig N50	Scaffold N50	Chr level	% placed	BUSCO	BUSCO db	BUSCO version	QV
-#odPhaVent	ratatosk.nextdenovo.hypo1.purged	Pseudohaploid Primary	207000000	2400000	6900000		0.0	"C:80.5%[S:78.4%	D:2.1%]	F:8.5%M:11.0%	n:954"	metazoa_odb10	4.0.6	32.30
-#ilHelHell	nextdenovo.assembly.hypo1.purged.curated	Pseudohaploid Primary	547306268	23624374	23624374	true	100	"C:98.0%[S:97.7%,D:0.3%],F:0.7%,M:1.3%,n:1013"	arthropoda_odb10	4.0.6	46.6
-#rPodLil	flye.nextpolish_superreads.purgedups.10X.YaHS	Pseudohaploid Primary	1460245709	1478291	89641981	true	98.2	"C:95.9%[S:94.6%,D:1.3%],F:1.4%,M:2.7%,n:3354"	vertebrata_odb10	4.0.6	40.36
+#assemblies.csv
+#tolid_prefix,description,type,span,contig_n50,scaffold_n50,chromosome_level,percent_placed,busco,busco_db,busco_version,qv
+#odPhaVent,ratatosk.nextdenovo.hypo1.purged,Primary,207000000,2400000,6900000,FALSE,0,C:80.5%[S:78.4%;D:2.1%];F:8.5%;M:11.0%;n:954,metazoa_odb10,4.0.6,32.3
+#ilHelHell,nextdenovo.assembly.hypo1.purged.curated,Primary,547306268,23624374,23624374,TRUE,100,C:98.0%[S:97.7%;D:0.3%];F:0.7%;M:1.3%;n:1013,arthropoda_odb10,4.0.6,46.6
 
-my $usage = "usage: $0 assemblies.tsv\n";
+my $usage = <<'END_HELP';
+usage: $0 <assemblies>.csv
+
+  EXAMPLE assemblies.csv (BUSCO string should be quoted or commas replaced with semicolons):
+  tolid_prefix,description,type,span,contig_n50,scaffold_n50,chromosome_level,percent_placed,busco,busco_db,busco_version,qv
+  odPhaVent,ratatosk.nextdenovo.hypo1.purged,Primary,207000000,2400000,6900000,FALSE,0,C:80.5%[S:78.4%;D:2.1%];F:8.5%;M:11.0%;n:954,metazoa_odb10,4.0.6,32.3
+  ilHelHell,nextdenovo.assembly.hypo1.purged.curated,Primary,547306268,23624374,23624374,TRUE,100,C:98.0%[S:97.7%;D:0.3%];F:0.7%;M:1.3%;n:1013,arthropoda_odb10,4.0.6,46.6
+
+END_HELP
 my $assembly_data;
-my $assembly_tsv_file = shift;
-die "No assembly data" unless $assembly_data=(loadTbl($assembly_tsv_file,$assembly_data));
+my $assembly_tsv_file = 0;
+$assembly_csv_file = shift or print $usage and exit;
+die "No assembly data!\n" unless $assembly_data=(loadTbl($assembly_csv_file,$assembly_data));
 print STDERR "Parsed data files... ready to add to ERGA-Status.\n";
 print STDERR "Adding assembly data...\n"; #print STDERR Data::Dumper->Dump($assembly_data),"\n" and exit;
 add_assembly($assembly_data);
