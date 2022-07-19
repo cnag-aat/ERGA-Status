@@ -126,7 +126,7 @@ class TargetSpecies(models.Model):
 
     def get_absolute_url(self):
         from django.urls import reverse
-        return reverse('species', args=[str(self.scientific_name)])
+        return reverse('species_detail', args=[str(self.scientific_name)])
 
     def __str__(self):
         return self.scientific_name
