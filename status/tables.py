@@ -18,6 +18,7 @@ class TargetSpeciesTable(tables.Table):
 
 class AssemblyTable(tables.Table):
     export_formats = ['csv', 'tsv']
+    project = tables.Column(linkify=True)
     class Meta:
         model = Assembly
         template_name = "django_tables2/bootstrap4.html"
@@ -27,9 +28,9 @@ class AssemblyProjectTable(tables.Table):
     export_formats = ['csv', 'tsv']
     assemblies = tables.TemplateColumn('<a href="{% url \'assembly_list\' %}?project={{record.pk}}">assemblies</a>',empty_values=(), verbose_name='Assemblies')
     status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</a>',empty_values=(), verbose_name='Status')
-
+    species = tables.Column(linkify=True)
     class Meta:
         model = AssemblyProject
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        fields = ('species', 'team','assemblies', 'status')
+        fields = ('species', 'team','assemblies', 'notes', 'status')
