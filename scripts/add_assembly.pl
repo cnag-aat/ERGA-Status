@@ -34,47 +34,77 @@ die "No assembly data" unless $assembly_data=(loadTbl($assembly_tsv_file,$assemb
 
 print STDERR "Parsed data files... ready to add to ERGA-Status.\n";
 print STDERR "Adding assembly data...\n"; #print STDERR Data::Dumper->Dump($assembly_data),"\n" and exit;
-die "Failed adding assembly!\n" unless add_assembly();
 
+#print STDERR Data::Dumper->Dump([$assembly_data->[0]]);
 
+#print STDERR $assembly_data->[0]->{project},"\n";
+add_assembly($assembly_data);
+#die "Failed adding assembly!\n" unless
 sub add_assembly{
-  my $qv_rounded = sprintf("%.2f",$assembly_data->[0]->{qv});
-  my $pp_rounded = sprintf("%.1f",$assembly_data->[0]->{percent_placed});
-  $client->GET("$url/assemblies/?assembly=". $assembly_data->[0]->{assembly});
-  print STDERR  $client->responseContent(),"\n";
-  my $response1 = decode_json $client->responseContent();
-  print STDERR $assembly_data->[0]->{sample},"\n";
-  $client->GET("$url/sample/?barcode=". $assembly_data->[0]->{sample});
-  my $response2 = decode_json $client->responseContent();
-  if ($response2->{count} == 1) {
-    $assembly_data->[0]->{sample}=$response2->{results}->[0]->{url};
-  } else {
-    print STDERR "Sample $bc could not be found in the samples table. Please add sample first.\n",encode_json($response2),"\n";
-    return;
-  }
-  if ($response1->{count} == 1) {
-    print STDERR $assembly_data->[0]->{assembly}," is already in database:\n",encode_json($response1),"\nWill update with new data..\n";
-    my $insert = encode_json $assembly_data->[0];
-    my $record_to_update = $response1->{results}->[0]->{url}; #the URL;
-    print STDERR "Deleting $record_to_update\n"; # and exit;
-    $client->DELETE($record_to_update);
-    print STDERR "Deleted record:\n",$client->responseContent(),"\n";
-    my $insert = encode_json $assembly_data->[0];
-    $client->POST("$url/assembly/", $insert);
-    print STDERR "Inserted new record:\n",$client->responseContent(),"\n";
-    return 1;
-  } elsif ($response1->{count} > 1) {
-    print STDERR "Multiple records match ", $assembly_data->[0]->{assembly},":\n";
-    foreach my $r (@{$response1->{results}}) {
-      print STDERR $r->{url},"\n";
-      die "Exiting.\n";
+  my $assemblies = shift;
+  for (my $i = 0;$i<@$assemblies; $i++){
+    my $tolid_prefix=$assemblies->[$i]->{'tolid_prefix'};
+    #print STDERR Data::Dumper->Dump([$a]);
+    print STDERR "$tolid_prefix ",$assemblies->[$i]->{description},"\n";
+    #exit;
+    my $qv_rounded = sprintf("%.2f",$assemblies->[$i]->{qv});
+    print STDERR $assemblies->[$i]->{qv},"\n";
+    $assemblies->[$i]->{qv} = $qv_rounded ;
+    my $pp_rounded = sprintf("%.1f",$assemblies->[$i]->{percent_placed});
+    $assemblies->[$i]->{percent_placed} = $pp_rounded;
+    $client->GET("$url/species/?tolid_prefix=". $tolid_prefix);
+    #print STDERR  $client->responseContent(),"\n";
+    my $response1 = decode_json $client->responseContent();
+    #print STDERR Data::Dumper->Dump([$response1]);
+    my $species_url = $response1->{results}->[0]->{url};
+    $species_url =~/(\d+)\/$/;
+    my $species_id = $1;
+    #print STDERR "$species_url\n";
+    #print STDERR "$species_id\n";
+    #print STDERR $assembly_data->[0]->{sample},"\n";
+    $client->GET("$url/assembly_project/?species=". $species_id);
+    my $response2 = decode_json $client->responseContent();
+    #print STDERR $client->responseContent() and exit;
+    my $project_url = $response2->{results}->[0]->{url};
+    $project_url =~/(\d+)\/$/;
+    print STDERR "$project_url\n";
+    my $project_id = $1;
+
+    if ($response2->{count} == 1) {
+      $assemblies->[$i]->{project}=$project_id;
+      my $d=$assemblies->[$i]->{description};
+      my $cn50=$assemblies->[$i]->{contig_n50};
+      my $sn50=$assemblies->[$i]->{scaffold_n50};
+      my $busco=$assemblies->[$i]->{busco};
+      my $busco_db=$assemblies->[$i]->{busco_db};
+      my $busco_version=$assemblies->[$i]->{busco_version};
+      my $qv=$assemblies->[$i]->{qv};
+
+      $client->GET("$url/busco_db/?db=". $busco_db);
+      my $busco_db_response = decode_json $client->responseContent();
+      my $busco_db_url = $busco_db_response->{results}->[0]->{url};
+      $client->GET("$url/busco_version/?species=". $busco_version);
+      my $buso_version_response = decode_json $client->responseContent();
+      my $busco_version_url = $busco_version_response->{results}->[0]->{url};
+      my $query = "$url/assembly/?project=$project_id&description=$d&contig_n50=$cn50&scaffold_n50=$sn50&qv=$qv";
+      print "$query\n";
+      $client->GET("$url/assembly/?project=$project_id&description=$d&contig_n50=$cn50&scaffold_n50=$sn50&qv=$qv");
+      my $response3 = decode_json $client->responseContent();
+      if ($response3->{count} > 0) {
+        print STDERR "Possible duplicate: $d\n",encode_json($response3),"\nAdding anyway. You may want to manually remove this record.\n";
+      }
+      $assemblies->[$i]->{project}=$project_url;
+      $assemblies->[$i]->{busco_db}=$busco_db_url;
+      $assemblies->[$i]->{busco_version}=$busco_version_url;
+      my $insert = encode_json $assemblies->[$i];
+      print STDERR "$insert\n";
+      $client->POST("$url/assembly/", $insert);
+      print STDERR "Inserted:\n",$client->responseContent(),"\n";
+    } else {
+      print STDERR "couldn't find project. please add project for $tolid_prefix. Skipping for now.\n"; #print STDERR "Project could not be found in the samples table. Please add sample first.\n",encode_json($response2),"\n";
     }
-  } else {
-    my $insert = encode_json $assembly_data->[0];
-    $client->POST("$url/assembly/", $insert);
-    print STDERR "Inserted:\n",$client->responseContent(),"\n";
-    return 1;
   }
+  return 1;
 }
 
 
@@ -84,15 +114,17 @@ sub loadTbl {
   open TAB, "<$file" or die "couldn't open $file\n";
   my $head = <TAB>;
   chomp $head;
-  my @h = split "\t",$head;
+  my @h = split ",",$head;
   my $count=0;
   while (my $record = <TAB>) {
     chomp $record;
-    my @r = split "\t",$record;
+    #print STDERR "$record\n";
+    my @r = split ",",$record;
 
     for (my $i=0;$i<@h; $i++) {
+      #print STDERR $h[$i],"\n";
       #$h[$i]=~s/sample_barcode/sample/; #fix some field names on the fly. later we should fix the flatfiles.
-      $arrayref->[$count]->{lc($h[$i])}=($r[$i]);
+      $arrayref->[$count]->{$h[$i]}=($r[$i]);
     }
     $count++;
   }
