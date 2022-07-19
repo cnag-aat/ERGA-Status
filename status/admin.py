@@ -71,8 +71,8 @@ admin.site.register(AssemblyTeam)
 # admin.site.register(AssemblyProject)
 @register(AssemblyProject)
 class AssemblyProjectAdmin(admin.ModelAdmin):
-    list_display = ('team', 'species', 'status',)
-    search_fields = ['team', 'species', 'status',]
+    list_display = ('species','team', 'note','status',)
+    search_fields = ['species', 'team', 'status',]
 
 admin.site.register(Assembly)
 admin.site.register(SampleCollection)
