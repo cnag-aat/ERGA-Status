@@ -9,7 +9,8 @@ STATUS_CHOICES = (
     ('Received', 'Input received'),
     ('Processing', 'Processing'),
     ('Done', 'Done'),
-    ('Sent', 'Sent')
+    ('Sent', 'Sent'),
+    ('Issue', 'Issue')
 )
 
 ASSEMBLY_TYPE_CHOICES = (

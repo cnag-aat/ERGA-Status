@@ -1,0 +1,18 @@
+.Waiting {
+  background-color: LightGray;
+}
+.Received {
+  background-color: PaleGreen;
+}
+.Processing {
+  background-color: LimeGreen;
+}
+.Done {
+  background-color: Teal;
+}
+.Sent {
+  background-color: SteelBlue;
+}
+.Issue {
+  background-color: Red;
+}
