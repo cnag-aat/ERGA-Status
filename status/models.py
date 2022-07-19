@@ -124,6 +124,10 @@ class TargetSpecies(models.Model):
         verbose_name_plural = 'species'
         ordering = ['taxon_kingdom', 'taxon_phylum', 'taxon_class', 'taxon_order','taxon_family','taxon_genus','scientific_name']
 
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('species', args=[str(self.scientific_name)])
+
     def __str__(self):
         return self.scientific_name
         #return self.scientific_name +" (" + self.tolid_prefix + ")"
