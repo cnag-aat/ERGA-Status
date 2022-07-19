@@ -1,5 +1,4 @@
 #!/usr/bin/env perl
-#use lib '/home/devel/talioto/perl5/lib/perl5/';
 use REST::Client;
 use MIME::Base64;
 use JSON::PP;
@@ -21,56 +20,41 @@ my $url="https://genomes.cnag.cat/erga-status/api";
 #rPodLil	flye.nextpolish_superreads.purgedups.10X.YaHS	Pseudohaploid Primary	1460245709	1478291	89641981	true	98.2	"C:95.9%[S:94.6%,D:1.3%],F:1.4%,M:2.7%,n:3354"	vertebrata_odb10	4.0.6	40.36
 
 my $usage = "usage: $0 assemblies.tsv\n";
-# GetOptions(
-# 	   'bc:s'      => \$bc,
-# 	   'v:s'  => \$version
-# 	  );
-# die $usage if !($bc && $version);
-#my $updateAnnotation = 0;
 my $assembly_data;
 my $assembly_tsv_file = shift;
-
 die "No assembly data" unless $assembly_data=(loadTbl($assembly_tsv_file,$assembly_data));
-
 print STDERR "Parsed data files... ready to add to ERGA-Status.\n";
 print STDERR "Adding assembly data...\n"; #print STDERR Data::Dumper->Dump($assembly_data),"\n" and exit;
-
-#print STDERR Data::Dumper->Dump([$assembly_data->[0]]);
-
-#print STDERR $assembly_data->[0]->{project},"\n";
 add_assembly($assembly_data);
-#die "Failed adding assembly!\n" unless
+
 sub add_assembly{
   my $assemblies = shift;
   for (my $i = 0;$i<@$assemblies; $i++){
     my $tolid_prefix=$assemblies->[$i]->{'tolid_prefix'};
-    #print STDERR Data::Dumper->Dump([$a]);
     print STDERR "$tolid_prefix ",$assemblies->[$i]->{description},"\n";
-    #exit;
     my $qv_rounded = sprintf("%.2f",$assemblies->[$i]->{qv});
     print STDERR $assemblies->[$i]->{qv},"\n";
     $assemblies->[$i]->{qv} = $qv_rounded ;
     my $pp_rounded = sprintf("%.1f",$assemblies->[$i]->{percent_placed});
     $assemblies->[$i]->{percent_placed} = $pp_rounded;
+
+    #Retrieve species from target species table
     $client->GET("$url/species/?tolid_prefix=". $tolid_prefix);
-    #print STDERR  $client->responseContent(),"\n";
     my $response1 = decode_json $client->responseContent();
-    #print STDERR Data::Dumper->Dump([$response1]);
     my $species_url = $response1->{results}->[0]->{url};
     $species_url =~/(\d+)\/$/;
     my $species_id = $1;
-    #print STDERR "$species_url\n";
-    #print STDERR "$species_id\n";
-    #print STDERR $assembly_data->[0]->{sample},"\n";
+
+    #Retrieve project based on species_id
     $client->GET("$url/assembly_project/?species=". $species_id);
     my $response2 = decode_json $client->responseContent();
     #print STDERR $client->responseContent() and exit;
     my $project_url = $response2->{results}->[0]->{url};
     $project_url =~/(\d+)\/$/;
-    print STDERR "$project_url\n";
+    #print STDERR "$project_url\n";
     my $project_id = $1;
 
-    if ($response2->{count} == 1) {
+    if ($response2->{count} == 1) { #proceed if there is one and only one project
       $assemblies->[$i]->{project}=$project_id;
       my $d=$assemblies->[$i]->{description};
       my $cn50=$assemblies->[$i]->{contig_n50};
@@ -80,33 +64,40 @@ sub add_assembly{
       my $busco_version=$assemblies->[$i]->{busco_version};
       my $qv=$assemblies->[$i]->{qv};
 
+      #Get the busco_db. If it doesn't exist, add it via the admin interface and redo this. In future, we can do it here.
       $client->GET("$url/busco_db/?db=". $busco_db);
       my $busco_db_response = decode_json $client->responseContent();
       my $busco_db_url = $busco_db_response->{results}->[0]->{url};
+
+      #Get the BUSCO version. If it doesn't exist, add it via the admin interface and redo this. In future, we can do it here.
       $client->GET("$url/busco_version/?species=". $busco_version);
       my $buso_version_response = decode_json $client->responseContent();
       my $busco_version_url = $busco_version_response->{results}->[0]->{url};
+
+      #check to see if the assembly already exists. Give warning.
       my $query = "$url/assembly/?project=$project_id&description=$d&contig_n50=$cn50&scaffold_n50=$sn50&qv=$qv";
-      print "$query\n";
-      $client->GET("$url/assembly/?project=$project_id&description=$d&contig_n50=$cn50&scaffold_n50=$sn50&qv=$qv");
+      #print "$query\n";
+      $client->GET($query);
       my $response3 = decode_json $client->responseContent();
       if ($response3->{count} > 0) {
         print STDERR "Possible duplicate: $d\n",encode_json($response3),"\nAdding anyway. You may want to manually remove this record.\n";
       }
+      #Replace regular strings with REST URLs.
       $assemblies->[$i]->{project}=$project_url;
       $assemblies->[$i]->{busco_db}=$busco_db_url;
       $assemblies->[$i]->{busco_version}=$busco_version_url;
+
+      #wrap it all up in JSON string
       my $insert = encode_json $assemblies->[$i];
-      print STDERR "$insert\n";
+      #print STDERR "$insert\n";
       $client->POST("$url/assembly/", $insert);
-      print STDERR "Inserted:\n",$client->responseContent(),"\n";
+      print STDERR "Inserting... Response:",$client->responseContent(),"\n";
     } else {
-      print STDERR "couldn't find project. please add project for $tolid_prefix. Skipping for now.\n"; #print STDERR "Project could not be found in the samples table. Please add sample first.\n",encode_json($response2),"\n";
+      print STDERR "Couldn't find project. Please add project for $tolid_prefix via the admin interface. Skipping for now.\n"; #print STDERR "Project could not be found in the samples table. Please add sample first.\n",encode_json($response2),"\n";
     }
   }
   return 1;
 }
-
 
 sub loadTbl {
   my $file =  shift;
@@ -118,12 +109,9 @@ sub loadTbl {
   my $count=0;
   while (my $record = <TAB>) {
     chomp $record;
-    #print STDERR "$record\n";
     my @r = split ",",$record;
 
     for (my $i=0;$i<@h; $i++) {
-      #print STDERR $h[$i],"\n";
-      #$h[$i]=~s/sample_barcode/sample/; #fix some field names on the fly. later we should fix the flatfiles.
       $arrayref->[$count]->{$h[$i]}=($r[$i]);
     }
     $count++;
