@@ -1,18 +1,54 @@
 .Waiting {
-  background-color: LightGray;
+  background-color: #F0F0F0;
+  color: Black;
+  padding: 7px;
+  padding-right: 20px;
+  padding-left: 20px;
+  border-radius: 15px;
 }
 .Received {
-  background-color: PaleGreen;
+  background-color: #99987d;
+  color: White;
+  padding: 7px;
+  padding-right: 13px;
+  padding-left: 13px;
+  border-radius: 15px;
+  width: 80;
 }
 .Processing {
-  background-color: LimeGreen;
+  background-color: #009f83;
+  color: White;
+  padding: 7px;
+  padding-right: 7px;
+  padding-left: 7px;
+  border-radius: 15px;
+  width: 80;
+
 }
 .Done {
-  background-color: Teal;
+  background-color: #009fc4;
+  color: White;
+  padding: 7px;
+  padding-right: 27px;
+  padding-left: 27px;
+  border-radius: 15px;
+  width: 80;
 }
 .Sent {
-  background-color: SteelBlue;
+  background-color: #0087a3;
+  color: White;
+  padding: 7px;
+  padding-right: 30px;
+  padding-left: 30px;
+  border-radius: 15px;
+  width: 80;
 }
 .Issue {
-  background-color: Red;
+  background-color: #D2042D;
+  color: White;
+  padding: 7px;
+  padding-right: 27px;
+  padding-left: 27px;
+  border-radius: 15px;
+  width: 80;
 }
