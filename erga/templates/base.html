@@ -62,6 +62,13 @@ body {
         </li>
       </ul>
       <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'admin' %}">Edit</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'api' %}">API</a>
+        </li>
+
         {% if user.is_authenticated %}
         <li class="nav-item">
           <p class="navbar-text">Logged in as <strong>{{ user.username }}</strong>.</p>
