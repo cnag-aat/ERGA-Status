@@ -55,9 +55,11 @@ class AssemblySerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerial
 class BUSCOdbSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = BUSCOdb
+        lookup_field = 'db'
         fields = '__all__'
 
 class BUSCOversionSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = BUSCOversion
+        lookup_field = 'version'
         fields = '__all__'

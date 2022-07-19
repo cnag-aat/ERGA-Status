@@ -193,7 +193,7 @@ class AssemblyProject(models.Model):
         return self.species.tolid_prefix + ' project'
 
 class BUSCOdb(models.Model):
-    db = models.CharField(max_length=60)
+    db = models.CharField(max_length=60, db_index=True)
     class Meta:
         verbose_name_plural = 'BUSCO dbs'
 
@@ -201,7 +201,7 @@ class BUSCOdb(models.Model):
         return self.db
 
 class BUSCOversion(models.Model):
-    version = models.CharField(max_length=10)
+    version = models.CharField(max_length=10, db_index=True)
     class Meta:
         verbose_name_plural = 'BUSCO versions'
 
