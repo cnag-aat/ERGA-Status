@@ -186,6 +186,7 @@ class AssemblyProject(models.Model):
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     team = models.ForeignKey(AssemblyTeam, on_delete=models.CASCADE, verbose_name="assembly team")
     status = models.CharField(max_length=12, help_text='Status', choices=STATUS_CHOICES, default='Waiting')
+    note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
 
     class Meta:
         verbose_name_plural = 'assembly projects'
