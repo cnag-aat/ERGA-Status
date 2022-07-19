@@ -30,9 +30,11 @@ router.register(r'order', api.TaxonOrderViewSet)
 router.register(r'family', api.TaxonFamilyViewSet)
 router.register(r'genus', api.TaxonGenusViewSet)
 router.register(r'species', api.TargetSpeciesViewSet)
-router.register(r'assemblyteam', api.AssemblyTeamViewSet)
-router.register(r'assemblyproject', api.AssemblyProjectViewSet)
+router.register(r'assembly_team', api.AssemblyTeamViewSet)
+router.register(r'assembly_project', api.AssemblyProjectViewSet)
 router.register(r'assembly', api.AssemblyViewSet)
+router.register(r'busco_db', api.BUSCOdbViewSet)
+router.register(r'busco_version', api.BUSCOversionViewSet)
 
 
 urlpatterns = [
