@@ -60,7 +60,8 @@ def species_detail(request, pk=None, scientific_name=None):
     context = {"species": sp
                }
     response = render(request, "species_detail.html", context)
-
+    return response
+    
 class AssemblyProjectListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
     # login_url = "access_denied"
