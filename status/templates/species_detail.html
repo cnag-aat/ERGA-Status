@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load static %}
+{% load render_table from django_tables2 %}
+{% load bootstrap4 %}
+{% block page_content %}
+
+<p>
+<div class="row m-1">
+  <div class="col-md-12">
+    <div class="card mb-12">
+      <div class="card-body">
+        <h5 class="card-title">{{ species.tolid_prefix }}</h5>
+        Scientific name: {{ species.scientific_name }}</br>
+        Taxon ID: {{ species.taxon_id }}</br>
+        Taxonomy: {{ species.taxon_kingdom }}
+        {{ species.taxon_phylum}}:
+        {{ species.taxon_class }}:
+        {{ species.taxon_order }}:
+        {{ species.taxon_family }}:
+        {{ species.taxon_genus }}</br>
+        Number of chromosomes: {{ species.chromosome_number }}</br>
+        Haploid number:  {{ species.haploid_number }}</br>
+        Ploidy: {{ species.ploidy }}</br>
+        C-value: {{ species.c_value }}</br>
+        Genome size: {{ species.genome_size }}</br> 
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

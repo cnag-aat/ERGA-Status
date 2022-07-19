@@ -51,6 +51,16 @@ class TargetSpeciesListView(ExportMixin, SingleTableMixin, FilterView):
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 15}
 
+def species_detail(request, pk=None, scientific_name=None):
+    if pk:
+        sp = TargetSpecies.objects.get(pk=pk)
+    else:
+        sp = TargetSpecies.objects.get(scientific_name=scientific_name)
+        pk = TargetSpecies.pk
+    context = {"species": sp
+               }
+    response = render(request, "species_detail.html", context)
+
 class AssemblyProjectListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
     # login_url = "access_denied"
