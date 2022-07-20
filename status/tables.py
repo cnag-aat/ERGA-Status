@@ -32,4 +32,4 @@ class AssemblyProjectTable(tables.Table):
         model = AssemblyProject
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        fields = ('species', 'team','assemblies', 'notes', 'status')
+        fields = ('species', 'team','assemblies', 'note', 'status')
