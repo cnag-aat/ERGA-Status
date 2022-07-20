@@ -195,6 +195,10 @@ class AssemblyProject(models.Model):
     class Meta:
         verbose_name_plural = 'assembly projects'
 
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('assembly_project_list', args=[str(self.scientific_name)])
+
     def __str__(self):
         return self.species.tolid_prefix + ' project'
 
