@@ -63,13 +63,45 @@ def species_detail(request, pk=None, scientific_name=None):
     return response
 
 def assembly_team_detail(request, pk=None):
-
     team = AssemblyTeam.objects.get(pk=pk)
-
-
     context = {"team": team
                }
     response = render(request, "assembly_team_detail.html", context)
+    return response
+
+def sequencing_team_detail(request, pk=None):
+    team = SequencingTeam.objects.get(pk=pk)
+    context = {"team": team
+               }
+    response = render(request, "sequencing_team_detail.html", context)
+    return response
+
+def curation_team_detail(request, pk=None):
+    team = CurationTeam.objects.get(pk=pk)
+    context = {"team": team
+               }
+    response = render(request, "curation_team_detail.html", context)
+    return response
+
+def collection_team_detail(request, pk=None):
+    team = CollectionTeam.objects.get(pk=pk)
+    context = {"team": team
+               }
+    response = render(request, "collection_team_detail.html", context)
+    return response
+
+def annotation_team_detail(request, pk=None):
+    team = AnnotationTeam.objects.get(pk=pk)
+    context = {"team": team
+               }
+    response = render(request, "annotation_team_detail.html", context)
+    return response
+
+def submission_team_detail(request, pk=None):
+    team = SubmissionTeam.objects.get(pk=pk)
+    context = {"team": team
+               }
+    response = render(request, "submission_team_detail.html", context)
     return response
 
 class AssemblyProjectListView(ExportMixin, SingleTableMixin, FilterView):
