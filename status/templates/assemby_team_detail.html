@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load static %}
+{% load render_table from django_tables2 %}
+{% load bootstrap4 %}
+{% block page_content %}
+
+<p>
+<div class="row m-1">
+  <div class="col-md-12">
+    <div class="card mb-12">
+      <div class="card-body">
+        <h5 class="card-title">{{ team.name }}</h5>
+        Institution: {{ team.contact.affiliation }}</br>
+        Team contact: {{ team.contact.first_name }} {{ team.contact.last_name }}</br>
+        email: {{ team.contact.email }}</br>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

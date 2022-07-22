@@ -61,7 +61,17 @@ def species_detail(request, pk=None, scientific_name=None):
                }
     response = render(request, "species_detail.html", context)
     return response
-    
+
+def assembly_team_detail(request, pk=None, scientific_name=None):
+    if pk:
+        team = AssemblyTeam.objects.get(pk=pk)
+    else:
+
+    context = {"team": team
+               }
+    response = render(request, "assembly_team_detail.html", context)
+    return response
+
 class AssemblyProjectListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
     # login_url = "access_denied"
