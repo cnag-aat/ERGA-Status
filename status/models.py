@@ -164,12 +164,49 @@ class SampleCoordinator(models.Model):
         return self.name
 
 class AssemblyTeam(models.Model):
+    name = models.CharField(max_length=100, null=True, blank=True)
+    affiliation = models.CharField(max_length=100)
+    email = models.CharField(max_length=100)
+    contact = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+
+    class Meta:
+        verbose_name_plural = 'assembly teams'
+
+    def __str__(self):
+        return self.contact.username + " ("+self.affiliation+")"
+
+class CurationTeam(models.Model):
     name = models.CharField(max_length=100)
     affiliation = models.CharField(max_length=100)
     email = models.CharField(max_length=100)
 
     class Meta:
-        verbose_name_plural = 'assembly teams'
+        verbose_name_plural = 'curation teams'
+
+    def __str__(self):
+        return self.name + " ("+self.affiliation+")"
+
+class SequencingTeam(models.Model):
+    name = models.CharField(max_length=100)
+    affiliation = models.CharField(max_length=100)
+    email = models.CharField(max_length=100)
+
+    class Meta:
+        verbose_name_plural = 'sequencing teams'
+
+    def __str__(self):
+        return self.name + " ("+self.affiliation+")"
+
+class CollectionTeam(models.Model):
+    name = models.CharField(max_length=100)
+    affiliation = models.CharField(max_length=100)
+    email = models.CharField(max_length=100)
+
+    class Meta:
+        verbose_name_plural = 'collection teams'
 
     def __str__(self):
         return self.name + " ("+self.affiliation+")"
