@@ -244,17 +244,17 @@ class SequencingTeam(models.Model):
     lead = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name=team_lead
+        related_name='team_lead'
     )
     reception = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name=sample_reception
+        related_name='sample_reception'
     )
     delivery = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name=data_delivery
+        related_name='data_delivery'
     )
     class Meta:
         verbose_name_plural = 'sequencing teams'
