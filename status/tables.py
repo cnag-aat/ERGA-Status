@@ -28,6 +28,8 @@ class AssemblyProjectTable(tables.Table):
     assemblies = tables.TemplateColumn('<a href="{% url \'assembly_list\' %}?project={{record.pk}}">assemblies</a>',empty_values=(), verbose_name='Assemblies')
     status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</a>',empty_values=(), verbose_name='Status')
     species = tables.Column(linkify=True)
+    team = tables.Column(linkify=True)
+
     class Meta:
         model = AssemblyProject
         template_name = "django_tables2/bootstrap4.html"

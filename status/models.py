@@ -166,7 +166,7 @@ class SampleCoordinator(models.Model):
 class AssemblyTeam(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True)
     affiliation = models.CharField(max_length=100)
-    email = models.CharField(max_length=100)
+    # email = models.CharField(max_length=100)
     contact = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -174,6 +174,10 @@ class AssemblyTeam(models.Model):
 
     class Meta:
         verbose_name_plural = 'assembly teams'
+
+    # def get_absolute_url(self):
+    #     from django.urls import reverse
+    #     return reverse('assembly_team_detail', args=[str(self.contact)])
 
     def __str__(self):
         return self.contact.username + " ("+self.affiliation+")"
