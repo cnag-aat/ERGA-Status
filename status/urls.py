@@ -11,6 +11,7 @@ urlpatterns = [
     path("species/", TargetSpeciesListView.as_view(), name="species_list"),
     path("species/<int:pk>/", views.species_detail, name="species_detail"),
     path("species/?scientific_name=<scientific_name>", views.species_detail, name="species_detail"),
+    path("assembly_team/<int:pk>/", views.assembly_team_detail, name="assembly_team_detail"),
     path("assemblies/", AssemblyListView.as_view(), name="assembly_list"),
     path("projects/", AssemblyProjectListView.as_view(), name="assembly_project_list"),
     path("projects/?species=<scientific_name>", AssemblyProjectListView.as_view(), name="assembly_project_list"),
