@@ -153,20 +153,59 @@ class Synonyms(models.Model):
         return self.name
 
 class SampleCoordinator(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, null=True, blank=True)
     affiliation = models.CharField(max_length=100)
-    email = models.CharField(max_length=100)
-
+    lead = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
     class Meta:
         verbose_name_plural = 'sample coordinators'
 
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('collection_team_detail', args=[str(self.pk)])
+
     def __str__(self):
-        return self.name
+        return self.lead.username + " ("+self.affiliation+")"
+
+class AnnotationTeam(models.Model):
+    name = models.CharField(max_length=100, null=True, blank=True)
+    affiliation = models.CharField(max_length=100)
+    lead = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    class Meta:
+        verbose_name_plural = 'annotation teams'
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('annotation_team_detail', args=[str(self.pk)])
+
+    def __str__(self):
+        return self.lead.username + " ("+self.affiliation+")"
+
+class SubmissionTeam(models.Model):
+    name = models.CharField(max_length=100, null=True, blank=True)
+    affiliation = models.CharField(max_length=100)
+    lead = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    class Meta:
+        verbose_name_plural = 'submission teams'
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('submission_team_detail', args=[str(self.pk)])
+
+    def __str__(self):
+        return self.lead.username + " ("+self.affiliation+")"
 
 class AssemblyTeam(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True)
     affiliation = models.CharField(max_length=100)
-    # email = models.CharField(max_length=100)
     contact = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -183,26 +222,46 @@ class AssemblyTeam(models.Model):
         return self.contact.username + " ("+self.affiliation+")"
 
 class CurationTeam(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, null=True, blank=True)
     affiliation = models.CharField(max_length=100)
-    email = models.CharField(max_length=100)
-
+    lead = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
     class Meta:
         verbose_name_plural = 'curation teams'
 
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('curation_team_detail', args=[str(self.pk)])
+
     def __str__(self):
-        return self.name + " ("+self.affiliation+")"
+        return self.lead.username + " ("+self.affiliation+")"
 
 class SequencingTeam(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, null=True, blank=True)
     affiliation = models.CharField(max_length=100)
-    email = models.CharField(max_length=100)
-
+    lead = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    reception = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    delivery = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
     class Meta:
         verbose_name_plural = 'sequencing teams'
 
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('sequencing_team_detail', args=[str(self.pk)])
+
     def __str__(self):
-        return self.name + " ("+self.affiliation+")"
+        return self.lead.username + " ("+self.affiliation+")"
 
 class CollectionTeam(models.Model):
     name = models.CharField(max_length=100)

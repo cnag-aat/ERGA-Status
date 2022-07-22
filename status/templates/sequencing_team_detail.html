@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static %}
+{% load render_table from django_tables2 %}
+{% load bootstrap4 %}
+{% block page_content %}
+
+<p>
+<div class="row m-1">
+  <div class="col-md-12">
+    <div class="card mb-12">
+      <div class="card-body">
+        <h5 class="card-title">{{ team.affiliation }}</h5>
+        Team lead: {{ team.lead.first_name }} {{ team.lead.last_name }}</br>
+        email: {{ team.lead.email }}</br>
+        <div class="card mb-12">
+          <div class="card-body">
+            <h5 class="card-title">{{ Sample Reception }}</h5>
+            Name: {{ team.reception.first_name }} {{ team.reception.last_name }}</br>
+            email: {{ team.reception.email }}</br>
+          </div>
+        </div>
+        <div class="card mb-12">
+          <div class="card-body">
+            <h5 class="card-title">{{ Data Transfer }}</h5>
+            Name: {{ team.delivery.first_name }} {{ team.delivery.last_name }}</br>
+            email: {{ team.delivery.email }}</br>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
