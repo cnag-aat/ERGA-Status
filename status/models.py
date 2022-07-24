@@ -152,23 +152,6 @@ class Synonyms(models.Model):
     def __str__(self):
         return self.name
 
-class SampleCoordinator(models.Model):
-    name = models.CharField(max_length=100, null=True, blank=True)
-    affiliation = models.CharField(max_length=100)
-    lead = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-    )
-    class Meta:
-        verbose_name_plural = 'sample coordinators'
-
-    def get_absolute_url(self):
-        from django.urls import reverse
-        return reverse('collection_team_detail', args=[str(self.pk)])
-
-    def __str__(self):
-        return self.lead.username + " ("+self.affiliation+")"
-
 class AnnotationTeam(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True)
     affiliation = models.CharField(max_length=100)
@@ -267,27 +250,86 @@ class SequencingTeam(models.Model):
         return self.lead.username + " ("+self.affiliation+")"
 
 class CollectionTeam(models.Model):
-    name = models.CharField(max_length=100)
     affiliation = models.CharField(max_length=100)
-    email = models.CharField(max_length=100)
+    coordinator = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='team_lead'
+    )
 
-    class Meta:
-        verbose_name_plural = 'collection teams'
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('collection_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.name + " ("+self.affiliation+")"
-
+        return self.lead.username + " ("+self.affiliation+")"
 
 class SampleCollection(models.Model):
-    sample_coordinator = models.ForeignKey(SampleCoordinator, on_delete=models.CASCADE, verbose_name="sample coordinators")
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
+    team = models.ForeignKey(CollectionTeam, on_delete=models.CASCADE, verbose_name="collection team")
     status = models.CharField(max_length=12, help_text='Status', choices=STATUS_CHOICES, default='Waiting')
+    note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
 
     class Meta:
-        verbose_name_plural = 'collections'
+        verbose_name_plural = 'collection'
 
     def __str__(self):
-        return self.name
+        return self.species.tolid_prefix
+
+class Sequencing(models.Model):
+    species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
+    team = models.ForeignKey(SequencingTeam, on_delete=models.CASCADE, verbose_name="sequencing team")
+    status = models.CharField(max_length=12, help_text='Status', choices=STATUS_CHOICES, default='Waiting')
+    note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
+    ont_target = models.BigIntegerField(null=True, blank=True, verbose_name="ONT target")
+    hifi_target = models.BigIntegerField(null=True, blank=True, verbose_name="HiFi target")
+    hic_target = models.BigIntegerField(null=True, blank=True, verbose_name="Hi-C target")
+    short_target = models.BigIntegerField(null=True, blank=True, verbose_name="Short read target")
+    rnaseq_numlibs_target = models.IntegerField(null=True, blank=True, verbose_name="RNAseq libs target")
+
+    class Meta:
+        verbose_name_plural = 'sequencing'
+
+    def __str__(self):
+        return self.species.tolid_prefix
+
+class Reads(models.Model):
+    project = models.ForeignKey(Sequencing, on_delete=models.CASCADE, verbose_name="Sequencing project")
+    ont_yield = models.BigIntegerField(null=True, blank=True, verbose_name="ONT yield")
+    hifi_yield = models.BigIntegerField(null=True, blank=True, verbose_name="HiFi yield")
+    hic_yield = models.BigIntegerField(null=True, blank=True, verbose_name="Hi-C yield")
+    short_yield = models.BigIntegerField(null=True, blank=True, verbose_name="Short read yield")
+    rnaseq_numlibs = models.IntegerField(null=True, blank=True, verbose_name="RNAseq libs")
+
+    class Meta:
+        verbose_name_plural = 'reads'
+
+    def __str__(self):
+        return self.species.tolid_prefix
+
+class Curation(models.Model):
+    species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
+    team = models.ForeignKey(CurationTeam, on_delete=models.CASCADE, verbose_name="curation team")
+    status = models.CharField(max_length=12, help_text='Status', choices=STATUS_CHOICES, default='Waiting')
+    note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = 'curation'
+
+    def __str__(self):
+        return self.species.tolid_prefix
+
+class Submission(models.Model):
+    species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
+    team = models.ForeignKey(SubmissionTeam, on_delete=models.CASCADE, verbose_name="submission team")
+    status = models.CharField(max_length=12, help_text='Status', choices=STATUS_CHOICES, default='Waiting')
+    note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = 'submission'
+
+    def __str__(self):
+        return self.species.tolid_prefix
 
 class AssemblyProject(models.Model):
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
