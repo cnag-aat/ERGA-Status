@@ -51,6 +51,13 @@ class TargetSpeciesListView(ExportMixin, SingleTableMixin, FilterView):
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 15}
 
+def Overview(request):
+    status_resultset = TargetSpecies.objects.all()
+    context = {"status_resultset": status_resultset
+               }
+    response = render(request, "overview.html", context)
+    return response
+
 def species_detail(request, pk=None, scientific_name=None):
     if pk:
         sp = TargetSpecies.objects.get(pk=pk)

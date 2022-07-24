@@ -9,9 +9,10 @@
   <div class="col-md-12">
     <div class="card mb-12">
       <div class="card-body">
-        <h5 class="card-title">{{ team.affiliation }}</h5>
-        Team lead: {{ team.lead.first_name }} {{ team.lead.last_name }}</br>
-        email: {{ team.lead.email }}</br>
+        <h5 class="card-title">Sample Collection Team</h5>
+        Coordinator: {{ team.coordinator.first_name }} {{ team.coordinator.last_name }}</br>
+        Institution: {{ team.affiliation }}
+        email: {{ team.coordinator.email }}</br>
       </div>
     </div>
   </div>
