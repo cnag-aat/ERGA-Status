@@ -5,6 +5,17 @@ from .models import *
 import re
 from django.utils.safestring import mark_safe
 #import html
+class OverviewTable(tables.Table):
+    export_formats = ['csv', 'tsv']
+    assembly_status = tables.Column(accessor='assemblyproject.status',
+                         linkify=True, verbose_name='Assembly')
+    tolid_prefix = tables.Column(linkify=True)
+    class Meta:
+        model = TargetSpecies
+        template_name = "django_tables2/bootstrap4.html"
+        paginate = {"per_page": 100}
+        fields = ('tolid_prefix', 'scientific_name','assembly_status')
+
 class TargetSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']
     scientific_name = tables.Column(linkify=True)

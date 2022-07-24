@@ -51,12 +51,15 @@ class TargetSpeciesListView(ExportMixin, SingleTableMixin, FilterView):
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 15}
 
-def Overview(request):
-    status_resultset = TargetSpecies.objects.all()
-    context = {"status_resultset": status_resultset
-               }
-    response = render(request, "overview.html", context)
-    return response
+class OverView(ExportMixin, SingleTableMixin, FilterView):
+    # permission_required = "resistome.view_sample"
+    # login_url = "access_denied"
+    model = TargetSpecies
+    table_class = OverviewTable
+    template_name = 'overview.html'
+    #filterset_class = SpeciesFilter
+    table_pagination = {"per_page": 15}
+
 
 def species_detail(request, pk=None, scientific_name=None):
     if pk:

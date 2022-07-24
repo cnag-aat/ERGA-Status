@@ -5,10 +5,11 @@ from status.views import TargetSpeciesListView
 from status.views import AssemblyListView
 from status.views import AssemblyProjectListView
 from status.views import HomeView
+from status.views import OverView
 
 urlpatterns = [
     path("", HomeView.as_view(), name="home"),
-    path("overview/", views.Overview, name="overview"),
+    path("overview/", OverView.as_view(), name="overview"),
     path("species/", TargetSpeciesListView.as_view(), name="species_list"),
     path("species/<int:pk>/", views.species_detail, name="species_detail"),
     path("species/?scientific_name=<scientific_name>", views.species_detail, name="species_detail"),
