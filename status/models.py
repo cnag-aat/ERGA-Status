@@ -158,6 +158,7 @@ class AnnotationTeam(models.Model):
     lead = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
+        related_name='annotation_team_lead'
     )
     class Meta:
         verbose_name_plural = 'annotation teams'
@@ -175,6 +176,7 @@ class SubmissionTeam(models.Model):
     lead = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
+        related_name='submission_team_lead'
     )
     class Meta:
         verbose_name_plural = 'submission teams'
@@ -192,6 +194,7 @@ class AssemblyTeam(models.Model):
     contact = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
+        related_name='assembly_team_lead'
     )
 
     class Meta:
@@ -210,6 +213,7 @@ class CurationTeam(models.Model):
     lead = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
+        related_name='curation_team_lead'
     )
     class Meta:
         verbose_name_plural = 'curation teams'
@@ -227,7 +231,7 @@ class SequencingTeam(models.Model):
     lead = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='team_lead'
+        related_name='sequencing_team_lead'
     )
     reception = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -254,7 +258,7 @@ class CollectionTeam(models.Model):
     coordinator = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='team_lead'
+        related_name='collection_team_lead'
     )
 
     def get_absolute_url(self):
