@@ -75,8 +75,14 @@ class AssemblyProjectAdmin(admin.ModelAdmin):
     search_fields = ['species', 'team', 'status',]
 
 admin.site.register(Assembly)
+admin.site.register(CollectionTeam)
 admin.site.register(SampleCollection)
-admin.site.register(SampleCoordinator)
+admin.site.register(CurationTeam)
+admin.site.register(Curation)
+admin.site.register(SubmissionTeam)
+admin.site.register(Submission)
+admin.site.register(SequencingTeam)
+admin.site.register(Sequencing)
 admin.site.register(BUSCOdb)
 admin.site.register(BUSCOversion)
 
