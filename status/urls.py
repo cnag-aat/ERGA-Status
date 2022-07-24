@@ -8,6 +8,7 @@ from status.views import HomeView
 
 urlpatterns = [
     path("", HomeView.as_view(), name="home"),
+    path("overview/", Overview.as_view(), name="overview"),
     path("species/", TargetSpeciesListView.as_view(), name="species_list"),
     path("species/<int:pk>/", views.species_detail, name="species_detail"),
     path("species/?scientific_name=<scientific_name>", views.species_detail, name="species_detail"),
