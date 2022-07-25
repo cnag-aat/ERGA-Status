@@ -28,23 +28,23 @@ class OverviewTable(tables.Table):
         html = '<a href="/erga-status/collection/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
-    def render_sequencing_status(self, value):
+    def render_sequencing_status(self, value, record):
         html = '<a href="/erga-status/sequencing/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
-    def render_assembly_status(self, value):
+    def render_assembly_status(self, value, record):
         html = '<a href="/erga-status/assemblyproject/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
-    def render_curation_status(self, value):
+    def render_curation_status(self, value, record):
         html = '<a href="/erga-status/curation/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
-    def render_annotation_status(self, value):
+    def render_annotation_status(self, value, record):
         html = '<a href="/erga-status/annotation/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
-    def render_submission_status(self, value):
+    def render_submission_status(self, value, record):
         html = '<a href="/erga-status/submission/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
