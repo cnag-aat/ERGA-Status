@@ -323,6 +323,18 @@ class Curation(models.Model):
     def __str__(self):
         return self.species.tolid_prefix
 
+class Annotation(models.Model):
+    species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
+    team = models.ForeignKey(AnnotationTeam, on_delete=models.CASCADE, verbose_name="annotation team")
+    status = models.CharField(max_length=12, help_text='Status', choices=STATUS_CHOICES, default='Waiting')
+    note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = 'annotation'
+
+    def __str__(self):
+        return self.species.tolid_prefix
+
 class Submission(models.Model):
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     team = models.ForeignKey(SubmissionTeam, on_delete=models.CASCADE, verbose_name="submission team")

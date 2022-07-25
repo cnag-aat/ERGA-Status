@@ -131,3 +131,48 @@ class AssemblyListView(ExportMixin, SingleTableMixin, FilterView):
     template_name = 'assembly.html'
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 15}
+
+class CollectionListView(ExportMixin, SingleTableMixin, FilterView):
+    # permission_required = "resistome.view_sample"
+    # login_url = "access_denied"
+    model = Collection
+    table_class = CollectionTable
+    template_name = 'collection.html'
+    #filterset_class = SpeciesFilter
+    table_pagination = {"per_page": 15}
+
+class SequencingView(ExportMixin, SingleTableMixin, FilterView):
+    # permission_required = "resistome.view_sample"
+    # login_url = "access_denied"
+    model = Sequencing
+    table_class = SequencingTable
+    template_name = 'sequencing.html'
+    #filterset_class = SpeciesFilter
+    table_pagination = {"per_page": 15}
+
+class CurationListView(ExportMixin, SingleTableMixin, FilterView):
+    # permission_required = "resistome.view_sample"
+    # login_url = "access_denied"
+    model = Curation
+    table_class = CurationTable
+    template_name = 'curation.html'
+    #filterset_class = SpeciesFilter
+    table_pagination = {"per_page": 15}
+
+class AnnotationListView(ExportMixin, SingleTableMixin, FilterView):
+    # permission_required = "resistome.view_sample"
+    # login_url = "access_denied"
+    model = Annotation
+    table_class = AnnotationTable
+    template_name = 'annotation.html'
+    #filterset_class = SpeciesFilter
+    table_pagination = {"per_page": 15}
+
+class SubmissionListView(ExportMixin, SingleTableMixin, FilterView):
+    # permission_required = "resistome.view_sample"
+    # login_url = "access_denied"
+    model = Submission
+    table_class = SubmissionTable
+    template_name = 'submission.html'
+    #filterset_class = SpeciesFilter
+    table_pagination = {"per_page": 15}
