@@ -180,14 +180,14 @@ AUTHENTICATION_BACKENDS = (
 )
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
-#SITE_ID = 1
+SITE_ID = 1
 ACCOUNT_LOGOUT_REDIRECT_URL="https://genomes.cnag.cat/erga-status/"
 LOGIN_REDIRECT_URL = 'home'
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS=7
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
-EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = "https://genomes.cnag.cat/erga-status/accounts/login/"
-LOGIN_URL="/erga-status/accounts/login/"
+EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = "https://genomes.cnag.cat/erga/erga/accounts/login/"
+LOGIN_URL="/erga/accounts/login/"
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 #EMAIL_USE_TLS = False
