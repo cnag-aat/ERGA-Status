@@ -26,7 +26,7 @@ class OverviewTable(tables.Table):
 
     def render_collection_status(self, value):
         html = '<a href="/erga-status/collection/?species={{record.pk}}"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
-        return html
+        return mark_safe(html)
 
     def render_sequencing_status(self, value):
         return mark_safe('<span class="'+escape(value)+'">'+escape(value)+'</span>')
