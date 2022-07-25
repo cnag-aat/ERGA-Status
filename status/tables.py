@@ -33,7 +33,7 @@ class OverviewTable(tables.Table):
         return mark_safe(html)
 
     def render_assembly_status(self, value, record):
-        html = '<a href="/erga-status/assemblyproject/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        html = '<a href="/erga-status/projects/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
     def render_curation_status(self, value, record):
