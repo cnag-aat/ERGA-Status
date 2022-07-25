@@ -23,7 +23,7 @@ class OverviewTable(tables.Table):
     #     return mark_safe('<a href="'+
     #         url('collection_list',kwargs={'scientific_name': record.scientific_name})
     #         +'"><span class="'+escape(value)+'">'+escape(value)+'</span>')
-    htmllink = '/erga-status/collection/?species='+tables.A("pk")
+    global htmllink = '/erga-status/collection/?species='+tables.A("pk")
     def render_collection_status(self, value):
         html = '<a href="'+ htmllink +'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
