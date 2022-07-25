@@ -9,7 +9,7 @@ from django.utils.html import escape
 class OverviewTable(tables.Table):
     export_formats = ['csv', 'tsv']
     # collection_status = tables.LinkColumn("collection_list",  kwargs={"species": tables.A("pk")},accessor='samplecollection.status',verbose_name='Collection')
-    collection_status = tables.Column(accessor='samplecollection.status',verbose_name='Sampling',linkify=True)
+    collection_status = tables.Column(accessor='samplecollection.status',verbose_name='Sampling')
     sequencing_status = tables.Column(accessor='sequencing.status',verbose_name='Sequencing',linkify=True)
     assembly_status = tables.Column(accessor='assemblyproject.status',verbose_name='Assembly',linkify=True)
     curation_status = tables.Column(accessor='curation.status',verbose_name='Curation',linkify=True)
@@ -25,7 +25,7 @@ class OverviewTable(tables.Table):
     #         +'"><span class="'+escape(value)+'">'+escape(value)+'</span>')
 
     def render_collection_status(self, value):
-        html = '<a href="/erga-status/collection/?species='+tables.A("pk")+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        html = '<a href="/erga-status/collection/?species={{record.pk}}"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return html
 
     def render_sequencing_status(self, value):
