@@ -7,8 +7,8 @@ from django.utils.safestring import mark_safe
 #import html
 class OverviewTable(tables.Table):
     export_formats = ['csv', 'tsv']
-    assembly_status = tables.Column(accessor='assemblyproject.status',
-                         linkify=True, verbose_name='Assembly')
+    assembly_status = tables.TemplateColumn('<span class="{{assemblyproject.status}}">{{assemblyproject.status}}</a>',
+                         empty_values=(), verbose_name='Assembly')
     tolid_prefix = tables.Column(linkify=True)
     class Meta:
         model = TargetSpecies
