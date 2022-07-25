@@ -9,9 +9,13 @@ class OverviewTable(tables.Table):
     export_formats = ['csv', 'tsv']
     assembly_status = tables.Column(accessor='assemblyproject.status',
                          verbose_name='Assembly')
-    astatus = tables.TemplateColumn('<span class="{{record.assemblyproject.status}}">{{record.assemblyproject.status}}</a>',empty_values=(), verbose_name='Status')
+    astatus = tables.TemplateColumn('<span class="{{record.assemblyproject.status}}">{{record.assemblyproject.status}}</span>',empty_values=(), verbose_name='Status')
 
     tolid_prefix = tables.Column(linkify=True)
+
+    def render_assembly_status(self):
+        return "<span class='%s'>%s</span>" % next(self.value)
+        
     class Meta:
         model = TargetSpecies
         template_name = "django_tables2/bootstrap4.html"
