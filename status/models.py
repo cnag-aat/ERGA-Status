@@ -279,7 +279,7 @@ class SampleCollection(models.Model):
 
     def get_absolute_url(self):
         from django.urls import reverse
-        return reverse('collection_list', args=[str(self.species)])
+        return reverse('collection_list', args=[self.species])
 
     def __str__(self):
         return self.species.tolid_prefix
