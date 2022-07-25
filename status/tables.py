@@ -7,8 +7,8 @@ from django.utils.safestring import mark_safe
 #import html
 class OverviewTable(tables.Table):
     export_formats = ['csv', 'tsv']
-    # assembly_status = tables.Column(accessor='assemblyproject.status',
-    #                      verbose_name='Assembly')
+    assembly_status = tables.Column(accessor='assemblyproject.status',
+                         verbose_name='Assembly')
     astatus = tables.TemplateColumn('<span class="{{record.assemblyproject.status}}">{{record.assemblyproject.status}}</a>',empty_values=(), verbose_name='Status')
 
     tolid_prefix = tables.Column(linkify=True)
