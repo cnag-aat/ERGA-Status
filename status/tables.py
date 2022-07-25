@@ -13,9 +13,9 @@ class OverviewTable(tables.Table):
 
     tolid_prefix = tables.Column(linkify=True)
 
-    def render_assembly_status(self):
-        return "<span class='%s'>%s</span>" % next(self.value)
-        
+    def render_assembly_status(self, value):
+        return "<span class='%s'>%s</span>" % value
+
     class Meta:
         model = TargetSpecies
         template_name = "django_tables2/bootstrap4.html"
