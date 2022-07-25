@@ -269,7 +269,7 @@ class CollectionTeam(models.Model):
         return self.coordinator.username + " ("+self.affiliation+")"
 
 class SampleCollection(models.Model):
-    species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
+    species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     team = models.ForeignKey(CollectionTeam, on_delete=models.CASCADE, verbose_name="collection team")
     status = models.CharField(max_length=12, help_text='Status', choices=STATUS_CHOICES, default='Waiting')
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
@@ -285,7 +285,7 @@ class SampleCollection(models.Model):
         return self.species.tolid_prefix
 
 class Sequencing(models.Model):
-    species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
+    species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     team = models.ForeignKey(SequencingTeam, on_delete=models.CASCADE, verbose_name="sequencing team")
     status = models.CharField(max_length=12, help_text='Status', choices=STATUS_CHOICES, default='Waiting')
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
@@ -316,7 +316,7 @@ class Reads(models.Model):
         return self.species.tolid_prefix
 
 class Curation(models.Model):
-    species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
+    species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     team = models.ForeignKey(CurationTeam, on_delete=models.CASCADE, verbose_name="curation team")
     status = models.CharField(max_length=12, help_text='Status', choices=STATUS_CHOICES, default='Waiting')
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
@@ -328,7 +328,7 @@ class Curation(models.Model):
         return self.species.tolid_prefix
 
 class Annotation(models.Model):
-    species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
+    species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     team = models.ForeignKey(AnnotationTeam, on_delete=models.CASCADE, verbose_name="annotation team")
     status = models.CharField(max_length=12, help_text='Status', choices=STATUS_CHOICES, default='Waiting')
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
@@ -340,7 +340,7 @@ class Annotation(models.Model):
         return self.species.tolid_prefix
 
 class Submission(models.Model):
-    species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
+    species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     team = models.ForeignKey(SubmissionTeam, on_delete=models.CASCADE, verbose_name="submission team")
     status = models.CharField(max_length=12, help_text='Status', choices=STATUS_CHOICES, default='Waiting')
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
