@@ -277,6 +277,10 @@ class SampleCollection(models.Model):
     class Meta:
         verbose_name_plural = 'collection'
 
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('collection_list', args=[str(self.species)])
+
     def __str__(self):
         return self.species.tolid_prefix
 
