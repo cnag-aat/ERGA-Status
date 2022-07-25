@@ -24,7 +24,7 @@ class OverviewTable(tables.Table):
     #         +'"><span class="'+escape(value)+'">'+escape(value)+'</span>')
 
     def render_collection_status(self, value):
-        return mark_safe('<span class="'+escape(value)+'">'+escape(value)+'</span>')
+        return format_html(mark_safe('<span class="'+escape(value)+'">'+escape(value)+'</span>'))
 
     def render_sequencing_status(self, value):
         return mark_safe('<span class="'+escape(value)+'">'+escape(value)+'</span>')
