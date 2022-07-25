@@ -16,7 +16,7 @@ class OverviewTable(tables.Table):
     submission_status = tables.Column(accessor='submission.status',verbose_name='Submission')
 
     tolid_prefix = tables.Column(linkify=True)
-    attrs={"tR": {"class": "overview-table"}}
+    attrs={"td": {"class": "overview-table"}}
 
     def render_collection_status(self, value):
         return mark_safe('<span class="'+escape(value)+'">'+escape(value)+'</span>')
