@@ -8,7 +8,8 @@ from django.utils.html import escape
 #import html
 class OverviewTable(tables.Table):
     export_formats = ['csv', 'tsv']
-    collection_status = tables.LinkColumn("collection_list",  kwargs={"species": tables.A("pk")},accessor='samplecollection.status',verbose_name='Collection')
+    # collection_status = tables.LinkColumn("collection_list",  kwargs={"species": tables.A("pk")},accessor='samplecollection.status',verbose_name='Collection')
+    collection_status = tables.Column(accessor='samplecollection.status',verbose_name='Sampling',linkify=True)
     sequencing_status = tables.Column(accessor='sequencing.status',verbose_name='Sequencing',linkify=True)
     assembly_status = tables.Column(accessor='assemblyproject.status',verbose_name='Assembly',linkify=True)
     curation_status = tables.Column(accessor='curation.status',verbose_name='Curation',linkify=True)
@@ -23,8 +24,8 @@ class OverviewTable(tables.Table):
     #         url('collection_list',kwargs={'scientific_name': record.scientific_name})
     #         +'"><span class="'+escape(value)+'">'+escape(value)+'</span>')
 
-    # def render_collection_status(self, value):
-    #     return format_html(mark_safe('<span class="'+escape(value)+'">'+escape(value)+'</span>'))
+    def render_collection_status(self, value):
+        return format_html(mark_safe('<a href="/erga-status/collection/?species='+record.pk+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'))
 
     def render_sequencing_status(self, value):
         return mark_safe('<span class="'+escape(value)+'">'+escape(value)+'</span>')
