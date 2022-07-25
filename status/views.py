@@ -49,7 +49,7 @@ class TargetSpeciesListView(ExportMixin, SingleTableMixin, FilterView):
     table_class = TargetSpeciesTable
     template_name = 'targetspecies.html'
     #filterset_class = SpeciesFilter
-    table_pagination = {"per_page": 15}
+    table_pagination = {"per_page": 100}
 
 class OverView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
@@ -58,7 +58,7 @@ class OverView(ExportMixin, SingleTableMixin, FilterView):
     table_class = OverviewTable
     template_name = 'overview.html'
     #filterset_class = SpeciesFilter
-    table_pagination = {"per_page": 15}
+    table_pagination = {"per_page": 100}
 
 
 def species_detail(request, pk=None, scientific_name=None):
@@ -121,7 +121,7 @@ class AssemblyProjectListView(ExportMixin, SingleTableMixin, FilterView):
     table_class = AssemblyProjectTable
     template_name = 'assemblyproject.html'
     #filterset_class = SpeciesFilter
-    table_pagination = {"per_page": 15}
+    table_pagination = {"per_page": 100}
 
 class AssemblyListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
@@ -130,7 +130,7 @@ class AssemblyListView(ExportMixin, SingleTableMixin, FilterView):
     table_class = AssemblyTable
     template_name = 'assembly.html'
     #filterset_class = SpeciesFilter
-    table_pagination = {"per_page": 15}
+    table_pagination = {"per_page": 100}
 
 class SampleCollectionListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
@@ -139,7 +139,7 @@ class SampleCollectionListView(ExportMixin, SingleTableMixin, FilterView):
     table_class = SampleCollectionTable
     template_name = 'collection.html'
     #filterset_class = SpeciesFilter
-    table_pagination = {"per_page": 15}
+    table_pagination = {"per_page": 100}
 
 class SequencingListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
@@ -148,7 +148,7 @@ class SequencingListView(ExportMixin, SingleTableMixin, FilterView):
     table_class = SequencingTable
     template_name = 'sequencing.html'
     #filterset_class = SpeciesFilter
-    table_pagination = {"per_page": 15}
+    table_pagination = {"per_page": 100}
 
 class CurationListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
@@ -157,7 +157,7 @@ class CurationListView(ExportMixin, SingleTableMixin, FilterView):
     table_class = CurationTable
     template_name = 'curation.html'
     #filterset_class = SpeciesFilter
-    table_pagination = {"per_page": 15}
+    table_pagination = {"per_page": 100}
 
 class AnnotationListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
@@ -166,7 +166,7 @@ class AnnotationListView(ExportMixin, SingleTableMixin, FilterView):
     table_class = AnnotationTable
     template_name = 'annotation.html'
     #filterset_class = SpeciesFilter
-    table_pagination = {"per_page": 15}
+    table_pagination = {"per_page": 100}
 
 class SubmissionListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
@@ -175,4 +175,4 @@ class SubmissionListView(ExportMixin, SingleTableMixin, FilterView):
     table_class = SubmissionTable
     template_name = 'submission.html'
     #filterset_class = SpeciesFilter
-    table_pagination = {"per_page": 15}
+    table_pagination = {"per_page": 100}
