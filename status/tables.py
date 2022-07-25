@@ -72,14 +72,14 @@ class AssemblyProjectTable(tables.Table):
         paginate = {"per_page": 100}
         fields = ('species', 'team','assemblies', 'note', 'status')
 
-class CollectionTable(tables.Table):
+class SampleCollectionTable(tables.Table):
     export_formats = ['csv', 'tsv']
     status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</a>',empty_values=(), verbose_name='Status')
     species = tables.Column(linkify=True)
     team = tables.Column(linkify=True)
 
     class Meta:
-        model = Collection
+        model = SampleCollection
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
         fields = ('species', 'team', 'note', 'status')
