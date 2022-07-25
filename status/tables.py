@@ -7,7 +7,7 @@ from django.utils.safestring import mark_safe
 #import html
 class OverviewTable(tables.Table):
     export_formats = ['csv', 'tsv']
-    assembly_status = tables.Column(accessor='assembly_project_list__status',
+    assembly_status = tables.Column(accessor='assemblyproject',
                          linkify=True, verbose_name='Assembly')
     tolid_prefix = tables.Column(linkify=True)
     class Meta:
