@@ -10,11 +10,11 @@ class OverviewTable(tables.Table):
     export_formats = ['csv', 'tsv']
     # collection_status = tables.LinkColumn("collection_list",  kwargs={"species": tables.A("pk")},accessor='samplecollection.status',verbose_name='Collection')
     collection_status = tables.Column(accessor='samplecollection.status',verbose_name='Sampling')
-    sequencing_status = tables.Column(accessor='sequencing.status',verbose_name='Sequencing',linkify=True)
-    assembly_status = tables.Column(accessor='assemblyproject.status',verbose_name='Assembly',linkify=True)
-    curation_status = tables.Column(accessor='curation.status',verbose_name='Curation',linkify=True)
-    annotation_status = tables.Column(accessor='annotation.status',verbose_name='Annotation',linkify=True)
-    submission_status = tables.Column(accessor='submission.status',verbose_name='Submission',linkify=True)
+    sequencing_status = tables.Column(accessor='sequencing.status',verbose_name='Sequencing')
+    assembly_status = tables.Column(accessor='assemblyproject.status',verbose_name='Assembly')
+    curation_status = tables.Column(accessor='curation.status',verbose_name='Curation')
+    annotation_status = tables.Column(accessor='annotation.status',verbose_name='Annotation')
+    submission_status = tables.Column(accessor='submission.status',verbose_name='Submission')
 
     tolid_prefix = tables.Column(linkify=True)
     attrs={"td": {"class": "overview-table"}}
@@ -29,19 +29,24 @@ class OverviewTable(tables.Table):
         return mark_safe(html)
 
     def render_sequencing_status(self, value):
-        return mark_safe('<span class="'+escape(value)+'">'+escape(value)+'</span>')
+        html = '<a href="/erga-status/sequencing/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        return mark_safe(html)
 
     def render_assembly_status(self, value):
-        return mark_safe('<span class="'+escape(value)+'">'+escape(value)+'</span>')
+        html = '<a href="/erga-status/assemblyproject/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        return mark_safe(html)
 
     def render_curation_status(self, value):
-        return mark_safe('<span class="'+escape(value)+'">'+escape(value)+'</span>')
+        html = '<a href="/erga-status/curation/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        return mark_safe(html)
 
     def render_annotation_status(self, value):
-        return mark_safe('<span class="'+escape(value)+'">'+escape(value)+'</span>')
+        html = '<a href="/erga-status/annotation/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        return mark_safe(html)
 
     def render_submission_status(self, value):
-        return mark_safe('<span class="'+escape(value)+'">'+escape(value)+'</span>')
+        html = '<a href="/erga-status/submission/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        return mark_safe(html)
 
     class Meta:
         model = TargetSpecies
