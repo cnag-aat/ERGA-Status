@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load render_table from django_tables2 %}
+{% load static %}
+{% load bootstrap4 %}
+{% block header %}
+{% load query_string %}
+
+<link rel="stylesheet" href="/static/css/sidebar.css">
+
+
+{% endblock %}
+
+{% block page_content %}
+
+<div id="mySidebar" class="sidebar">
+  <p>
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+    <div class=" row m-1">
+      <form action="" method="get" class="form">
+        {% bootstrap_form filter.form layout='horizontal' %}
+        {% bootstrap_button 'filter' %}
+        <a class="btn btn-link" href="{% url 'sequencing_list' %}">clear filters</a>
+      </form>
+    </div>
+</div>
+
+
+<div id="main">
+  <div class=" row m-1">
+    <div class="col d-flex justify-content-start">
+      <button class="btn btn-link" onclick="openNav()">☰ Filters</button>
+    </div>
+    <div class="col d-flex justify-content-end">
+      <a href="{{ request.get_full_path }}{% query_string '_export' 'csv' %}" class="btn btn-primary" role="button">Export CSV</a>
+    </div>
+  </div>
+  <div class=" row m-1">
+    <div class="col m-2">
+      <div class=" row m-1">
+        <div class="table-responsive">
+          {% render_table table %}
+        </div>
+      </div>
+      <div class="row m-1">
+        <div class="col-md-12 d-flex justify-content-center">
+          <div align="center">Displaying {{ table.page.start_index }} to {{ table.page.end_index }} of {{ table.page.paginator.count }}.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openNav() {
+    document.getElementById("mySidebar").style.width = "460px";
+    document.getElementById("main").style.marginLeft = "460px";
+  }
+
+  function closeNav() {
+    document.getElementById("mySidebar").style.width = "0";
+    document.getElementById("main").style.marginLeft = "0";
+  }
+</script>
+
+{% endblock %}
