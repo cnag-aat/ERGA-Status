@@ -9,11 +9,11 @@ from django.utils.html import escape
 class OverviewTable(tables.Table):
     export_formats = ['csv', 'tsv']
     collection_status = tables.Column(accessor='samplecollection.status',verbose_name='Collection',linkify=True)
-    sequencing_status = tables.Column(accessor='sequencing.status',verbose_name='Sequencing')
-    assembly_status = tables.Column(accessor='assemblyproject.status',verbose_name='Assembly')
-    curation_status = tables.Column(accessor='curation.status',verbose_name='Curation')
-    annotation_status = tables.Column(accessor='annotation.status',verbose_name='Annotation')
-    submission_status = tables.Column(accessor='submission.status',verbose_name='Submission')
+    sequencing_status = tables.Column(accessor='sequencing.status',verbose_name='Sequencing',linkify=True)
+    assembly_status = tables.Column(accessor='assemblyproject.status',verbose_name='Assembly',linkify=True)
+    curation_status = tables.Column(accessor='curation.status',verbose_name='Curation',linkify=True)
+    annotation_status = tables.Column(accessor='annotation.status',verbose_name='Annotation',linkify=True)
+    submission_status = tables.Column(accessor='submission.status',verbose_name='Submission',linkify=True)
 
     tolid_prefix = tables.Column(linkify=True)
     attrs={"td": {"class": "overview-table"}}
