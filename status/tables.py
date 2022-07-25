@@ -9,7 +9,7 @@ from django.utils.html import escape
 class OverviewTable(tables.Table):
     export_formats = ['csv', 'tsv']
     collection_status = tables.LinkColumn("collection_list", kwargs={
-                             "pk": tables.A("pk")}, empty_values=(),accessor='samplecollection.status',verbose_name='Collection')
+                             "scientific_name": tables.A("scientific_name")}, empty_values=(),accessor='samplecollection.status',verbose_name='Collection')
     sequencing_status = tables.Column(accessor='sequencing.status',verbose_name='Sequencing',linkify=True)
     assembly_status = tables.Column(accessor='assemblyproject.status',verbose_name='Assembly',linkify=True)
     curation_status = tables.Column(accessor='curation.status',verbose_name='Curation',linkify=True)
