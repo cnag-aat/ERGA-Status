@@ -25,7 +25,7 @@ class OverviewTable(tables.Table):
     #         +'"><span class="'+escape(value)+'">'+escape(value)+'</span>')
 
     def render_collection_status(self, value):
-        return mark_safe('<a href="/erga-status/collection/?species='+pk+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>')
+        return mark_safe('<a href="/erga-status/collection/?species='+A("pk")+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>')
 
     def render_sequencing_status(self, value):
         return mark_safe('<span class="'+escape(value)+'">'+escape(value)+'</span>')
