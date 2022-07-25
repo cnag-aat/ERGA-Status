@@ -8,20 +8,38 @@ from django.utils.html import escape
 #import html
 class OverviewTable(tables.Table):
     export_formats = ['csv', 'tsv']
-    assembly_status = tables.Column(accessor='assemblyproject.status',
-                         verbose_name='Assembly')
-    astatus = tables.TemplateColumn('<span class="{{record.assemblyproject.status}}">{{record.assemblyproject.status}}</span>',empty_values=(), verbose_name='Status')
+    collection_status = tables.Column(accessor='collection.status',verbose_name='Collection')
+    sequencing_status = tables.Column(accessor='sequencing.status',verbose_name='Sequencing')
+    assembly_status = tables.Column(accessor='assemblyproject.status',verbose_name='Assembly')
+    curation_status = tables.Column(accessor='curation.status',verbose_name='Curation')
+    annotation_status = tables.Column(accessor='annotation.status',verbose_name='Annotation')
+    submission_status = tables.Column(accessor='submission.status',verbose_name='Submission')
 
     tolid_prefix = tables.Column(linkify=True)
 
+    def render_collection_status(self, value):
+        return mark_safe('<span class="'+escape(value)+'">'+escape(value)+'</span>')
+
+    def render_sequencing_status(self, value):
+        return mark_safe('<span class="'+escape(value)+'">'+escape(value)+'</span>')
+
     def render_assembly_status(self, value):
+        return mark_safe('<span class="'+escape(value)+'">'+escape(value)+'</span>')
+
+    def render_curation_status(self, value):
+        return mark_safe('<span class="'+escape(value)+'">'+escape(value)+'</span>')
+
+    def render_annotation_status(self, value):
+        return mark_safe('<span class="'+escape(value)+'">'+escape(value)+'</span>')
+
+    def render_submission_status(self, value):
         return mark_safe('<span class="'+escape(value)+'">'+escape(value)+'</span>')
 
     class Meta:
         model = TargetSpecies
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        fields = ('tolid_prefix', 'scientific_name','assembly_status','astatus')
+        fields = ('tolid_prefix', 'scientific_name','collection_status','sequencing_status','assembly_status','curation_status','annotation_status','submission_status')
 
 class TargetSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']
@@ -53,3 +71,63 @@ class AssemblyProjectTable(tables.Table):
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
         fields = ('species', 'team','assemblies', 'note', 'status')
+
+class CollectionTable(tables.Table):
+    export_formats = ['csv', 'tsv']
+    status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</a>',empty_values=(), verbose_name='Status')
+    species = tables.Column(linkify=True)
+    team = tables.Column(linkify=True)
+
+    class Meta:
+        model = Collection
+        template_name = "django_tables2/bootstrap4.html"
+        paginate = {"per_page": 100}
+        fields = ('species', 'team', 'note', 'status')
+
+class SequencingTable(tables.Table):
+    export_formats = ['csv', 'tsv']
+    status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</a>',empty_values=(), verbose_name='Status')
+    species = tables.Column(linkify=True)
+    team = tables.Column(linkify=True)
+
+    class Meta:
+        model = Sequencing
+        template_name = "django_tables2/bootstrap4.html"
+        paginate = {"per_page": 100}
+        fields = ('species', 'team', 'note', 'status')
+
+class CurationTable(tables.Table):
+    export_formats = ['csv', 'tsv']
+    status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</a>',empty_values=(), verbose_name='Status')
+    species = tables.Column(linkify=True)
+    team = tables.Column(linkify=True)
+
+    class Meta:
+        model = Curation
+        template_name = "django_tables2/bootstrap4.html"
+        paginate = {"per_page": 100}
+        fields = ('species', 'team', 'note', 'status')
+
+class AnnotationTable(tables.Table):
+    export_formats = ['csv', 'tsv']
+    status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</a>',empty_values=(), verbose_name='Status')
+    species = tables.Column(linkify=True)
+    team = tables.Column(linkify=True)
+
+    class Meta:
+        model = Annotation
+        template_name = "django_tables2/bootstrap4.html"
+        paginate = {"per_page": 100}
+        fields = ('species', 'team', 'note', 'status')
+
+class SubmissionTable(tables.Table):
+    export_formats = ['csv', 'tsv']
+    status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</a>',empty_values=(), verbose_name='Status')
+    species = tables.Column(linkify=True)
+    team = tables.Column(linkify=True)
+
+    class Meta:
+        model = Submission
+        template_name = "django_tables2/bootstrap4.html"
+        paginate = {"per_page": 100}
+        fields = ('species', 'team', 'note', 'status')
