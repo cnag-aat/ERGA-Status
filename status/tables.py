@@ -4,6 +4,7 @@ from django_tables2.utils import A
 from .models import *
 import re
 from django.utils.safestring import mark_safe
+from django.utils.html import escape
 #import html
 class OverviewTable(tables.Table):
     export_formats = ['csv', 'tsv']
@@ -14,7 +15,7 @@ class OverviewTable(tables.Table):
     tolid_prefix = tables.Column(linkify=True)
 
     def render_assembly_status(self, value):
-        return '<span class="'+value+'">'+value+'</span>' 
+        return mark_safe('<span class="'+escape(value)+'">'+escape(value)+'</span>')
 
     class Meta:
         model = TargetSpecies
