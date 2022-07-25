@@ -132,11 +132,11 @@ class AssemblyListView(ExportMixin, SingleTableMixin, FilterView):
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 15}
 
-class CollectionListView(ExportMixin, SingleTableMixin, FilterView):
+class SampleCollectionListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
     # login_url = "access_denied"
-    model = Collection
-    table_class = CollectionTable
+    model = SampleCollection
+    table_class = SampleCollectionTable
     template_name = 'collection.html'
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 15}
