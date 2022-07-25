@@ -8,7 +8,7 @@ from django.utils.html import escape
 #import html
 class OverviewTable(tables.Table):
     export_formats = ['csv', 'tsv']
-    collection_status = tables.Column(accessor='collection.status',verbose_name='Collection')
+    collection_status = tables.Column(accessor='samplecollection.status',verbose_name='Collection')
     sequencing_status = tables.Column(accessor='sequencing.status',verbose_name='Sequencing')
     assembly_status = tables.Column(accessor='assemblyproject.status',verbose_name='Assembly')
     curation_status = tables.Column(accessor='curation.status',verbose_name='Curation')

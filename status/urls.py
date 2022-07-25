@@ -3,7 +3,7 @@ from django.urls import path
 from . import views
 from status.views import TargetSpeciesListView
 from status.views import AssemblyListView
-from status.views import CollectionListView
+from status.views import SampleCollectionListView
 from status.views import SequencingListView
 from status.views import AssemblyProjectListView
 from status.views import CurationListView
@@ -28,12 +28,12 @@ urlpatterns = [
     path("curation_team/<int:pk>/", views.curation_team_detail, name="curation_team_detail"),
     path("annotation_team/<int:pk>/", views.annotation_team_detail, name="annotation_team_detail"),
     path("submission_team/<int:pk>/", views.submission_team_detail, name="submission_team_detail"),
-    path("collection/?species=<scientific_name>", CollectionListView.as_view(), name="collection_list"),
+    path("collection/?species=<scientific_name>", SampleCollectionListView.as_view(), name="collection_list"),
     path("sequencing/?species=<scientific_name>", SequencingListView.as_view(), name="sequencing_list"),
     path("curation/?species=<scientific_name>", CurationListView.as_view(), name="curation_list"),
     path("annotation/?species=<scientific_name>", AnnotationListView.as_view(), name="annotation_list"),
     path("submission/?species=<scientific_name>", SubmissionListView.as_view(), name="submission_list"),
-    path("collection/", CollectionListView.as_view(), name="collection_list"),
+    path("collection/", SampleCollectionListView.as_view(), name="collection_list"),
     path("sequencing/", SequencingListView.as_view(), name="sequencing_list"),
     path("curation/", CurationListView.as_view(), name="curation_list"),
     path("annotation/", AnnotationListView.as_view(), name="annotation_list"),
