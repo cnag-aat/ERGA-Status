@@ -23,8 +23,8 @@ class OverviewTable(tables.Table):
     #         url('collection_list',kwargs={'scientific_name': record.scientific_name})
     #         +'"><span class="'+escape(value)+'">'+escape(value)+'</span>')
 
-    def render_collection_status(self, value):
-        return format_html(mark_safe('<span class="'+escape(value)+'">'+escape(value)+'</span>'))
+    # def render_collection_status(self, value):
+    #     return format_html(mark_safe('<span class="'+escape(value)+'">'+escape(value)+'</span>'))
 
     def render_sequencing_status(self, value):
         return mark_safe('<span class="'+escape(value)+'">'+escape(value)+'</span>')
