@@ -5,8 +5,8 @@ from django.conf import settings
 
 # Create your models here.
 STATUS_CHOICES = (
-    ('Waiting', 'Waiting for input'),
-    ('Received', 'Input received'),
+    ('Waiting', 'Waiting'),
+    ('Received', 'Received'),
     ('Processing', 'Processing'),
     ('Done', 'Done'),
     ('Sent', 'Sent'),
