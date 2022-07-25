@@ -20,7 +20,7 @@ class OverviewTable(tables.Table):
 
     def render_collection_status(self, value):
         return mark_safe('<a href="'+
-            url('collection_list',kwargs={'scientific_name':, record.scientific_name})
+            url('collection_list',kwargs={'scientific_name': record.scientific_name})
             +'"><span class="'+escape(value)+'">'+escape(value)+'</span>')
 
     def render_sequencing_status(self, value):
