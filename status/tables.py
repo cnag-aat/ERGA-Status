@@ -14,7 +14,7 @@ class OverviewTable(tables.Table):
     tolid_prefix = tables.Column(linkify=True)
 
     def render_assembly_status(self, value):
-        return "<span class='%s'>%s</span>" % value
+        return "<span class='%s'>%s</span>" % value, value
 
     class Meta:
         model = TargetSpecies
