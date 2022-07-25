@@ -1,4 +1,5 @@
 from django.urls import path
+from django.conf.urls import url
 
 from . import views
 from status.views import TargetSpeciesListView
@@ -28,7 +29,7 @@ urlpatterns = [
     path("curation_team/<int:pk>/", views.curation_team_detail, name="curation_team_detail"),
     path("annotation_team/<int:pk>/", views.annotation_team_detail, name="annotation_team_detail"),
     path("submission_team/<int:pk>/", views.submission_team_detail, name="submission_team_detail"),
-    path('collection/?species=<species>', SampleCollectionListView.as_view(), name="collection_list"),
+    url('collection/?species=<species>', SampleCollectionListView.as_view(), name="collection_list"),
     path("sequencing/?species=<scientific_name>", SequencingListView.as_view(), name="sequencing_list"),
     path("curation/?species=<scientific_name>", CurationListView.as_view(), name="curation_list"),
     path("annotation/?species=<scientific_name>", AnnotationListView.as_view(), name="annotation_list"),
