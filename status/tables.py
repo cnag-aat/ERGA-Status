@@ -7,14 +7,16 @@ from django.utils.safestring import mark_safe
 #import html
 class OverviewTable(tables.Table):
     export_formats = ['csv', 'tsv']
-    assembly_status = tables.TemplateColumn('<span class="{{assemblyproject.status}}">{{assemblyproject.status}}</a>',
-                         empty_values=(), verbose_name='Assembly')
+    assembly_status = tables.Column(accessor='assemblyproject.status',
+                         verbose_name='Assembly')
+    astatus = tables.TemplateColumn(accessor='assemblyproject.status','<span class="{{record.status}}">{{record.status}}</a>',empty_values=(), verbose_name='Status')
+
     tolid_prefix = tables.Column(linkify=True)
     class Meta:
         model = TargetSpecies
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        fields = ('tolid_prefix', 'scientific_name','assembly_status')
+        fields = ('tolid_prefix', 'scientific_name','assembly_status','astatus')
 
 class TargetSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']
