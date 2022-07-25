@@ -18,14 +18,14 @@ class OverviewTable(tables.Table):
 
     tolid_prefix = tables.Column(linkify=True)
     attrs={"td": {"class": "overview-table"}}
-    targetspecies=TargetSpecies.objects.get(pk=pk)
+    #targetspecies=TargetSpecies.objects.get(=pk)
     # def render_collection_status(self, value):
     #     return mark_safe('<a href="'+
     #         url('collection_list',kwargs={'scientific_name': record.scientific_name})
     #         +'"><span class="'+escape(value)+'">'+escape(value)+'</span>')
 
-    def render_collection_status(self, value):
-        html = '<a href="/erga-status/collection/?species='+targetspecies+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+    def render_collection_status(self, value, record):
+        html = '<a href="/erga-status/collection/?species='+record.pk+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
     def render_sequencing_status(self, value):
