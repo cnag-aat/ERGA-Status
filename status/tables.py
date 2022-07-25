@@ -9,7 +9,7 @@ class OverviewTable(tables.Table):
     export_formats = ['csv', 'tsv']
     collection_status = tables.TemplateColumn('<span class="{{record.samplecollection.status}}">{{record.samplecollection.status}}</a>',empty_values=(), verbose_name='Collection')
     sequencing_status = tables.TemplateColumn('<span class="{{record.sequencing.status}}">{{record.sequencing.status}}</a>',empty_values=(), verbose_name='Sequencing')
-    assembly_status = tables.TemplateColumn('<span class="{{record.assemblyproject.status}}">{{record.assemblyproject.status}}</a>',empty_values=(), verbose_name='Assembly')
+    astatus = tables.TemplateColumn('<span class="{{record.assemblyproject.status}}">{{record.assemblyproject.status}}</a>',empty_values=(), verbose_name='Assembly')
     curation_status = tables.TemplateColumn('<span class="{{record.curation.status}}">{{record.curation.status}}</a>',empty_values=(), verbose_name='Curation')
     submission_status = tables.TemplateColumn('<span class="{{record.submission.status}}">{{record.submission.status}}</a>',empty_values=(), verbose_name='Submission')
 
@@ -18,7 +18,7 @@ class OverviewTable(tables.Table):
         model = TargetSpecies
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        fields = ('tolid_prefix', 'scientific_name','assembly_status',)
+        fields = ('tolid_prefix', 'scientific_name','astatus',)
 
 class TargetSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']
