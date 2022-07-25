@@ -83,6 +83,8 @@ admin.site.register(SubmissionTeam)
 admin.site.register(Submission)
 admin.site.register(SequencingTeam)
 admin.site.register(Sequencing)
+admin.site.register(AnnotationTeam)
+admin.site.register(Annotation)
 admin.site.register(BUSCOdb)
 admin.site.register(BUSCOversion)
 
