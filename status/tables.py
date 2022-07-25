@@ -16,7 +16,7 @@ class OverviewTable(tables.Table):
         model = TargetSpecies
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        fields = ('tolid_prefix', 'scientific_name','astatus')
+        fields = ('tolid_prefix', 'scientific_name','assembly_status','astatus')
 
 class TargetSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']
