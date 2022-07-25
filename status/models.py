@@ -266,7 +266,7 @@ class CollectionTeam(models.Model):
         return reverse('collection_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.lead.username + " ("+self.affiliation+")"
+        return self.coordinator.username + " ("+self.affiliation+")"
 
 class SampleCollection(models.Model):
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
