@@ -155,7 +155,7 @@ class SequencingListView(ExportMixin, SingleTableMixin, FilterView):
         """Filter by price if it is provided in GET parameters"""
         queryset = super(SequencingListView, self).get_queryset()
         if 'project' in self.request.GET:
-            queryset = queryset.filter(pk=self.self.kwargs['project'])
+            queryset = queryset.filter(pk=self.request.GET['project'])
             return queryset
 
 
