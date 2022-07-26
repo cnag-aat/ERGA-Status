@@ -143,7 +143,7 @@ class ReadsTable(tables.Table):
                 css_class = '<i class="fas fa-battery-full fa-lg"></i>'
 
         cov = int(value)/rs.species.genome_size
-        if (value == 0 && rs.hifi_target == 0):
+        if (value == 0 and rs.hifi_target == 0):
             return mark_safe('<i class="fas fa-ban fa-lg"></i>')
         else:
             return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
