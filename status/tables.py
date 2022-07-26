@@ -199,20 +199,20 @@ class ReadsTable(tables.Table):
     def render_ont_yield(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
-        css_class = '<i class="fa-duotone fa-signal-bars-slash">'
+        css_class = '<i class="fa-solid fa-battery-empty"></i>'
         if (rs.ont_target >  0):
             threshmet = int(value)/(rs.ont_target * rs.species.genome_size)
-            if(threshmet > 0):
-                css_class = '<i class="fa-duotone fa-signal-bars-weak">'
+            if(threshmet > 0.25):
+                css_class = '<i class="fa-solid fa-battery-quarter"></i>'
+            if(threshmet > 0.5):
+                css_class = <i class="fa-solid fa-battery-half"></i>
             if(threshmet > 0.75):
-                css_class = '<i class="fa-duotone fa-signal-bars-fair">'
-            if(threshmet >= 1):
-                css_class = '<i class="fa-duotone fa-signal-bars-strong">'
-            if(threshmet > 1.5):
-                css_class = '<i class="fa-duotone fa-signal-bars">'
+                css_class = '<i class="fa-solid fa-battery-three-quarters"></i>'
+            if(threshmet >= 1.0):
+                css_class = '<i class="fa-solid fa-battery-full"></i>'
 
         cov = int(value)/rs.species.genome_size
-        return mark_safe(css_class + "{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)")
+        return mark_safe(css_class + "<span>" + "{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
 
     class Meta:
         model = Reads
