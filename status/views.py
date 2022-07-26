@@ -147,6 +147,7 @@ class SequencingListView(DetailView, ExportMixin, SingleTableMixin, FilterView):
     # login_url = "access_denied"
     model = Sequencing
     table_class = SequencingTable
+    queryset = Sequencing.objects.all()
     template_name = 'sequencing.html'
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
