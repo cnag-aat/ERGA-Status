@@ -122,7 +122,7 @@ class ReadsTable(tables.Table):
 
     def render_project(self, value, record):
         url = reverse('sequencing_list')
-        return format_html('<a href="{}?project={}">{}</a>', url, self, value)
+        return format_html('<a href="{}?project={}">{}</a>', url, record.project.pk, value)
 
     def render_ont_yield(self, value, record):
         percent = value
