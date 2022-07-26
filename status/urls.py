@@ -6,6 +6,7 @@ from status.views import TargetSpeciesListView
 from status.views import AssemblyListView
 from status.views import SampleCollectionListView
 from status.views import SequencingListView
+from status.views import SequencingDetailView
 from status.views import ReadsListView
 from status.views import AssemblyProjectListView
 from status.views import CurationListView
