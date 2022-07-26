@@ -144,7 +144,7 @@ class ReadsTable(tables.Table):
 
         cov = int(value)/rs.species.genome_size
         if (value == 0 and rs.hifi_target == 0):
-            return mark_safe('<i class="fas fa-ban fa-lg"></i>')
+            return ''
         else:
             return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
 
@@ -165,7 +165,10 @@ class ReadsTable(tables.Table):
                 css_class = '<i class="fas fa-battery-full fa-lg"></i>'
 
         cov = int(value)/rs.species.genome_size
-        return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
+        if (value == 0 and rs.hic_target == 0):
+            return ''
+        else:
+            return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
 
     def render_short_yield(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
@@ -184,7 +187,10 @@ class ReadsTable(tables.Table):
                 css_class = '<i class="fas fa-battery-full fa-lg"></i>'
 
         cov = int(value)/rs.species.genome_size
-        return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
+        if (value == 0 and rs.short_target == 0):
+            return ''
+        else:
+            return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
 
     def render_rnaseq_numlibs(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
@@ -202,7 +208,10 @@ class ReadsTable(tables.Table):
             if(threshmet >= 1.0):
                 css_class = '<i class="fas fa-battery-full fa-lg"></i>'
 
-        return mark_safe(css_class + "<span>&nbsp;" + str(value) + "</span>")
+        if (value == 0 and rs.rnaseq_numlibs_target == 0):
+            return ''
+        else:
+            return mark_safe(css_class + "<span>&nbsp;" + str(value) + "</span>")
 
     def render_ont_yield(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
@@ -221,7 +230,10 @@ class ReadsTable(tables.Table):
                 css_class = '<i class="fas fa-battery-full fa-lg"></i>'
 
         cov = int(value)/rs.species.genome_size
-        return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
+        if (value == 0 and rs.ont_target == 0):
+            return ''
+        else:
+            return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
 
     class Meta:
         model = Reads
