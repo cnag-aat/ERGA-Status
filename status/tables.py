@@ -123,7 +123,7 @@ class ReadsTable(tables.Table):
         return percent
 
     class Meta:
-        model = Sequencing
+        model = Reads
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
         # fields = ('species', 'team', 'note', 'status')
