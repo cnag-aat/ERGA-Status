@@ -111,12 +111,16 @@ class SequencingTable(tables.Table):
 
 class ReadsTable(tables.Table):
     export_formats = ['csv', 'tsv']
-    project = tables.LinkColumn('sequencing_list',kwargs={'project':tables.A('pk')})
+    project = tables.LinkColumn('sequencing_list')
     ont_yield = tables.Column(verbose_name="ONT yield")
     hifi_yield = tables.Column(verbose_name="HiFi yield")
     hic_yield = tables.Column(verbose_name="Hi-C yield")
     short_yield = tables.Column(verbose_name="Short read yield")
     rnaseq_numlibs = tables.Column(verbose_name="RNAseq libs")
+
+    def render_id(self, record):
+        url = reverse('sequencing_list')
+        return format_html('<a href="{}?project={}">{}</a>', url, record.id, self.value)
 
     def render_ont_yield(self, value, record):
         percent = value
