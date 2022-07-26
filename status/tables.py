@@ -105,7 +105,7 @@ class SequencingTable(tables.Table):
     status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</a>',empty_values=(), verbose_name='Status')
     species = tables.Column(linkify=True)
     team = tables.Column(linkify=True)
-    reads = tables.TemplateColumn('<a href="{% url \'reads\' %}?project={{record.pk}}">reads</a>',empty_values=(), verbose_name='Reads')
+    reads = tables.TemplateColumn('<a href="{% url \'reads_list\' %}?project={{record.pk}}">reads</a>',empty_values=(), verbose_name='Reads')
 
     class Meta:
         model = Sequencing
