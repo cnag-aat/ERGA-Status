@@ -125,6 +125,77 @@ class ReadsTable(tables.Table):
         url = reverse('sequencing_list')
         return format_html('<a href="{}?project={}">{}</a>', url, record.project.pk, value)
 
+    def render_hifi_yield(self, value, record):
+        rs = Sequencing.objects.get(pk=record.project.pk)
+        threshmet = 1.0
+        css_class = 'yield_na'
+        if (rs.hifi_target >  0):
+            threshmet = int(value)/(rs.hifi_target * rs.species.genome_size)
+            if(threshmet > 0):
+                css_class = 'yield_low'
+            if(threshmet > 0.75):
+                css_class = 'yield_ok'
+            if(threshmet >= 1):
+                css_class = 'yield_high'
+            if(threshmet > 1.5):
+                css_class = 'yield_extrahigh'
+
+        cov = int(value)/rs.species.genome_size
+        return mark_safe('<span class="'+css_class+'">' + "{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
+
+    def render_hic_yield(self, value, record):
+        rs = Sequencing.objects.get(pk=record.project.pk)
+        threshmet = 1.0
+        css_class = 'yield_na'
+        if (rs.hic_target >  0):
+            threshmet = int(value)/(rs.hic_target * rs.species.genome_size)
+            if(threshmet > 0):
+                css_class = 'yield_low'
+            if(threshmet > 0.75):
+                css_class = 'yield_ok'
+            if(threshmet >= 1):
+                css_class = 'yield_high'
+            if(threshmet > 1.5):
+                css_class = 'yield_extrahigh'
+
+        cov = int(value)/rs.species.genome_size
+        return mark_safe('<span class="'+css_class+'">' + "{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
+
+    def render_short_yield(self, value, record):
+        rs = Sequencing.objects.get(pk=record.project.pk)
+        threshmet = 1.0
+        css_class = 'yield_na'
+        if (rs.short_target >  0):
+            threshmet = int(value)/(rs.short_target * rs.species.genome_size)
+            if(threshmet > 0):
+                css_class = 'yield_low'
+            if(threshmet > 0.75):
+                css_class = 'yield_ok'
+            if(threshmet >= 1):
+                css_class = 'yield_high'
+            if(threshmet > 1.5):
+                css_class = 'yield_extrahigh'
+
+        cov = int(value)/rs.species.genome_size
+        return mark_safe('<span class="'+css_class+'">' + "{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
+
+    def render_rnaseq_numlibs(self, value, record):
+        rs = Sequencing.objects.get(pk=record.project.pk)
+        threshmet = 1.0
+        css_class = 'yield_na'
+        if (rs.rnaseq_numlibs_target >  0):
+            threshmet = int(value)/(rs.rnaseq_numlibs_target)
+            if(threshmet > 0):
+                css_class = 'yield_low'
+            if(threshmet > 0.75):
+                css_class = 'yield_ok'
+            if(threshmet >= 1):
+                css_class = 'yield_high'
+            if(threshmet > 1.5):
+                css_class = 'yield_extrahigh'
+
+        return mark_safe('<span class="'+css_class+'">' + value + "</span>")
+
     def render_ont_yield(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
