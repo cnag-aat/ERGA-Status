@@ -120,9 +120,9 @@ class ReadsTable(tables.Table):
     short_yield = tables.Column(verbose_name="Short read yield")
     rnaseq_numlibs = tables.Column(verbose_name="RNAseq libs")
 
-    def render_project(self, record):
+    def render_project(self, value, record):
         url = reverse('sequencing_list')
-        return format_html('<a href="{}?project={}">{}</a>', url, record.id, self.value)
+        return format_html('<a href="{}?project={}">{}</a>', url, record.id, value)
 
     def render_ont_yield(self, value, record):
         percent = value
