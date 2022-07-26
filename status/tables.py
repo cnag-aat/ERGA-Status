@@ -194,7 +194,7 @@ class ReadsTable(tables.Table):
             if(threshmet > 1.5):
                 css_class = 'yield_extrahigh'
 
-        return mark_safe('<span class="'+css_class+'">' + value + "</span>")
+        return mark_safe('<span class="'+css_class+'">' + str(value) + "</span>")
 
     def render_ont_yield(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
