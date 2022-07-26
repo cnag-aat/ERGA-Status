@@ -19,7 +19,7 @@
       <form action="" method="get" class="form">
         {% bootstrap_form filter.form layout='horizontal' %}
         {% bootstrap_button 'filter' %}
-        <a class="btn btn-link" href="{% url 'overview' %}">clear filters</a>
+        <a class="btn btn-link" href="{% url 'reads_list' %}">clear filters</a>
       </form>
     </div>
 </div>
@@ -30,9 +30,9 @@
     <div class="col d-flex justify-content-start">
       <button class="btn btn-link" onclick="openNav()">☰ Filters</button>
     </div>
-    <!-- <div class="col d-flex justify-content-end">
+    <div class="col d-flex justify-content-end">
       <a href="{{ request.get_full_path }}{% query_string '_export' 'csv' %}" class="btn btn-primary" role="button">Export CSV</a>
-    </div> -->
+    </div>
   </div>
   <div class=" row m-1">
     <div class="col m-2">

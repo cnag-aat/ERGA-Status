@@ -150,6 +150,15 @@ class SequencingListView(ExportMixin, SingleTableMixin, FilterView):
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
 
+class ReadsListView(ExportMixin, SingleTableMixin, FilterView):
+    # permission_required = "resistome.view_sample"
+    # login_url = "access_denied"
+    model = Reads
+    table_class = ReadsTable
+    template_name = 'reads.html'
+    #filterset_class = SpeciesFilter
+    table_pagination = {"per_page": 100}
+
 class CurationListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
     # login_url = "access_denied"

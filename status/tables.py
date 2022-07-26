@@ -109,6 +109,25 @@ class SequencingTable(tables.Table):
         paginate = {"per_page": 100}
         fields = ('species', 'team', 'note', 'status')
 
+class ReadsTable(tables.Table):
+    export_formats = ['csv', 'tsv']
+    project = tables.Column(linkify=True)
+    ont_yield = tables.Column(verbose_name="ONT yield")
+    hifi_yield = tables.Column(verbose_name="HiFi yield")
+    hic_yield = tables.Column(verbose_name="Hi-C yield")
+    short_yield = tables.Column(verbose_name="Short read yield")
+    rnaseq_numlibs = tables.Column(verbose_name="RNAseq libs")
+
+    def render_ont_yield(self, value, record):
+        percent = value
+        return percent
+
+    class Meta:
+        model = Sequencing
+        template_name = "django_tables2/bootstrap4.html"
+        paginate = {"per_page": 100}
+        # fields = ('species', 'team', 'note', 'status')
+
 class CurationTable(tables.Table):
     export_formats = ['csv', 'tsv']
     status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</a>',empty_values=(), verbose_name='Status')

@@ -57,16 +57,19 @@ body {
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
         <li class="nav-item active">
-          <a class="nav-link" id="specieslink" href="{% url 'species_list' %}"><i id=speciesspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Target Species</a>
+          <a class="nav-link" id="overviewlink" href="{% url 'overview' %}"><i id=overviewspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Status</a>
         </li>
         <li class="nav-item active">
-          <a class="nav-link" id="overviewlink" href="{% url 'overview' %}"><i id=overviewspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Status</a>
+          <a class="nav-link" id="specieslink" href="{% url 'species_list' %}"><i id=speciesspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Target Species</a>
         </li>
         <li class="nav-item active">
           <a class="nav-link" id="projectlink" href="{% url 'assembly_project_list' %}"><i id=projectspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Assembly Projects</a>
         </li>
         <li class="nav-item active">
           <a class="nav-link" id="assemblylink" href="{% url 'assembly_list' %}"><i id=assemblyspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Assemblies</a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" id="readslink" href="{% url 'reads' %}"><i id=readsspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Reads</a>
         </li>
       </ul>
       <ul class="navbar-nav ml-auto">
@@ -213,6 +216,10 @@ body {
       const assemblylink = document.getElementById('assemblylink');
     	assemblylink.addEventListener('click', () => {
         $("#assemblyspinner").show();
+      })
+      const readslink = document.getElementById('readslink');
+    	readslink.addEventListener('click', () => {
+        $("#readsspinner").show();
       })
     }
 
