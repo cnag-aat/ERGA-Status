@@ -127,7 +127,7 @@ class ReadsTable(tables.Table):
 
     def render_ont_yield(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
-        threshmet = 1.0;
+        threshmet = 1.0
         class = 'yield_na'
         if (rs.ont_target >  0):
             threshmet = int(value)/(rs.ont_target * rs.species.genome_size)
