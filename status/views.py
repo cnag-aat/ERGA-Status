@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.views.generic import ListView
 from status.models import *
 from django.views.generic import TemplateView
+from django.views.generic import DetailView
 from django_tables2 import SingleTableView
 from django_tables2 import RequestConfig
 
@@ -154,8 +155,26 @@ class SequencingListView(ExportMixin, SingleTableMixin, FilterView):
         """Filter by price if it is provided in GET parameters"""
         queryset = super(SequencingListView, self).get_queryset()
         if 'pk' in self.request.GET:
-            queryset = queryset.filter(pk=self.request.GET['pk'])
+            queryset = queryset.filter(pk=self.request.GET['project'])
             return queryset
+
+
+class SequencingDetailView(DetailView, ExportMixin, SingleTableMixin, FilterView):
+    # permission_required = "resistome.view_sample"
+    # login_url = "access_denied"
+    model = Sequencing
+    table_class = SequencingTable
+    queryset = Sequencing.objects.all()
+    template_name = 'sequencing.html'
+    #filterset_class = SpeciesFilter
+    table_pagination = {"per_page": 100}
+
+    # def get_queryset(self):
+    #     """Filter by price if it is provided in GET parameters"""
+    #     queryset = super(SequencingListView, self).get_queryset()
+    #     if 'pk' in self.request.GET:
+    #         queryset = queryset.filter(pk=self.request.GET['project'])
+    #         return queryset
 
 # def SequencingSingleView(request, pk=None):
 #     seq = Sequencing.objects.get(pk=pk)
