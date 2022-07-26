@@ -295,6 +295,10 @@ class Sequencing(models.Model):
     short_target = models.BigIntegerField(null=True, blank=True, verbose_name="Short read target")
     rnaseq_numlibs_target = models.IntegerField(null=True, blank=True, verbose_name="RNAseq libs target")
 
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('sequencing_list', args=[str(self.species)])
+
     class Meta:
         verbose_name_plural = 'sequencing'
 
