@@ -6,6 +6,7 @@ from status.views import TargetSpeciesListView
 from status.views import AssemblyListView
 from status.views import SampleCollectionListView
 from status.views import SequencingListView
+from status.views import ReadsListView
 from status.views import AssemblyProjectListView
 from status.views import CurationListView
 from status.views import AnnotationListView
@@ -36,6 +37,7 @@ urlpatterns = [
     path("submission/?species=<scientific_name>", SubmissionListView.as_view(), name="submission_list"),
     path("collection/", SampleCollectionListView.as_view(), name="collection_list"),
     path("sequencing/", SequencingListView.as_view(), name="sequencing_list"),
+    path("reads/", ReadsListView.as_view(), name="reads_list"),
     path("curation/", CurationListView.as_view(), name="curation_list"),
     path("annotation/", AnnotationListView.as_view(), name="annotation_list"),
     path("submission/", SubmissionListView.as_view(), name="submission_list"),
