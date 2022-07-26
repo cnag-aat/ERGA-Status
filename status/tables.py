@@ -128,9 +128,10 @@ class ReadsTable(tables.Table):
     def render_hifi_yield(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
-        css_class = '<i class="fas fa-battery-empty fa-lg"></i>'
+        css_class = '<i class="fas fa-battery-slash fa-lg"></i>'
         if (rs.hifi_target >  0):
             threshmet = int(value)/(rs.hifi_target * rs.species.genome_size)
+            css_class = '<i class="fas fa-battery-empty fa-lg"></i>'
             if(threshmet > 0.25):
                 css_class = '<i class="fas fa-battery-quarter fa-lg"></i>'
             if(threshmet > 0.5):
@@ -146,9 +147,10 @@ class ReadsTable(tables.Table):
     def render_hic_yield(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
-        css_class = '<i class="fas fa-battery-empty fa-lg"></i>'
+        css_class = '<i class="fas fa-battery-slash fa-lg"></i>'
         if (rs.hic_target >  0):
             threshmet = int(value)/(rs.hic_target * rs.species.genome_size)
+            css_class = '<i class="fas fa-battery-empty fa-lg"></i>'
             if(threshmet > 0.25):
                 css_class = '<i class="fas fa-battery-quarter fa-lg"></i>'
             if(threshmet > 0.5):
@@ -164,9 +166,10 @@ class ReadsTable(tables.Table):
     def render_short_yield(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
-        css_class = '<i class="fas fa-battery-empty fa-lg"></i>'
+        css_class = '<i class="fas fa-battery-slash fa-lg"></i>'
         if (rs.short_target >  0):
             threshmet = int(value)/(rs.short_target * rs.species.genome_size)
+            css_class = '<i class="fas fa-battery-empty fa-lg"></i>'
             if(threshmet > 0.25):
                 css_class = '<i class="fas fa-battery-quarter fa-lg"></i>'
             if(threshmet > 0.5):
@@ -182,9 +185,10 @@ class ReadsTable(tables.Table):
     def render_rnaseq_numlibs(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
-        css_class = '<i class="fas fa-battery-empty fa-lg"></i>'
+        css_class = '<i class="fas fa-battery-slash fa-lg"></i>'
         if (rs.rnaseq_numlibs_target >  0):
             threshmet = int(value)/(rs.rnaseq_numlibs_target)
+            css_class = '<i class="fas fa-battery-empty fa-lg"></i>'
             if(threshmet > 0.25):
                 css_class = '<i class="fas fa-battery-quarter fa-lg"></i>'
             if(threshmet > 0.5):
@@ -199,9 +203,10 @@ class ReadsTable(tables.Table):
     def render_ont_yield(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
-        css_class = '<i class="fas fa-battery-empty fa-lg"></i>'
+        css_class = '<i class="fas fa-battery-slash fa-lg"></i>'
         if (rs.ont_target >  0):
             threshmet = int(value)/(rs.ont_target * rs.species.genome_size)
+            css_class = '<i class="fas fa-battery-empty fa-lg"></i>'
             if(threshmet > 0.25):
                 css_class = '<i class="fas fa-battery-quarter fa-lg"></i>'
             if(threshmet > 0.5):
