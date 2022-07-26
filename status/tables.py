@@ -141,7 +141,7 @@ class ReadsTable(tables.Table):
                 css_class = 'yield_extrahigh'
 
         cov = int(value)/rs.species.genome_size
-        return mark_safe('<span class="'+css_class+'">' + str("{.1f}".format(value/1000000000)) + "Gb (" + str("{.1f}".format(cov)) + "x)</span>")
+        return mark_safe('<span class="'+css_class+'">' + "{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
 
     class Meta:
         model = Reads
