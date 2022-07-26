@@ -209,7 +209,7 @@ class ReadsTable(tables.Table):
             if(threshmet > 0.75):
                 css_class = '<i class="fa-solid fa-battery-three-quarters"></i>'
             if(threshmet >= 1.0):
-                css_class = '<i class="fas fa-thumbs-up fa-5x"></i>'
+                css_class = '<i class="fas fa-battery-full fa-5x"></i>'
 
         cov = int(value)/rs.species.genome_size
         return mark_safe(css_class + "<span>" + "{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
