@@ -111,7 +111,7 @@ class SequencingTable(tables.Table):
 
 class ReadsTable(tables.Table):
     export_formats = ['csv', 'tsv']
-    project = tables.Column(linkify=True)
+    project = tables.LinkColumn('sequencing_list',kwargs={'project':tables.A('pk')]})
     ont_yield = tables.Column(verbose_name="ONT yield")
     hifi_yield = tables.Column(verbose_name="HiFi yield")
     hic_yield = tables.Column(verbose_name="Hi-C yield")

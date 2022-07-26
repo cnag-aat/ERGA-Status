@@ -154,18 +154,18 @@ class SequencingListView(ExportMixin, SingleTableMixin, FilterView):
     def get_queryset(self):
         """Filter by price if it is provided in GET parameters"""
         queryset = super(SequencingListView, self).get_queryset()
-        if 'pk' in self.request.GET:
+        if 'project' in self.request.GET:
             queryset = queryset.filter(pk=self.request.GET['project'])
             return queryset
 
 
-class SequencingDetailView(DetailView, ExportMixin, SingleTableMixin, FilterView):
+class SequencingDetailView(DetailView):
     # permission_required = "resistome.view_sample"
     # login_url = "access_denied"
     model = Sequencing
     table_class = SequencingTable
     queryset = Sequencing.objects.all()
-    template_name = 'sequencing.html'
+    template_name = 'sequencing_detail.html'
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
 
