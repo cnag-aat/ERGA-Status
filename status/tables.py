@@ -131,17 +131,17 @@ class ReadsTable(tables.Table):
         css_class = 'yield_na'
         if (rs.hifi_target >  0):
             threshmet = int(value)/(rs.hifi_target * rs.species.genome_size)
-            if(threshmet > 0):
-                css_class = 'yield_low'
+            if(threshmet > 0.25):
+                css_class = '<i class="fas fa-battery-quarter fa-lg"></i>'
+            if(threshmet > 0.5):
+                css_class = '<i class="fas fa-battery-half fa-lg"></i>'
             if(threshmet > 0.75):
-                css_class = 'yield_ok'
-            if(threshmet >= 1):
-                css_class = 'yield_high'
-            if(threshmet > 1.5):
-                css_class = 'yield_extrahigh'
+                css_class = '<i class="fas fa-battery-three-quarters fa-lg"></i>'
+            if(threshmet >= 1.0):
+                css_class = '<i class="fas fa-battery-full fa-lg"></i>'
 
         cov = int(value)/rs.species.genome_size
-        return mark_safe('<span class="'+css_class+'">' + "{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
+        return mark_safe(css_class + "<span>" + "&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
 
     def render_hic_yield(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
@@ -149,17 +149,17 @@ class ReadsTable(tables.Table):
         css_class = 'yield_na'
         if (rs.hic_target >  0):
             threshmet = int(value)/(rs.hic_target * rs.species.genome_size)
-            if(threshmet > 0):
-                css_class = 'yield_low'
+            if(threshmet > 0.25):
+                css_class = '<i class="fas fa-battery-quarter fa-lg"></i>'
+            if(threshmet > 0.5):
+                css_class = '<i class="fas fa-battery-half fa-lg"></i>'
             if(threshmet > 0.75):
-                css_class = 'yield_ok'
-            if(threshmet >= 1):
-                css_class = 'yield_high'
-            if(threshmet > 1.5):
-                css_class = 'yield_extrahigh'
+                css_class = '<i class="fas fa-battery-three-quarters fa-lg"></i>'
+            if(threshmet >= 1.0):
+                css_class = '<i class="fas fa-battery-full fa-lg"></i>'
 
         cov = int(value)/rs.species.genome_size
-        return mark_safe('<span class="'+css_class+'">' + "{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
+        return mark_safe(css_class + "<span>" + "&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
 
     def render_short_yield(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
@@ -167,17 +167,17 @@ class ReadsTable(tables.Table):
         css_class = 'yield_na'
         if (rs.short_target >  0):
             threshmet = int(value)/(rs.short_target * rs.species.genome_size)
-            if(threshmet > 0):
-                css_class = 'yield_low'
+            if(threshmet > 0.25):
+                css_class = '<i class="fas fa-battery-quarter fa-lg"></i>'
+            if(threshmet > 0.5):
+                css_class = '<i class="fas fa-battery-half fa-lg"></i>'
             if(threshmet > 0.75):
-                css_class = 'yield_ok'
-            if(threshmet >= 1):
-                css_class = 'yield_high'
-            if(threshmet > 1.5):
-                css_class = 'yield_extrahigh'
+                css_class = '<i class="fas fa-battery-three-quarters fa-lg"></i>'
+            if(threshmet >= 1.0):
+                css_class = '<i class="fas fa-battery-full fa-lg"></i>'
 
         cov = int(value)/rs.species.genome_size
-        return mark_safe('<span class="'+css_class+'">' + "{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
+        return mark_safe(css_class + "<span>" + "&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
 
     def render_rnaseq_numlibs(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
@@ -185,14 +185,14 @@ class ReadsTable(tables.Table):
         css_class = 'yield_na'
         if (rs.rnaseq_numlibs_target >  0):
             threshmet = int(value)/(rs.rnaseq_numlibs_target)
-            if(threshmet > 0):
-                css_class = 'yield_low'
+            if(threshmet > 0.25):
+                css_class = '<i class="fas fa-battery-quarter fa-lg"></i>'
+            if(threshmet > 0.5):
+                css_class = '<i class="fas fa-battery-half fa-lg"></i>'
             if(threshmet > 0.75):
-                css_class = 'yield_ok'
-            if(threshmet >= 1):
-                css_class = 'yield_high'
-            if(threshmet > 1.5):
-                css_class = 'yield_extrahigh'
+                css_class = '<i class="fas fa-battery-three-quarters fa-lg"></i>'
+            if(threshmet >= 1.0):
+                css_class = '<i class="fas fa-battery-full fa-lg"></i>'
 
         return mark_safe('<span class="'+css_class+'">' + str(value) + "</span>")
 
@@ -203,16 +203,16 @@ class ReadsTable(tables.Table):
         if (rs.ont_target >  0):
             threshmet = int(value)/(rs.ont_target * rs.species.genome_size)
             if(threshmet > 0.25):
-                css_class = '<i class="fas fa-battery-quarter"></i>'
+                css_class = '<i class="fas fa-battery-quarter fa-lg"></i>'
             if(threshmet > 0.5):
-                css_class = '<i class="fas fa-battery-half"></i>'
+                css_class = '<i class="fas fa-battery-half fa-lg"></i>'
             if(threshmet > 0.75):
-                css_class = '<i class="fas fa-battery-three-quarters"></i>'
+                css_class = '<i class="fas fa-battery-three-quarters fa-lg"></i>'
             if(threshmet >= 1.0):
-                css_class = '<i class="fas fa-battery-full"></i>'
+                css_class = '<i class="fas fa-battery-full fa-lg"></i>'
 
         cov = int(value)/rs.species.genome_size
-        return mark_safe(css_class + "<span>" + "{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
+        return mark_safe(css_class + "<span>" + "&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
 
     class Meta:
         model = Reads
