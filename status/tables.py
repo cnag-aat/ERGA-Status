@@ -107,7 +107,7 @@ class SequencingTable(tables.Table):
         model = Sequencing
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        fields = ('species', 'team', 'note', 'status')
+        fields = ('id','species', 'team', 'note', 'status')
 
 class ReadsTable(tables.Table):
     export_formats = ['csv', 'tsv']
