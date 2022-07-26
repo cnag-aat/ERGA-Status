@@ -142,12 +142,11 @@ class SampleCollectionListView(ExportMixin, SingleTableMixin, FilterView):
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
 
-class SequencingListView(DetailView, ExportMixin, SingleTableMixin, FilterView):
+class SequencingListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
     # login_url = "access_denied"
     model = Sequencing
     table_class = SequencingTable
-    queryset = Sequencing.objects.all()
     template_name = 'sequencing.html'
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
