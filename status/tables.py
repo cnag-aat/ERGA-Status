@@ -5,6 +5,7 @@ from .models import *
 import re
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
+from django.utils.html import format_html
 from django.urls import reverse
 #import html
 class OverviewTable(tables.Table):
