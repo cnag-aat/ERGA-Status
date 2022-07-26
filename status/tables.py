@@ -127,8 +127,11 @@ class ReadsTable(tables.Table):
 
     def render_ont_yield(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
-        percent = int(value)/(rs.ont_target * rs.species.genome_size)
-        return (str(value) + ":" + str(rs.species.genome_size) + " x " + str(rs.ont_target) + ":" + str(percent))
+        threshmet = 1.0;
+        if (rs.ont_target >  0):
+            threshmet = int(value)/(rs.ont_target * rs.species.genome_size)
+        cov = int(value)/rs.species.genome_size
+        return (str(value/1000000000) Gb + " (" str(cov) + "))
 
     class Meta:
         model = Reads
