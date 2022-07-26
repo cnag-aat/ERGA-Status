@@ -203,13 +203,13 @@ class ReadsTable(tables.Table):
         if (rs.ont_target >  0):
             threshmet = int(value)/(rs.ont_target * rs.species.genome_size)
             if(threshmet > 0.25):
-                css_class = '<i class="fa-solid fa-battery-quarter"></i>'
+                css_class = '<i class="fas fa-battery-quarter"></i>'
             if(threshmet > 0.5):
-                css_class = '<i class="fa-solid fa-battery-half"></i>'
+                css_class = '<i class="fas fa-battery-half"></i>'
             if(threshmet > 0.75):
-                css_class = '<i class="fa-solid fa-battery-three-quarters"></i>'
+                css_class = '<i class="fas fa-battery-three-quarters"></i>'
             if(threshmet >= 1.0):
-                css_class = '<i class="fas fa-battery-full fa-5x"></i>'
+                css_class = '<i class="fas fa-battery-full"></i>'
 
         cov = int(value)/rs.species.genome_size
         return mark_safe(css_class + "<span>" + "{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
