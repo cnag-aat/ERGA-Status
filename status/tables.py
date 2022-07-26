@@ -218,7 +218,7 @@ class ReadsTable(tables.Table):
         model = Reads
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        # fields = ('species', 'team', 'note', 'status')
+        fields = ('project', 'ont_yield', 'hifi_yield', 'short_yield','hic_yield','rnaseq_numlibs')
 
 class CurationTable(tables.Table):
     export_formats = ['csv', 'tsv']
