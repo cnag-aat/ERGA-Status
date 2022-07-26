@@ -313,7 +313,7 @@ class Reads(models.Model):
         verbose_name_plural = 'reads'
 
     def __str__(self):
-        return self.project.tolid_prefix
+        return self.project.species
 
 class Curation(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
