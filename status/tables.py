@@ -205,7 +205,7 @@ class ReadsTable(tables.Table):
             if(threshmet > 0.25):
                 css_class = '<i class="fa-solid fa-battery-quarter"></i>'
             if(threshmet > 0.5):
-                css_class = <i class="fa-solid fa-battery-half"></i>
+                css_class = '<i class="fa-solid fa-battery-half"></i>'
             if(threshmet > 0.75):
                 css_class = '<i class="fa-solid fa-battery-three-quarters"></i>'
             if(threshmet >= 1.0):
