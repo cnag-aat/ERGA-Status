@@ -70,6 +70,8 @@ class TargetSpeciesTable(tables.Table):
 class AssemblyTable(tables.Table):
     export_formats = ['csv', 'tsv']
     project = tables.Column(linkify=True)
+    contig_n50 = tables.TemplateColumn("{:.3f}".format(record.contig_n50/1000000) + "Mb",empty_values=(), verbose_name='Contig N50')
+
     class Meta:
         model = Assembly
         template_name = "django_tables2/bootstrap4.html"
