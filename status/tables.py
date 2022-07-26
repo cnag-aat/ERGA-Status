@@ -128,20 +128,20 @@ class ReadsTable(tables.Table):
     def render_ont_yield(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
-        class = 'yield_na'
+        css_class = 'yield_na'
         if (rs.ont_target >  0):
             threshmet = int(value)/(rs.ont_target * rs.species.genome_size)
             if(threshmet > 0):
-                class = 'yield_low'
+                css_class = 'yield_low'
             if(threshmet > 0.75):
-                class = 'yield_ok'
+                css_class = 'yield_ok'
             if(threshmet >= 1):
-                class = 'yield_high'
+                css_class = 'yield_high'
             if(threshmet > 1.5):
-                class = 'yield_extrahigh'
+                css_class = 'yield_extrahigh'
 
         cov = int(value)/rs.species.genome_size
-        return mark_safe('<span class="'+class+'">' (str(value/1000000000) Gb + " (" str(cov) + ")</span>")
+        return mark_safe('<span class="'+css_class+'">' (str(value/1000000000) Gb + " (" str(cov) + ")</span>")
 
     class Meta:
         model = Reads
