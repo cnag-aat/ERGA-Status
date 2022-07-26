@@ -297,6 +297,7 @@ class Sequencing(models.Model):
 
     def get_absolute_url(self):
         from django.urls import reverse
+        #return reverse('sequencing_list',kwargs=)
         return reverse('sequencing_list', args=[str(self.pk)])
 
     class Meta:
