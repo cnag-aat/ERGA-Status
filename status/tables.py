@@ -128,7 +128,7 @@ class ReadsTable(tables.Table):
     def render_hifi_yield(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
-        css_class = 'yield_na'
+        css_class = '<i class="fas fa-battery-empty fa-lg"></i>'
         if (rs.hifi_target >  0):
             threshmet = int(value)/(rs.hifi_target * rs.species.genome_size)
             if(threshmet > 0.25):
@@ -141,12 +141,12 @@ class ReadsTable(tables.Table):
                 css_class = '<i class="fas fa-battery-full fa-lg"></i>'
 
         cov = int(value)/rs.species.genome_size
-        return mark_safe(css_class + "<span>" + "&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
+        return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
 
     def render_hic_yield(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
-        css_class = 'yield_na'
+        css_class = '<i class="fas fa-battery-empty fa-lg"></i>'
         if (rs.hic_target >  0):
             threshmet = int(value)/(rs.hic_target * rs.species.genome_size)
             if(threshmet > 0.25):
@@ -159,12 +159,12 @@ class ReadsTable(tables.Table):
                 css_class = '<i class="fas fa-battery-full fa-lg"></i>'
 
         cov = int(value)/rs.species.genome_size
-        return mark_safe(css_class + "<span>" + "&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
+        return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
 
     def render_short_yield(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
-        css_class = 'yield_na'
+        css_class = '<i class="fas fa-battery-empty fa-lg"></i>'
         if (rs.short_target >  0):
             threshmet = int(value)/(rs.short_target * rs.species.genome_size)
             if(threshmet > 0.25):
@@ -177,12 +177,12 @@ class ReadsTable(tables.Table):
                 css_class = '<i class="fas fa-battery-full fa-lg"></i>'
 
         cov = int(value)/rs.species.genome_size
-        return mark_safe(css_class + "<span>" + "&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
+        return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
 
     def render_rnaseq_numlibs(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
-        css_class = 'yield_na'
+        css_class = '<i class="fas fa-battery-empty fa-lg"></i>'
         if (rs.rnaseq_numlibs_target >  0):
             threshmet = int(value)/(rs.rnaseq_numlibs_target)
             if(threshmet > 0.25):
@@ -194,12 +194,12 @@ class ReadsTable(tables.Table):
             if(threshmet >= 1.0):
                 css_class = '<i class="fas fa-battery-full fa-lg"></i>'
 
-        return mark_safe('<span class="'+css_class+'">' + str(value) + "</span>")
+        return mark_safe(css_class + "<span>&nbsp;" + str(value) + "</span>")
 
     def render_ont_yield(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
-        css_class = '<i class="fa-solid fa-battery-empty"></i>'
+        css_class = '<i class="fas fa-battery-empty fa-lg"></i>'
         if (rs.ont_target >  0):
             threshmet = int(value)/(rs.ont_target * rs.species.genome_size)
             if(threshmet > 0.25):
@@ -212,7 +212,7 @@ class ReadsTable(tables.Table):
                 css_class = '<i class="fas fa-battery-full fa-lg"></i>'
 
         cov = int(value)/rs.species.genome_size
-        return mark_safe(css_class + "<span>" + "&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
+        return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
 
     class Meta:
         model = Reads
