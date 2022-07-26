@@ -70,14 +70,12 @@ class TargetSpeciesTable(tables.Table):
 class AssemblyTable(tables.Table):
     export_formats = ['csv', 'tsv']
     project = tables.Column(linkify=True)
-    contig_n50 = tables.Column()
     def render_scaffold_n50(self, value, record):
-        return "{:.3f}".format(record.contig_n50/1000000) + " Mb"
+        return "{:.3f}".format(record.scaffold_n50/1000000) + " Mb"
     def render_contig_n50(self, value, record):
         return "{:.3f}".format(record.contig_n50/1000000) + " Mb"
     def render_span(self, value, record):
-        return "{:.3f}".format(record.contig_n50/1000000000) + " Gb"
-
+        return "{:.3f}".format(record.span/1000000000) + " Gb"
 
     class Meta:
         model = Assembly
