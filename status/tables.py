@@ -70,7 +70,9 @@ class TargetSpeciesTable(tables.Table):
 class AssemblyTable(tables.Table):
     export_formats = ['csv', 'tsv']
     project = tables.Column(linkify=True)
-    contig_n50 = tables.TemplateColumn("{:.3f}".format(record.contig_n50/1000000) + "Mb",empty_values=(), verbose_name='Contig N50')
+    contig_n50 = tables.Column()
+    def render_contig_n50(self, value, record):
+        return "{:.3f}".format(record.contig_n50/1000000) + "Mb"
 
     class Meta:
         model = Assembly
