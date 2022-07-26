@@ -7,6 +7,7 @@ from django.utils.safestring import mark_safe
 from django.utils.html import escape
 from django.utils.html import format_html
 from django.urls import reverse
+from status.models import *
 #import html
 class OverviewTable(tables.Table):
     export_formats = ['csv', 'tsv']
@@ -125,7 +126,8 @@ class ReadsTable(tables.Table):
         return format_html('<a href="{}?project={}">{}</a>', url, record.project.pk, value)
 
     def render_ont_yield(self, value, record):
-        percent = value
+        rs = Sequencing.objects.get(pk=record.project.pk)
+        percent = value/rs.ont_target
         return percent
 
     class Meta:
