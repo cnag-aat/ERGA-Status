@@ -370,7 +370,7 @@ class AssemblyProject(models.Model):
         return reverse('assembly_project_list', args=[str(self.species)])
 
     def __str__(self):
-        return self.species.tolid_prefix + ' project'
+        return self.species.tolid_prefix
 
 class BUSCOdb(models.Model):
     db = models.CharField(max_length=60, db_index=True)
