@@ -142,6 +142,15 @@ class SampleCollectionListView(ExportMixin, SingleTableMixin, FilterView):
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
 
+class SpecimenListView(ExportMixin, SingleTableMixin, FilterView):
+    # permission_required = "resistome.view_sample"
+    # login_url = "access_denied"
+    model = Specimen
+    table_class = SpecimenTable
+    template_name = 'specimens.html'
+    #filterset_class = SpeciesFilter
+    table_pagination = {"per_page": 100}
+
 class SequencingListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
     # login_url = "access_denied"

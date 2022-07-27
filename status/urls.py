@@ -12,6 +12,7 @@ from status.views import AssemblyProjectListView
 from status.views import CurationListView
 from status.views import AnnotationListView
 from status.views import SubmissionListView
+from status.views import SpecimenListView
 from status.views import HomeView
 from status.views import OverView
 
@@ -22,6 +23,7 @@ urlpatterns = [
     path("species/<int:pk>/", views.species_detail, name="species_detail"),
     path("species/?scientific_name=<scientific_name>", views.species_detail, name="species_detail"),
     path("assemblies/", AssemblyListView.as_view(), name="assembly_list"),
+    path("specimens/", SpecimenListView.as_view(), name="specimen_list"),
     path("projects/", AssemblyProjectListView.as_view(), name="assembly_project_list"),
     path("projects/?species=<scientific_name>", AssemblyProjectListView.as_view(), name="assembly_project_list"),
     path("assembly_team/<int:pk>/", views.assembly_team_detail, name="assembly_team_detail"),
