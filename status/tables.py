@@ -102,13 +102,14 @@ class SampleCollectionTable(tables.Table):
     export_formats = ['csv', 'tsv']
     status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</a>',empty_values=(), verbose_name='Status')
     species = tables.Column(linkify=True)
+    specimens = tables.TemplateColumn('<a href="{% url \'specimen_list\' %}?collection={{record.pk}}">specimens</a>',empty_values=(), verbose_name='Specimen(s)')
     team = tables.Column(linkify=True)
 
     class Meta:
         model = SampleCollection
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        fields = ('species', 'team', 'note', 'status')
+        fields = ('species', 'team', 'specimens','note', 'status')
 
 class SequencingTable(tables.Table):
     export_formats = ['csv', 'tsv']
@@ -286,3 +287,11 @@ class SubmissionTable(tables.Table):
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
         fields = ('species', 'team', 'note', 'status')
+
+class SpecimenTable(tables.Table):
+    export_formats = ['csv', 'tsv']
+
+    class Meta:
+        model = Specimen
+        template_name = "django_tables2/bootstrap4.html"
+        paginate = {"per_page": 100}
