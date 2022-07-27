@@ -88,6 +88,7 @@ admin.site.register(AnnotationTeam)
 admin.site.register(Annotation)
 admin.site.register(BUSCOdb)
 admin.site.register(BUSCOversion)
+admin.site.register(Specimen)
 
 admin.site.unregister(User)
 admin.site.register(User, MyUserAdmin)
