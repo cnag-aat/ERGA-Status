@@ -396,7 +396,7 @@ class Assembly(models.Model):
     contig_n50 = models.BigIntegerField(null=True, blank=True, verbose_name="Contig N50")
     scaffold_n50 = models.BigIntegerField(null=True, blank=True, verbose_name="Scaffold N50")
     chromosome_level =  models.NullBooleanField(blank=True, null=True, verbose_name="Chr level")
-    percent_placed = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True, verbose_name="% placed")
+    percent_placed = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True, verbose_name="Pct. placed")
     busco = models.CharField(null=True, blank=True, max_length=60, verbose_name="BUSCO")
     busco_db = models.ForeignKey(BUSCOdb, on_delete=models.CASCADE, verbose_name="BUSCO db", null=True, blank=True)
     busco_version = models.ForeignKey(BUSCOversion, on_delete=models.CASCADE, verbose_name="BUSCO version",null=True, blank=True)
