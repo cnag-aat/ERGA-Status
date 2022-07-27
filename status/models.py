@@ -272,7 +272,7 @@ class Specimen(models.Model):
     specimen_id = models.CharField(max_length=20, help_text='Internal Specimen ID')
     barcode = models.CharField(max_length=20, help_text='Tube barcode')
     tolid = models.CharField(max_length=20, help_text='Registered ToLID for the Specimen', null=True, blank=True)
-    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, verbose_name="Collection")
+    collection = models.ForeignKey(SampleCollection, on_delete=models.CASCADE, verbose_name="Collection")
 
 class SampleCollection(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
