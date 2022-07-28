@@ -13,6 +13,65 @@ STATUS_CHOICES = (
     ('Issue', 'Issue')
 )
 
+COLLECTION_STATUS_CHOICES = (
+    ('Waiting', 'Waiting'),
+    ('Sampling', 'Sampling'),
+    ('Resampling', 'Resampling'),
+    ('Sent', 'Sent'),
+    ('Issue', 'Issue')
+)
+
+SEQUENCING_STATUS_CHOICES = (
+    ('Waiting', 'Waiting'),
+    ('Sequencing', 'Sequencing'),
+    ('TopUp', 'TopUp'),
+    ('Sent', 'Sent'),
+    ('Issue', 'Issue')
+)
+
+ASSEMBLY_STATUS_CHOICES = (
+    ('Waiting', 'Waiting'),
+    ('Assembling', 'Assembling'),
+    ('Done', 'Done'),
+    ('Sent', 'Sent'),
+    ('Issue', 'Issue')
+)
+
+CURATION_STATUS_CHOICES = (
+    ('Waiting', 'Waiting'),
+    ('Curating', 'Curating'),
+    ('Done', 'Done'),
+    ('Sent', 'Sent'),
+    ('Issue', 'Issue')
+)
+
+ANNOTATION_STATUS_CHOICES = (
+    ('Waiting', 'Waiting'),
+    ('Annotating', 'Annotating'),
+    ('Done', 'Done'),
+    ('Sent', 'Sent'),
+    ('Issue', 'Issue')
+)
+
+SUBMISSION_STATUS_CHOICES = (
+    ('Waiting', 'Waiting'),
+    ('Submitted', 'Submitted'),
+    ('Issue', 'Issue')
+)
+
+SUBMISSION_DATATYPE_CHOICES = (
+    ('DNA', 'DNA'),
+    ('RNA', 'RNA'),
+    ('Assembly', 'Assembly')
+    ('Annotation', 'Annotation')
+)
+
+SEQUENCING_DATATYPE_CHOICES = (
+    ('gDNA', 'gDNA'),
+    ('HiC', 'HiC'),
+    ('RNA', 'RNA')
+)
+
 ASSEMBLY_TYPE_CHOICES = (
     ('Primary', 'Pseudohaploid Primary'),
     ('Alternate', 'Pseudohaploid Alternate'),
@@ -272,7 +331,7 @@ class CollectionTeam(models.Model):
 class SampleCollection(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     team = models.ForeignKey(CollectionTeam, on_delete=models.CASCADE, verbose_name="collection team")
-    status = models.CharField(max_length=12, help_text='Status', choices=STATUS_CHOICES, default='Waiting')
+    status = models.CharField(max_length=12, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
 
     class Meta:
@@ -294,13 +353,14 @@ class Specimen(models.Model):
 class Sequencing(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     team = models.ForeignKey(SequencingTeam, on_delete=models.CASCADE, verbose_name="sequencing team")
-    status = models.CharField(max_length=12, help_text='Status', choices=STATUS_CHOICES, default='Waiting')
+    status = models.CharField(max_length=12, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
     ont_target = models.BigIntegerField(null=True, blank=True, verbose_name="ONT target")
     hifi_target = models.BigIntegerField(null=True, blank=True, verbose_name="HiFi target")
     hic_target = models.BigIntegerField(null=True, blank=True, verbose_name="Hi-C target")
     short_target = models.BigIntegerField(null=True, blank=True, verbose_name="Short read target")
     rnaseq_numlibs_target = models.IntegerField(null=True, blank=True, verbose_name="RNAseq libs target")
+    datatype = models.CharField(max_length=12, help_text='Data Type', choices=SEQUENCING_DATATYPE_CHOICES, default=SEQUENCING_DATATYPE_CHOICES[0][0])
 
     def get_absolute_url(self):
         from django.urls import reverse
@@ -330,7 +390,7 @@ class Reads(models.Model):
 class Curation(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     team = models.ForeignKey(CurationTeam, on_delete=models.CASCADE, verbose_name="curation team")
-    status = models.CharField(max_length=12, help_text='Status', choices=STATUS_CHOICES, default='Waiting')
+    status = models.CharField(max_length=12, help_text='Status', choices=CURATION_STATUS_CHOICES, default=CURATION_STATUS_CHOICES[0][0])
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
 
     class Meta:
@@ -342,7 +402,7 @@ class Curation(models.Model):
 class Annotation(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     team = models.ForeignKey(AnnotationTeam, on_delete=models.CASCADE, verbose_name="annotation team")
-    status = models.CharField(max_length=12, help_text='Status', choices=STATUS_CHOICES, default='Waiting')
+    status = models.CharField(max_length=12, help_text='Status', choices=ANNOTATION_STATUS_CHOICES, default=ANNOTATION_STATUS_CHOICES[0][0])
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
 
     class Meta:
@@ -354,7 +414,9 @@ class Annotation(models.Model):
 class Submission(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     team = models.ForeignKey(SubmissionTeam, on_delete=models.CASCADE, verbose_name="submission team")
-    status = models.CharField(max_length=12, help_text='Status', choices=STATUS_CHOICES, default='Waiting')
+    status = models.CharField(max_length=12, help_text='Status', choices=SUBMISSION_STATUS_CHOICES, default='Waiting')
+    datatype = models.CharField(max_length=12, help_text='Data Type', choices=SUBMISSION_DATATYPE_CHOICES, default=SUBMISSION_DATATYPE_CHOICES[0][0])
+    accession = models.CharField(max_length=20, help_text='ENA Accession Number', null=True, blank=True)
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
 
     class Meta:
@@ -366,7 +428,7 @@ class Submission(models.Model):
 class AssemblyProject(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     team = models.ForeignKey(AssemblyTeam, on_delete=models.CASCADE, verbose_name="assembly team")
-    status = models.CharField(max_length=12, help_text='Status', choices=STATUS_CHOICES, default='Waiting')
+    status = models.CharField(max_length=12, help_text='Status', choices=ASSEMBLY_STATUS_CHOICES, default=ASSEMBLY_STATUS_CHOICES[0][0])
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
 
     class Meta:
