@@ -121,9 +121,9 @@ class AssemblyProjectTable(tables.Table):
 
 class SampleCollectionTable(tables.Table):
     export_formats = ['csv', 'tsv']
-    genomic_sample_status = tables.TemplateColumn('<span class="{{record.genomic_sample_status}}">{{record.genomic_sample_status}}</a>',empty_values=(), verbose_name='Status')
-    hic_sample_status = tables.TemplateColumn('<span class="{{record.hic_sample_status}}">{{record.hic_sample_status}}</a>',empty_values=(), verbose_name='Status')
-    rna_sample_status = tables.TemplateColumn('<span class="{{record.rna_sample_status}}">{{record.rna_sample_status}}</a>',empty_values=(), verbose_name='Status')
+    genomic_sample_status = tables.TemplateColumn('<span class="{{record.genomic_sample_status}}">{{record.genomic_sample_status}}</a>',empty_values=(), verbose_name='Genomic Sample')
+    hic_sample_status = tables.TemplateColumn('<span class="{{record.hic_sample_status}}">{{record.hic_sample_status}}</a>',empty_values=(), verbose_name='HiC Sample')
+    rna_sample_status = tables.TemplateColumn('<span class="{{record.rna_sample_status}}">{{record.rna_sample_status}}</a>',empty_values=(), verbose_name='RNA Sample')
     species = tables.Column(linkify=True)
     specimens = tables.TemplateColumn('<a href="{% url \'specimen_list\' %}?collection={{record.pk}}">specimens</a>',empty_values=(), verbose_name='Specimen(s)')
     team = tables.Column(linkify=True)
