@@ -12,6 +12,7 @@
         <h5 class="card-title">Sequencing Team</h5>
         <p>Institution: {{ team.affiliation }}</p>
         </br>
+
         <div class="card mb-12">
           <div class="card-body">
             <h5 class="card-title">Main Contact</h5>
@@ -19,12 +20,15 @@
             email: {{ team.lead.email }}</br>
           </div>
         </div>
+
+        <div class="card mb-12">
           <div class="card-body">
             <h5 class="card-title">Sample Reception</h5>
             Name: {{ team.reception.first_name }} {{ team.reception.last_name }}</br>
             email: {{ team.reception.email }}</br>
           </div>
         </div>
+
         <div class="card mb-12">
           <div class="card-body">
             <h5 class="card-title">Data Transfer</h5>
@@ -32,6 +36,7 @@
             email: {{ team.delivery.email }}</br>
           </div>
         </div>
+
       </div>
     </div>
   </div>
