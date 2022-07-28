@@ -62,7 +62,7 @@ SUBMISSION_STATUS_CHOICES = (
 SUBMISSION_DATATYPE_CHOICES = (
     ('DNA', 'DNA'),
     ('RNA', 'RNA'),
-    ('Assembly', 'Assembly')
+    ('Assembly', 'Assembly'),
     ('Annotation', 'Annotation')
 )
 
