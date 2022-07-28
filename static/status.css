@@ -102,29 +102,21 @@
 }
 
 .empty-color {
-    color:red;
+    color:#FF0D0D;
 }
 
 .quarter-color {
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: linear-gradient(90deg, rgba(251,0,0,1) 0%, rgba(255,148,0,1) 50%, rgba(25,255,0,1) 100%);
+  color: #FF4E11;
 }
 
 .half-color {
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: linear-gradient(90deg, rgba(251,0,0,1) 0%, rgba(255,148,0,1) 50%, rgba(25,255,0,1) 100%);
-}
+    color: #FF8E15;
+  }
 
 .threequarters-color {
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: linear-gradient(90deg, rgba(251,0,0,1) 0%, rgba(255,148,0,1) 50%, rgba(25,255,0,1) 100%);
-}
+    color: #ACB334;
+  }
 
 .full-color {
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: linear-gradient(90deg, rgba(251,0,0,1) 0%, rgba(255,148,0,1) 50%, rgba(25,255,0,1) 100%);
-}
+    color: #69B34C;
+  }
