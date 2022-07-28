@@ -12,8 +12,12 @@ from status.models import *
 class OverviewTable(tables.Table):
     export_formats = ['csv', 'tsv']
     # collection_status = tables.LinkColumn("collection_list",  kwargs={"species": tables.A("pk")},accessor='samplecollection.status',verbose_name='Collection')
-    collection_status = tables.Column(accessor='samplecollection.status',verbose_name='Sampling')
-    sequencing_status = tables.Column(accessor='sequencing.status',verbose_name='Sequencing')
+    genomic_sample_status = tables.Column(accessor='samplecollection.genomic_sample_status',verbose_name='Genomic Sample')
+    hic_sample_status = tables.Column(accessor='samplecollection.hic_sample_status',verbose_name='HiC Sample')
+    rna_sample_status = tables.Column(accessor='samplecollection.rna_sample_status',verbose_name='RNA Sample')
+    genomic_seq_status = tables.Column(accessor='sequencing.genomic_seq_status',verbose_name='gDNA-Seq')
+    hic_seq_status = tables.Column(accessor='sequencing.status',verbose_name='HiC-Seq')
+    rna_seq_status = tables.Column(accessor='sequencing.status',verbose_name='RNA-Seq')
     assembly_status = tables.Column(accessor='assemblyproject.status',verbose_name='Assembly')
     curation_status = tables.Column(accessor='curation.status',verbose_name='Curation')
     annotation_status = tables.Column(accessor='annotation.status',verbose_name='Annotation')
@@ -28,11 +32,27 @@ class OverviewTable(tables.Table):
     #         url('collection_list',kwargs={'scientific_name': record.scientific_name})
     #         +'"><span class="'+escape(value)+'">'+escape(value)+'</span>')
 
-    def render_collection_status(self, value, record):
+    def render_genomic_sample_status(self, value, record):
         html = '<a href="/erga-status/collection/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
-    def render_sequencing_status(self, value, record):
+    def render_hic_sample_status(self, value, record):
+        html = '<a href="/erga-status/collection/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        return mark_safe(html)
+
+    def render_rna_sample_status(self, value, record):
+        html = '<a href="/erga-status/collection/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        return mark_safe(html)
+
+    def render_genomic_seq_status(self, value, record):
+        html = '<a href="/erga-status/sequencing/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        return mark_safe(html)
+
+    def render_hic_seq_status(self, value, record):
+        html = '<a href="/erga-status/sequencing/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        return mark_safe(html)
+
+    def render_rna_seq_status(self, value, record):
         html = '<a href="/erga-status/sequencing/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
@@ -56,7 +76,7 @@ class OverviewTable(tables.Table):
         model = TargetSpecies
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        fields = ('tolid_prefix', 'scientific_name','collection_status','sequencing_status','assembly_status','curation_status','annotation_status','submission_status')
+        fields = ('tolid_prefix', 'scientific_name','genomic_sample_status','hic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','curation_status','annotation_status','submission_status')
 
 class TargetSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']
