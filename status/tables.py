@@ -20,6 +20,7 @@ class OverviewTable(tables.Table):
     submission_status = tables.Column(accessor='submission.status',verbose_name='Submission')
 
     tolid_prefix = tables.Column(linkify=True)
+    scientific_name = tables.Column(linkify=True)
     attrs={"td": {"class": "overview-table"}}
     #targetspecies=TargetSpecies.objects.get(=pk)
     # def render_collection_status(self, value):
