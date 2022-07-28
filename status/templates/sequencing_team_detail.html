@@ -10,10 +10,15 @@
     <div class="card mb-12">
       <div class="card-body">
         <h5 class="card-title">Sequencing Team</h5>
-        Team lead: {{ team.lead.first_name }} {{ team.lead.last_name }}</br>
-        Institution: {{ team.affiliation }}</br>
-        email: {{ team.lead.email }}</br>
+        <p>Institution: {{ team.affiliation }}</p>
+        </br>
         <div class="card mb-12">
+          <div class="card-body">
+            <h5 class="card-title">Main Contact</h5>
+            Team lead: {{ team.lead.first_name }} {{ team.lead.last_name }}</br>
+            email: {{ team.lead.email }}</br>
+          </div>
+        </div>
           <div class="card-body">
             <h5 class="card-title">Sample Reception</h5>
             Name: {{ team.reception.first_name }} {{ team.reception.last_name }}</br>
