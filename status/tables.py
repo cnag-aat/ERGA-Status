@@ -143,15 +143,15 @@ class ReadsTable(tables.Table):
         css_class = '<i class="fas fa-ban fa-lg"></i>'
         if (rs.hifi_target >  0):
             threshmet = int(value)/(rs.hifi_target * rs.species.genome_size)
-            css_class = '<i class="fas fa-battery-empty fa-lg"></i>'
+            css_class = '<i class="fas fa-battery-empty fa-lg empty-color"></i>'
             if(threshmet > 0.25):
-                css_class = '<i class="fas fa-battery-quarter fa-lg"></i>'
+                css_class = '<i class="fas fa-battery-quarter fa-lg quarter-color"></i>'
             if(threshmet > 0.5):
-                css_class = '<i class="fas fa-battery-half fa-lg"></i>'
+                css_class = '<i class="fas fa-battery-half fa-lg half-color"></i>'
             if(threshmet > 0.75):
-                css_class = '<i class="fas fa-battery-three-quarters fa-lg"></i>'
+                css_class = '<i class="fas fa-battery-three-quarters fa-lg threequarters-color"></i>'
             if(threshmet >= 1.0):
-                css_class = '<i class="fas fa-battery-full fa-lg"></i>'
+                css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
 
         cov = int(value)/rs.species.genome_size
         if (value == 0 and rs.hifi_target == 0):
@@ -165,15 +165,15 @@ class ReadsTable(tables.Table):
         css_class = '<i class="fas fa-ban fa-lg"></i>'
         if (rs.hic_target >  0):
             threshmet = int(value)/(rs.hic_target * rs.species.genome_size)
-            css_class = '<i class="fas fa-battery-empty fa-lg"></i>'
+            css_class = '<i class="fas fa-battery-empty fa-lg empty-color"></i>'
             if(threshmet > 0.25):
-                css_class = '<i class="fas fa-battery-quarter fa-lg"></i>'
+                css_class = '<i class="fas fa-battery-quarter fa-lg quarter-color"></i>'
             if(threshmet > 0.5):
-                css_class = '<i class="fas fa-battery-half fa-lg"></i>'
+                css_class = '<i class="fas fa-battery-half fa-lg half-color"></i>'
             if(threshmet > 0.75):
-                css_class = '<i class="fas fa-battery-three-quarters fa-lg"></i>'
+                css_class = '<i class="fas fa-battery-three-quarters fa-lg threequarters-color"></i>'
             if(threshmet >= 1.0):
-                css_class = '<i class="fas fa-battery-full fa-lg"></i>'
+                css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
 
         cov = int(value)/rs.species.genome_size
         if (value == 0 and rs.hic_target == 0):
@@ -187,15 +187,15 @@ class ReadsTable(tables.Table):
         css_class = '<i class="fas fa-ban fa-lg"></i>'
         if (rs.short_target >  0):
             threshmet = int(value)/(rs.short_target * rs.species.genome_size)
-            css_class = '<i class="fas fa-battery-empty fa-lg"></i>'
+            css_class = '<i class="fas fa-battery-empty fa-lg empty-color"></i>'
             if(threshmet > 0.25):
-                css_class = '<i class="fas fa-battery-quarter fa-lg"></i>'
+                css_class = '<i class="fas fa-battery-quarter fa-lg quarter-color"></i>'
             if(threshmet > 0.5):
-                css_class = '<i class="fas fa-battery-half fa-lg"></i>'
+                css_class = '<i class="fas fa-battery-half fa-lg half-color"></i>'
             if(threshmet > 0.75):
-                css_class = '<i class="fas fa-battery-three-quarters fa-lg"></i>'
+                css_class = '<i class="fas fa-battery-three-quarters fa-lg threequarters-color"></i>'
             if(threshmet >= 1.0):
-                css_class = '<i class="fas fa-battery-full fa-lg"></i>'
+                css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
 
         cov = int(value)/rs.species.genome_size
         if (value == 0 and rs.short_target == 0):
@@ -209,15 +209,15 @@ class ReadsTable(tables.Table):
         css_class = '<i class="fas fa-ban fa-lg"></i>'
         if (rs.rnaseq_numlibs_target >  0):
             threshmet = int(value)/(rs.rnaseq_numlibs_target)
-            css_class = '<i class="fas fa-battery-empty fa-lg"></i>'
+            css_class = '<i class="fas fa-battery-empty fa-lg empty-color"></i>'
             if(threshmet > 0.25):
-                css_class = '<i class="fas fa-battery-quarter fa-lg"></i>'
+                css_class = '<i class="fas fa-battery-quarter fa-lg quarter-color"></i>'
             if(threshmet > 0.5):
-                css_class = '<i class="fas fa-battery-half fa-lg"></i>'
+                css_class = '<i class="fas fa-battery-half fa-lg half-color"></i>'
             if(threshmet > 0.75):
-                css_class = '<i class="fas fa-battery-three-quarters fa-lg"></i>'
+                css_class = '<i class="fas fa-battery-three-quarters fa-lg threequarters-color"></i>'
             if(threshmet >= 1.0):
-                css_class = '<i class="fas fa-battery-full fa-lg"></i>'
+                css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
 
         if (value == 0 and rs.rnaseq_numlibs_target == 0):
             return ''
@@ -230,15 +230,15 @@ class ReadsTable(tables.Table):
         css_class = '<i class="fas fa-ban fa-lg"></i>'
         if (rs.ont_target >  0):
             threshmet = int(value)/(rs.ont_target * rs.species.genome_size)
-            css_class = '<i class="fas fa-battery-empty fa-lg"></i>'
+            css_class = '<i class="fas fa-battery-empty fa-lg empty-color"></i>'
             if(threshmet > 0.25):
-                css_class = '<i class="fas fa-battery-quarter fa-lg"></i>'
+                css_class = '<i class="fas fa-battery-quarter fa-lg quarter-color"></i>'
             if(threshmet > 0.5):
-                css_class = '<i class="fas fa-battery-half fa-lg"></i>'
+                css_class = '<i class="fas fa-battery-half fa-lg half-color"></i>'
             if(threshmet > 0.75):
-                css_class = '<i class="fas fa-battery-three-quarters fa-lg"></i>'
+                css_class = '<i class="fas fa-battery-three-quarters fa-lg threequarters-color"></i>'
             if(threshmet >= 1.0):
-                css_class = '<i class="fas fa-battery-full fa-lg"></i>'
+                css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
 
         cov = int(value)/rs.species.genome_size
         if (value == 0 and rs.ont_target == 0):

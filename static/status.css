@@ -100,3 +100,23 @@
   border-radius: 12px;
   width: 80;
 }
+
+.empty-color {
+    color:red;
+}
+
+.quarter-color {
+    color:linear-gradient(90deg, rgba(251,0,0,1) 0%, rgba(255,148,0,1) 50%, rgba(25,255,0,1) 100%);
+}
+
+.half-color {
+    color:linear-gradient(90deg, rgba(251,0,0,1) 0%, rgba(255,148,0,1) 50%, rgba(25,255,0,1) 100%);
+}
+
+.threequarters-color {
+    color:linear-gradient(90deg, rgba(251,0,0,1) 0%, rgba(255,148,0,1) 50%, rgba(25,255,0,1) 100%);
+}
+
+.full-color {
+    color:linear-gradient(90deg, rgba(251,0,0,1) 0%, rgba(255,148,0,1) 50%, rgba(25,255,0,1) 100%);
+}
