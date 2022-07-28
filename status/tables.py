@@ -16,8 +16,8 @@ class OverviewTable(tables.Table):
     hic_sample_status = tables.Column(accessor='samplecollection.hic_sample_status',verbose_name='HiC Sample')
     rna_sample_status = tables.Column(accessor='samplecollection.rna_sample_status',verbose_name='RNA Sample')
     genomic_seq_status = tables.Column(accessor='sequencing.genomic_seq_status',verbose_name='gDNA-Seq')
-    hic_seq_status = tables.Column(accessor='sequencing.status',verbose_name='HiC-Seq')
-    rna_seq_status = tables.Column(accessor='sequencing.status',verbose_name='RNA-Seq')
+    hic_seq_status = tables.Column(accessor='sequencing.hic_seq_status',verbose_name='HiC-Seq')
+    rna_seq_status = tables.Column(accessor='sequencing.rna_seq_status',verbose_name='RNA-Seq')
     assembly_status = tables.Column(accessor='assemblyproject.status',verbose_name='Assembly')
     curation_status = tables.Column(accessor='curation.status',verbose_name='Curation')
     annotation_status = tables.Column(accessor='annotation.status',verbose_name='Annotation')
@@ -121,7 +121,9 @@ class AssemblyProjectTable(tables.Table):
 
 class SampleCollectionTable(tables.Table):
     export_formats = ['csv', 'tsv']
-    status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</a>',empty_values=(), verbose_name='Status')
+    genomic_sample_status = tables.TemplateColumn('<span class="{{record.genomic_sample_status}}">{{record.genomic_sample_status}}</a>',empty_values=(), verbose_name='Status')
+    hic_sample_status = tables.TemplateColumn('<span class="{{record.hic_sample_status}}">{{record.hic_sample_status}}</a>',empty_values=(), verbose_name='Status')
+    rna_sample_status = tables.TemplateColumn('<span class="{{record.rna_sample_status}}">{{record.rna_sample_status}}</a>',empty_values=(), verbose_name='Status')
     species = tables.Column(linkify=True)
     specimens = tables.TemplateColumn('<a href="{% url \'specimen_list\' %}?collection={{record.pk}}">specimens</a>',empty_values=(), verbose_name='Specimen(s)')
     team = tables.Column(linkify=True)
@@ -130,11 +132,13 @@ class SampleCollectionTable(tables.Table):
         model = SampleCollection
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        fields = ('species', 'team', 'specimens','note', 'status')
+        fields = ('species', 'team', 'specimens','note', 'genomic_sample_status','hic_sample_status','rna_sample_status')
 
 class SequencingTable(tables.Table):
     export_formats = ['csv', 'tsv']
-    status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</a>',empty_values=(), verbose_name='Status')
+    genomic_seq_status = tables.TemplateColumn('<span class="{{record.genomic_seq_status}}">{{record.genomic_seq_status}}</a>',empty_values=(), verbose_name='gDNA Status')
+    hic_seq_status = tables.TemplateColumn('<span class="{{record.hic_seq_status}}">{{record.hic_seq_status}}</a>',empty_values=(), verbose_name='HiC Status')
+    rna_seq_status = tables.TemplateColumn('<span class="{{record.rna_seq_status}}">{{record.rna_seq_status}}</a>',empty_values=(), verbose_name='RNA Status')
     species = tables.Column(linkify=True)
     team = tables.Column(linkify=True)
     reads = tables.TemplateColumn('<a href="{% url \'reads_list\' %}?project={{record.pk}}">reads</a>',empty_values=(), verbose_name='Reads')
@@ -143,7 +147,7 @@ class SequencingTable(tables.Table):
         model = Sequencing
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        fields = ('id','species', 'team', 'note', 'reads', 'status')
+        fields = ('id','species', 'team', 'note', 'reads', 'genomic_seq_status','hic_seq_status','rna_seq_status')
 
 class ReadsTable(tables.Table):
     export_formats = ['csv', 'tsv']
