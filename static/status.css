@@ -108,23 +108,23 @@
 .quarter-color {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  background: :linear-gradient(90deg, rgba(251,0,0,1) 0%, rgba(255,148,0,1) 50%, rgba(25,255,0,1) 100%);
+  background: linear-gradient(90deg, rgba(251,0,0,1) 0%, rgba(255,148,0,1) 50%, rgba(25,255,0,1) 100%);
 }
 
 .half-color {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  background: :linear-gradient(90deg, rgba(251,0,0,1) 0%, rgba(255,148,0,1) 50%, rgba(25,255,0,1) 100%);
+  background: linear-gradient(90deg, rgba(251,0,0,1) 0%, rgba(255,148,0,1) 50%, rgba(25,255,0,1) 100%);
 }
 
 .threequarters-color {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  background: :linear-gradient(90deg, rgba(251,0,0,1) 0%, rgba(255,148,0,1) 50%, rgba(25,255,0,1) 100%);
+  background: linear-gradient(90deg, rgba(251,0,0,1) 0%, rgba(255,148,0,1) 50%, rgba(25,255,0,1) 100%);
 }
 
 .full-color {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  background: :linear-gradient(90deg, rgba(251,0,0,1) 0%, rgba(255,148,0,1) 50%, rgba(25,255,0,1) 100%);
+  background: linear-gradient(90deg, rgba(251,0,0,1) 0%, rgba(255,148,0,1) 50%, rgba(25,255,0,1) 100%);
 }
