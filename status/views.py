@@ -183,7 +183,6 @@ class SequencingDetailView(DetailView):
     template_name = 'sequencing_detail.html'
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
-    export_formats = ['csv', 'tsv','xls','json','yaml']
 
     # def get_queryset(self):
     #     """Filter by price if it is provided in GET parameters"""
