@@ -58,6 +58,7 @@ class OverView(ExportMixin, SingleTableMixin, FilterView):
     model = TargetSpecies
     table_class = OverviewTable
     template_name = 'overview.html'
+    export_formats = ['csv','xls']
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
 
