@@ -369,7 +369,7 @@ class Sequencing(models.Model):
         verbose_name_plural = 'sequencing'
 
     def __str__(self):
-        return self.species.tolid_prefix
+        return self.species.scientific_name
 
 class Reads(models.Model):
     project = models.ForeignKey(Sequencing, on_delete=models.CASCADE, verbose_name="Sequencing project")
