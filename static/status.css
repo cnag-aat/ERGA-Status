@@ -38,8 +38,8 @@
   background-color: #009f83;
   color: White;
   padding: 3px;
-  padding-right: 7px;
-  padding-left: 7px;
+  padding-right: 4px;
+  padding-left: 4px;
   border-radius: 12px;
   width: 80;
 }
@@ -110,8 +110,8 @@
   background-color: #0087a3;
   color: White;
   padding: 3px;
-  padding-right: 30px;
-  padding-left: 30px;
+  padding-right: 32px;
+  padding-left: 32px;
   border-radius: 12px;
   width: 80;
 }
@@ -128,8 +128,8 @@
   background-color: #D2042D;
   color: White;
   padding: 3px;
-  padding-right: 27px;
-  padding-left: 27px;
+  padding-right: 30px;
+  padding-left: 30px;
   border-radius: 12px;
   width: 80;
 }
