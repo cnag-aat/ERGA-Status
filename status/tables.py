@@ -199,7 +199,7 @@ class SequencingTable(tables.Table):
         model = Sequencing
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        fields = ('id','species', 'team', 'note', 'reads', 'genomic_seq_status','hic_seq_status','rna_seq_status')
+        fields = ('species', 'team', 'note', 'reads', 'genomic_seq_status','hic_seq_status','rna_seq_status')
 
 class ReadsTable(tables.Table):
     project = tables.LinkColumn('sequencing_list')
