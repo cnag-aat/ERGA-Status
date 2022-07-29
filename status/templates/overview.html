@@ -32,17 +32,13 @@
       <button class="btn btn-link" onclick="openNav()">☰ Filters</button>
     </div>
     <div class="col d-flex justify-content-end">
-      <a href="{{ request.get_full_path }}{% query_string '_export' 'csv' %}" class="btn btn-primary" role="button">Export CSV</a>
-    </div>
-    <div class="col d-flex justify-content-end">
-      <a href="{{ request.get_full_path }}{% query_string '_export' 'xls' %}" class="btn btn-primary" role="button">Export XLS</a>
-    </div>
     Download:
     {% for format in view.export_formats %}
     <a href="{% export_url format %}">
         <code>&nbsp;.{{ format }}</code>
     </a>
     {% endfor %}
+    </div>
   </div>
   <div class=" row m-1">
     <div class="col m-2">
