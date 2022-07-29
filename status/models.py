@@ -25,6 +25,7 @@ SEQUENCING_STATUS_CHOICES = (
     ('Waiting', 'Waiting'),
     ('Sequencing', 'Sequencing'),
     ('TopUp', 'TopUp'),
+    ('External', 'External'),
     ('Sent', 'Sent'),
     ('Issue', 'Issue')
 )

@@ -52,6 +52,15 @@
   border-radius: 12px;
   width: 80;
 }
+.External {
+  background-color: #0087a3;
+  color: White;
+  padding: 4px;
+  padding-right: 7px;
+  padding-left: 7px;
+  border-radius: 12px;
+  width: 80;
+}
 .Sampling {
   background-color: #009f83;
   color: White;
