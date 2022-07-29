@@ -36,41 +36,71 @@ class OverviewTable(tables.Table):
         html = '<a href="/erga-status/collection/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
+    def value_genomic_sample_status(self, value):
+        return value
+
     def render_hic_sample_status(self, value, record):
         html = '<a href="/erga-status/collection/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
+
+    def value_hic_sample_status(self, value):
+        return value
 
     def render_rna_sample_status(self, value, record):
         html = '<a href="/erga-status/collection/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
+    def value_rna_sample_status(self, value):
+        return value
+
     def render_genomic_seq_status(self, value, record):
         html = '<a href="/erga-status/sequencing/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
+
+    def value_genomic_seq_status(self, value):
+        return value
 
     def render_hic_seq_status(self, value, record):
         html = '<a href="/erga-status/sequencing/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
+    def value_hic_seq_status(self, value):
+        return value
+
     def render_rna_seq_status(self, value, record):
         html = '<a href="/erga-status/sequencing/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
+
+    def value_rna_seq_status(self, value):
+        return value
 
     def render_assembly_status(self, value, record):
         html = '<a href="/erga-status/projects/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
+    def value_assembly_status(self, value):
+        return value
+
     def render_curation_status(self, value, record):
         html = '<a href="/erga-status/curation/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
+
+    def value_curation_status(self, value):
+        return value
 
     def render_annotation_status(self, value, record):
         html = '<a href="/erga-status/annotation/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
+    def value_annotation_status(self, value):
+        return value
+
     def render_submission_status(self, value, record):
         html = '<a href="/erga-status/submission/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
+
+    def value_submission_status(self, value):
+        return value
 
     class Meta:
         model = TargetSpecies
