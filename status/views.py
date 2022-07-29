@@ -51,7 +51,7 @@ class TargetSpeciesListView(ExportMixin, SingleTableMixin, FilterView):
     template_name = 'targetspecies.html'
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
-    export_formats = ['csv', 'tsv','xlsx','json','yaml',]
+    export_formats = ['csv', 'tsv','xlsx','json']
 
 class OverView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
@@ -59,7 +59,7 @@ class OverView(ExportMixin, SingleTableMixin, FilterView):
     model = TargetSpecies
     table_class = OverviewTable
     template_name = 'overview.html'
-    export_formats = ['csv', 'tsv','xls','json','yaml']
+    export_formats = ['csv', 'tsv','xlsx','json']
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
 
@@ -125,7 +125,7 @@ class AssemblyProjectListView(ExportMixin, SingleTableMixin, FilterView):
     template_name = 'assemblyproject.html'
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
-    export_formats = ['csv', 'tsv','xls','json','yaml']
+    export_formats = ['csv', 'tsv','xlsx','json']
 
 class AssemblyListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
@@ -135,7 +135,7 @@ class AssemblyListView(ExportMixin, SingleTableMixin, FilterView):
     template_name = 'assembly.html'
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
-    export_formats = ['csv', 'tsv','xls','json','yaml']
+    export_formats = ['csv', 'tsv','xlsx','json']
 
 class SampleCollectionListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
@@ -145,7 +145,7 @@ class SampleCollectionListView(ExportMixin, SingleTableMixin, FilterView):
     template_name = 'collection.html'
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
-    export_formats = ['csv', 'tsv','xls','json','yaml']
+    export_formats = ['csv', 'tsv','xlsx','json']
 
 class SpecimenListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
@@ -155,7 +155,7 @@ class SpecimenListView(ExportMixin, SingleTableMixin, FilterView):
     template_name = 'specimens.html'
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
-    export_formats = ['csv', 'tsv','xls','json','yaml']
+    export_formats = ['csv', 'tsv','xlsx','json']
 
 class SequencingListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
@@ -165,7 +165,7 @@ class SequencingListView(ExportMixin, SingleTableMixin, FilterView):
     template_name = 'sequencing.html'
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
-    export_formats = ['csv', 'tsv','xls','json','yaml']
+    export_formats = ['csv', 'tsv','xlsx','json']
 
     def get_queryset(self):
         """Filter by price if it is provided in GET parameters"""
@@ -207,7 +207,7 @@ class ReadsListView(ExportMixin, SingleTableMixin, FilterView):
     template_name = 'reads.html'
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
-    export_formats = ['csv', 'tsv','xls','json','yaml']
+    export_formats = ['csv', 'tsv','xlsx','json']
 
 class CurationListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
@@ -217,7 +217,7 @@ class CurationListView(ExportMixin, SingleTableMixin, FilterView):
     template_name = 'curation.html'
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
-    export_formats = ['csv', 'tsv','xls','json','yaml']
+    export_formats = ['csv', 'tsv','xlsx','json']
 
 class AnnotationListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
@@ -227,7 +227,7 @@ class AnnotationListView(ExportMixin, SingleTableMixin, FilterView):
     template_name = 'annotation.html'
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
-    export_formats = ['csv', 'tsv','xls','json','yaml']
+    export_formats = ['csv', 'tsv','xlsx','json']
 
 class SubmissionListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
@@ -237,4 +237,4 @@ class SubmissionListView(ExportMixin, SingleTableMixin, FilterView):
     template_name = 'submission.html'
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
-    export_formats = ['csv', 'tsv','xls','json','yaml']
+    export_formats = ['csv', 'tsv','xlsx','json']
