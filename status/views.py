@@ -51,6 +51,7 @@ class TargetSpeciesListView(ExportMixin, SingleTableMixin, FilterView):
     template_name = 'targetspecies.html'
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
+    export_formats = ['csv', 'tsv','xlsx','json','yaml',]
 
 class OverView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
