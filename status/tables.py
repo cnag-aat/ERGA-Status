@@ -10,7 +10,7 @@ from django.urls import reverse
 from status.models import *
 #import html
 class OverviewTable(tables.Table):
-    export_formats = ['csv', 'tsv']
+    export_formats = ['csv', 'tsv','xls']
     # collection_status = tables.LinkColumn("collection_list",  kwargs={"species": tables.A("pk")},accessor='samplecollection.status',verbose_name='Collection')
     genomic_sample_status = tables.Column(accessor='samplecollection.genomic_sample_status',verbose_name='Genomic Sample')
     hic_sample_status = tables.Column(accessor='samplecollection.hic_sample_status',verbose_name='HiC Sample')
