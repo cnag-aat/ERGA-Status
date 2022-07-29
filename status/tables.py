@@ -130,6 +130,12 @@ class AssemblyTable(tables.Table):
         return "{:.3f}".format(record.contig_n50/1000000)
     def render_span(self, value, record):
         return "{:.3f}".format(record.span/1000000000)
+    def value_scaffold_n50(self, value):
+        return value
+    def value_contig_n50(self, value):
+        return value
+    def value_span_n50(self, value):
+        return value
 
     class Meta:
         model = Assembly
@@ -142,6 +148,9 @@ class AssemblyProjectTable(tables.Table):
     status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</a>',empty_values=(), verbose_name='Status')
     species = tables.Column(linkify=True)
     team = tables.Column(linkify=True)
+
+    def value_status(self, value):
+        return value
 
     class Meta:
         model = AssemblyProject
@@ -158,6 +167,13 @@ class SampleCollectionTable(tables.Table):
     specimens = tables.TemplateColumn('<a href="{% url \'specimen_list\' %}?collection={{record.pk}}">specimens</a>',empty_values=(), verbose_name='Specimen(s)')
     team = tables.Column(linkify=True)
 
+    def value_genomic_sample_status(self, value):
+        return value
+    def value_hic_sample_status(self, value):
+        return value
+    def value_rna_sample_status(self, value):
+        return value
+
     class Meta:
         model = SampleCollection
         template_name = "django_tables2/bootstrap4.html"
@@ -165,13 +181,19 @@ class SampleCollectionTable(tables.Table):
         fields = ('species', 'team', 'specimens','note', 'genomic_sample_status','hic_sample_status','rna_sample_status')
 
 class SequencingTable(tables.Table):
-    export_formats = ['csv', 'tsv']
     genomic_seq_status = tables.TemplateColumn('<span class="{{record.genomic_seq_status}}">{{record.genomic_seq_status}}</a>',empty_values=(), verbose_name='gDNA Status')
     hic_seq_status = tables.TemplateColumn('<span class="{{record.hic_seq_status}}">{{record.hic_seq_status}}</a>',empty_values=(), verbose_name='HiC Status')
     rna_seq_status = tables.TemplateColumn('<span class="{{record.rna_seq_status}}">{{record.rna_seq_status}}</a>',empty_values=(), verbose_name='RNA Status')
     species = tables.Column(linkify=True)
     team = tables.Column(linkify=True)
     reads = tables.TemplateColumn('<a href="{% url \'reads_list\' %}?project={{record.pk}}">reads</a>',empty_values=(), verbose_name='Reads')
+
+    def value_genomic_seq_status(self, value):
+        return value
+    def value_hic_seq_status(self, value):
+        return value
+    def value_rna_seq_status(self, value):
+        return value
 
     class Meta:
         model = Sequencing
@@ -180,7 +202,6 @@ class SequencingTable(tables.Table):
         fields = ('id','species', 'team', 'note', 'reads', 'genomic_seq_status','hic_seq_status','rna_seq_status')
 
 class ReadsTable(tables.Table):
-    export_formats = ['csv', 'tsv']
     project = tables.LinkColumn('sequencing_list')
     ont_yield = tables.Column(verbose_name="ONT yield")
     hifi_yield = tables.Column(verbose_name="HiFi yield")
@@ -191,6 +212,8 @@ class ReadsTable(tables.Table):
     def render_project(self, value, record):
         url = reverse('sequencing_list')
         return format_html('<a href="{}?project={}">{}</a>', url, record.project.pk, value)
+    def value_project(self, value):
+        return value
 
     def render_hifi_yield(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
@@ -214,6 +237,9 @@ class ReadsTable(tables.Table):
         else:
             return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
 
+    def value_hifi_yield(self, value):
+        return value
+
     def render_hic_yield(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
@@ -235,6 +261,9 @@ class ReadsTable(tables.Table):
             return ''
         else:
             return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
+
+    def value_hic_yield(self, value):
+        return value
 
     def render_short_yield(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
@@ -258,6 +287,9 @@ class ReadsTable(tables.Table):
         else:
             return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
 
+    def value_short_yield(self, value):
+        return value
+
     def render_rnaseq_numlibs(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
@@ -278,6 +310,9 @@ class ReadsTable(tables.Table):
             return ''
         else:
             return mark_safe(css_class + "<span>&nbsp;" + str(value) + "</span>")
+
+    def value_rnaseq_numlibs(self, value):
+        return value
 
     def render_ont_yield(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
@@ -301,6 +336,9 @@ class ReadsTable(tables.Table):
         else:
             return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
 
+    def value_ont_yield(self, value):
+        return value
+
     class Meta:
         model = Reads
         template_name = "django_tables2/bootstrap4.html"
@@ -308,10 +346,12 @@ class ReadsTable(tables.Table):
         fields = ('project', 'ont_yield', 'hifi_yield', 'short_yield','hic_yield','rnaseq_numlibs')
 
 class CurationTable(tables.Table):
-    export_formats = ['csv', 'tsv']
     status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</a>',empty_values=(), verbose_name='Status')
     species = tables.Column(linkify=True)
     team = tables.Column(linkify=True)
+
+    def value_status(self, value):
+        return value
 
     class Meta:
         model = Curation
@@ -320,10 +360,12 @@ class CurationTable(tables.Table):
         fields = ('species', 'team', 'note', 'status')
 
 class AnnotationTable(tables.Table):
-    export_formats = ['csv', 'tsv']
     status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</a>',empty_values=(), verbose_name='Status')
     species = tables.Column(linkify=True)
     team = tables.Column(linkify=True)
+
+    def value_status(self, value):
+        return value
 
     class Meta:
         model = Annotation
@@ -332,10 +374,12 @@ class AnnotationTable(tables.Table):
         fields = ('species', 'team', 'note', 'status')
 
 class SubmissionTable(tables.Table):
-    export_formats = ['csv', 'tsv']
     status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</a>',empty_values=(), verbose_name='Status')
     species = tables.Column(linkify=True)
     team = tables.Column(linkify=True)
+
+    def value_status(self, value):
+        return value
 
     class Meta:
         model = Submission
@@ -344,7 +388,6 @@ class SubmissionTable(tables.Table):
         fields = ('species', 'team', 'note', 'status')
 
 class SpecimenTable(tables.Table):
-    export_formats = ['csv', 'tsv']
 
     class Meta:
         model = Specimen
