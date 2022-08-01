@@ -23,6 +23,7 @@ class OverviewTable(tables.Table):
     genomic_sample_status = tables.Column(accessor='samplecollection.genomic_sample_status',verbose_name='Genomic Sample',attrs={
         "td": {
             "background-color": "#e5e5f7"
+            }
         }
     )
     hic_sample_status = tables.Column(accessor='samplecollection.hic_sample_status',verbose_name='HiC Sample')
