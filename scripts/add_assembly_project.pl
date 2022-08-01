@@ -35,7 +35,7 @@ print STDERR "Parsed data files... ready to add to ERGA-Status.\n";
 print STDERR "Adding assembly data...\n"; #print STDERR Data::Dumper->Dump($assembly_data),"\n" and exit;
 add_assembly($assembly_data);
 
-sub add_assembly{
+sub add_assembly_project{
   my $assemblies = shift;
   for (my $i = 0;$i<@$assemblies; $i++){
     my $tolid_prefix=$assemblies->[$i]->{'tolid_prefix'};
