@@ -235,7 +235,7 @@ class ReadsTable(tables.Table):
         if (value == 0 and rs.hifi_target == 0):
             return ''
         else:
-            return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
+            return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + " Gb (" + "{:.1f}".format(cov) + "x)</span>")
 
     def value_hifi_yield(self, value):
         return value
