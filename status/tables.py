@@ -12,7 +12,14 @@ from status.models import *
 class OverviewTable(tables.Table):
     export_formats = ['csv', 'tsv','xls']
     # collection_status = tables.LinkColumn("collection_list",  kwargs={"species": tables.A("pk")},accessor='samplecollection.status',verbose_name='Collection')
-    genomic_sample_status = tables.Column(accessor='samplecollection.genomic_sample_status',verbose_name='Genomic Sample',attrs={"td": {"background-color": "#e5e5f7","opacity": "0.8","background-size":"6px 6px","background-image":"repeating-linear-gradient(45deg, #c6c9fc 0, #c6c9fc 0.6000000000000001px, #e5e5f7 0, #e5e5f7 50%)"}})
+    genomic_sample_status = tables.Column(accessor='samplecollection.genomic_sample_status',verbose_name='Genomic Sample',attrs={
+        "td": {
+            "background-color": "#e5e5f7"
+            "opacity": "0.8"
+            "background-size":"6px 6px","background-image":"repeating-linear-gradient(45deg, #c6c9fc 0, #c6c9fc 0.6000000000000001px, #e5e5f7 0, #e5e5f7 50%)"
+            }
+        }
+    )
     hic_sample_status = tables.Column(accessor='samplecollection.hic_sample_status',verbose_name='HiC Sample')
     rna_sample_status = tables.Column(accessor='samplecollection.rna_sample_status',verbose_name='RNA Sample')
     genomic_seq_status = tables.Column(accessor='sequencing.genomic_seq_status',verbose_name='gDNA-Seq')
