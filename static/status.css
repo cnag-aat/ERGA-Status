@@ -219,3 +219,17 @@
 .full-color {
     color: #69B34C;
   }
+  .sample_col {
+  background-color: #f0f0f0;
+  opacity: 1.0;
+  }
+
+  .seq_col {
+  background-color: #f8f8f8;
+  opacity: 1;
+  }
+  .analysis_col {
+  background-color: #f0f0f0;
+  opacity: 1;
+  }
+  
