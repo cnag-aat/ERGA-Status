@@ -14,8 +14,8 @@ class OverviewTable(tables.Table):
     # collection_status = tables.LinkColumn("collection_list",  kwargs={"species": tables.A("pk")},accessor='samplecollection.status',verbose_name='Collection')
     genomic_sample_status = tables.Column(accessor='samplecollection.genomic_sample_status',verbose_name='Genomic Sample',attrs={
         "td": {
-            "background-color": "#e5e5f7"
-            "opacity": "0.8"
+            "background-color": "#e5e5f7",
+            "opacity": "0.8",
             "background-size":"6px 6px","background-image":"repeating-linear-gradient(45deg, #c6c9fc 0, #c6c9fc 0.6000000000000001px, #e5e5f7 0, #e5e5f7 50%)"
             }
         }
