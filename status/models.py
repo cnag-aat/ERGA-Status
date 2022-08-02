@@ -476,7 +476,7 @@ class BUSCOversion(models.Model):
 class Assembly(models.Model):
     project = models.ForeignKey(AssemblyProject, on_delete=models.CASCADE, verbose_name="Assembly project")
     description = models.CharField(null=True, blank=True, max_length=100)
-    pipeline = models.ForeignKey(AssemblyPipeline, on_delete=models.CASCADE, verbose_name="Assembly pipeline")
+    pipeline = models.ForeignKey(AssemblyPipeline, on_delete=models.CASCADE, verbose_name="Assembly pipeline",null=True, blank=True )
     type = models.CharField(max_length=20, help_text='Type of assembly', choices=ASSEMBLY_TYPE_CHOICES, default='Primary')
     span = models.BigIntegerField(null=True, blank=True, verbose_name="Assembly span")
     contig_n50 = models.BigIntegerField(null=True, blank=True, verbose_name="Contig N50")
