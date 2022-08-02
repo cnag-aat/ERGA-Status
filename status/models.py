@@ -446,6 +446,7 @@ class AssemblyPipeline(models.Model):
     version = models.CharField(max_length=10, help_text='Version')
     contigger = models.CharField(max_length=30, help_text='Main assembler')
     scaffolder = models.CharField(max_length=30, help_text='Scaffolder (can be the same as assembler)')
+    url = models.CharField(max_length=300, help_text='URL', null=True, blank=True)
     description = models.TextField(max_length=2000, help_text='Full description of pipeline', null=True, blank=True)
     class Meta:
         verbose_name_plural = 'assembly pipelines'
