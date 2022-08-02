@@ -12,7 +12,7 @@
         <h5 class="card-title">{{ pipeline.name }}.{{ pipeline.version }}</h5>
         Assembler: {{ pipeline.contigger }}</br>
         Scaffolder: {{ pipeline.scaffolder }}</br>
-        URL: {{ pipeline.url }}</br></br>
+        URL: {{ pipeline.url|urlize }}</br></br>
         <h6>Description:</h6>
         {{ pipeline.description|safe }}
       </div>
