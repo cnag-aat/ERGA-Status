@@ -441,6 +441,22 @@ class AssemblyProject(models.Model):
     def __str__(self):
         return self.species.tolid_prefix
 
+class AssemblyPipeline(models.Model):
+    name = models.CharField(max_length=30, help_text='Pipeline name')
+    version = models.CharField(max_length=10, help_text='Version')
+    contigger = models.CharField(max_length=30, help_text='Main assembler')
+    scaffolder = models.CharField(max_length=30, help_text='Scaffolder (can be the same as assembler)')
+    description = models.CharField(max_length=1000, help_text='Full description of pipeline', null=True, blank=True)
+    class Meta:
+        verbose_name_plural = 'assembly pipelines'
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('assembly_pipeline_detail', args=[str(self.pk)])
+
+    def __str__(self):
+        return self.name + "." + self.version
+
 class BUSCOdb(models.Model):
     db = models.CharField(max_length=60, db_index=True)
     class Meta:
@@ -460,6 +476,7 @@ class BUSCOversion(models.Model):
 class Assembly(models.Model):
     project = models.ForeignKey(AssemblyProject, on_delete=models.CASCADE, verbose_name="Assembly project")
     description = models.CharField(null=True, blank=True, max_length=100)
+    pipeline = models.ForeignKey(AssemblyPipeline, on_delete=models.CASCADE, verbose_name="Assembly pipeline")
     type = models.CharField(max_length=20, help_text='Type of assembly', choices=ASSEMBLY_TYPE_CHOICES, default='Primary')
     span = models.BigIntegerField(null=True, blank=True, verbose_name="Assembly span")
     contig_n50 = models.BigIntegerField(null=True, blank=True, verbose_name="Contig N50")
