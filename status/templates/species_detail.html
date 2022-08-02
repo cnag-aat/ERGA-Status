@@ -10,19 +10,21 @@
     <div class="card mb-12">
       <div class="card-body">
         <h5 class="card-title">{{ species.tolid_prefix }}</h5>
-        Scientific name: {{ species.scientific_name }}</br>
-        Taxon ID: {{ species.taxon_id }}</br>
-        Taxonomy: {{ species.taxon_kingdom }}
+        <table>
+          <tr><td>Scientific name:</td><td> {{ species.scientific_name }}</br></td></tr>
+          <tr><td>Taxon ID:</td><td> {{ species.taxon_id }}</br></td></tr>
+          <tr><td>Taxonomy:</td><td> {{ species.taxon_kingdom }}:
         {{ species.taxon_phylum}}:
         {{ species.taxon_class }}:
         {{ species.taxon_order }}:
         {{ species.taxon_family }}:
-        {{ species.taxon_genus }}</br>
-        Number of chromosomes: {{ species.chromosome_number }}</br>
-        Haploid number: {{ species.haploid_number }}</br>
-        Ploidy: {{ species.ploidy }}</br>
-        C-value: {{ species.c_value }}</br>
-        Genome size: {{ species.genome_size }}</br>
+        {{ species.taxon_genus }}</br></td></tr>
+          <tr><td>Number of chromosomes:</td><td> {{ species.chromosome_number }}</br></td></tr>
+          <tr><td>Haploid number:</td><td> {{ species.haploid_number }}</br></td></tr>
+          <tr><td>Ploidy:</td><td> {{ species.ploidy }}</br></td></tr>
+          <tr><td>C-value:</td><td> {{ species.c_value }}</br></td></tr>
+          <tr><td>Genome size:</td><td>{{ species.genome_size }}</br></td></tr>
+        </table>
       </div>
     </div>
   </div>
