@@ -126,6 +126,12 @@ class AssemblyProjectListView(ExportMixin, SingleTableMixin, FilterView):
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
+    def get_queryset(self):
+        """Filter by price if it is provided in GET parameters"""
+        queryset = super(AssemblyProjectListView, self).get_queryset()
+        if 'project' in self.request.GET:
+            queryset = queryset.filter(pk=self.request.GET['project'])
+            return queryset
 
 class AssemblyListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
