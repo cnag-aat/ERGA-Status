@@ -128,7 +128,7 @@ class TargetSpeciesTable(tables.Table):
 
 class AssemblyTable(tables.Table):
     export_formats = ['csv', 'tsv']
-    project = tables.LinkColumn('sequencing_list')
+    project = tables.LinkColumn('assembly_project_list')
     pipeline = tables.Column(linkify=True)
     span = tables.Column(verbose_name="Span (Gb)")
     contig_n50 = tables.Column(verbose_name="Contig N50 (Mb)")
@@ -145,7 +145,11 @@ class AssemblyTable(tables.Table):
         return value
     def value_span_n50(self, value):
         return value
-
+    def render_project(self, value, record):
+        url = reverse('assembly_project_list')
+        return format_html('<a href="{}?project={}">{}</a>', url, record.project.pk, value)
+    def value_project(self, value):
+        return value
     class Meta:
         model = Assembly
         template_name = "django_tables2/bootstrap4.html"
