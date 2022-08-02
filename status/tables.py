@@ -129,6 +129,7 @@ class TargetSpeciesTable(tables.Table):
 class AssemblyTable(tables.Table):
     export_formats = ['csv', 'tsv']
     project = tables.Column(linkify=True)
+    pipeline = tables.Column(linkify=True)
     span = tables.Column(verbose_name="Span (Gb)")
     contig_n50 = tables.Column(verbose_name="Contig N50 (Mb)")
     scaffold_n50 = tables.Column(verbose_name="Scaffold N50 (Mb)")
