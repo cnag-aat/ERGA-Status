@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %}
+{% load render_table from django_tables2 %}
+{% load bootstrap4 %}
+{% block page_content %}
+
+<p>
+<div class="row m-1">
+  <div class="col-md-12">
+    <div class="card mb-12">
+      <div class="card-body">
+        <h5 class="card-title">{{ pipeline.name }}.{{ pipeline.version }}</h5>
+        Assembler: {{ pipeline.contigger }}</br>
+        Scaffolder: {{ pipeline.scaffolder }}</br>
+        <h6>Description</h6>
+        {{ pipeline.description|safe }}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
