@@ -137,6 +137,13 @@ class AssemblyListView(ExportMixin, SingleTableMixin, FilterView):
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
 
+def assembly_pipeline_detail(request, pk=None):
+    pipeline = AssemblyPipeline.objects.get(pk=pk)
+    context = {"pipeline": pipeline
+               }
+    response = render(request, "assembly_pipeline_detail.html", context)
+    return response
+
 class SampleCollectionListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
     # login_url = "access_denied"

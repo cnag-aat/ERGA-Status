@@ -89,6 +89,7 @@ admin.site.register(Annotation)
 admin.site.register(BUSCOdb)
 admin.site.register(BUSCOversion)
 admin.site.register(Specimen)
+admin.site.register(AssemblyPipeline)
 
 admin.site.unregister(User)
 admin.site.register(User, MyUserAdmin)
