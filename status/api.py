@@ -100,3 +100,11 @@ class BUSCOdbViewSet(BulkModelViewSet):
     queryset = BUSCOdb.objects.all()
     serializer_class = BUSCOdbSerializer
     filter_fields = '__all__'
+
+class SampleViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows Samples to be viewed or edited.
+    """
+    queryset = Sample.objects.all()
+    serializer_class = SampleSerializer
+    filter_fields = '__all__'

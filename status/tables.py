@@ -406,3 +406,10 @@ class SpecimenTable(tables.Table):
         model = Specimen
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
+
+class SampleTable(tables.Table):
+
+    class Meta:
+        model = Sample
+        template_name = "django_tables2/bootstrap4.html"
+        paginate = {"per_page": 100}
