@@ -62,3 +62,8 @@ class BUSCOversionSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSe
         model = BUSCOversion
         lookup_field = 'version'
         fields = '__all__'
+
+class SampleSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Sample
+        fields = '__all__'

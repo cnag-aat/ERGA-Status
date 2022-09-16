@@ -170,6 +170,16 @@ class SpecimenListView(ExportMixin, SingleTableMixin, FilterView):
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
 
+class SampleListView(ExportMixin, SingleTableMixin, FilterView):
+    # permission_required = "resistome.view_sample"
+    # login_url = "access_denied"
+    model = Sample
+    table_class = SampleTable
+    template_name = 'samples.html'
+    #filterset_class = SpeciesFilter
+    table_pagination = {"per_page": 100}
+    export_formats = ['csv', 'tsv','xlsx','json']
+
 class SequencingListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
     # login_url = "access_denied"
