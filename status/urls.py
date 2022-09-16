@@ -25,7 +25,7 @@ urlpatterns = [
     path("species/?scientific_name=<scientific_name>", views.species_detail, name="species_detail"),
     path("assemblies/", AssemblyListView.as_view(), name="assembly_list"),
     path("specimens/", SpecimenListView.as_view(), name="specimen_list"),
-    path("samples/", SpecimenListView.as_view(), name="sample_list"),
+    path("samples/", SampleListView.as_view(), name="sample_list"),
     path("projects/", AssemblyProjectListView.as_view(), name="assembly_project_list"),
     path("projects/?species=<scientific_name>", AssemblyProjectListView.as_view(), name="assembly_project_list"),
     path("assembly_team/<int:pk>/", views.assembly_team_detail, name="assembly_team_detail"),
