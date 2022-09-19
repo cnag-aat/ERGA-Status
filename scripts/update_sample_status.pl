@@ -128,6 +128,44 @@ sub getSamples {
     if ($number_found){
       my $sample_details = $response2->{data};
       foreach my $s (@$sample_details){
+        # check if sample exists and update or insert.
+        # need to get species using tolid_prefix or TAXON_ID
+        # try to match up with collection or collection_team and set status
+        next if $s->{status} ne 'accepted';
+        next if $s->{PURPOSE_OF_SPECIMEN} =~/BARCODING/;
+        my $tolid = $s->{public_name};
+        my $tolid_prefix = $tolid;
+        $tolid_prefix =~ s/\d+$//;
+        my $sample_accession = $s->{biosampleAccession};
+
+        # CHECK for species in tracker. Skip of species not there?
+        my $species_query = "$erga_status_url/species/?tolid_prefix=$tolid_prefix ";
+        #print "$query\n";
+        my $species_id = '';
+        $client->GET($species_query);
+        my $response4 = decode_json $client->responseContent();
+        if ($response4->{count} < 1) {
+          print STDERR "Species doesn't exist. Please add first.\n";
+          next;
+        }else{
+          my $species_url = $response1->{results}->[0]->{url};
+          $species_url =~/(\d+)\/$/;
+          $species_id = $1;
+        }
+
+        #build insert
+        my $record = {};
+        $record->{biosampleAccession} = $sample_accession;
+        $record->{tolid} = $s->{public_name};
+        $record->{specimen_id} = $s->{SPECIMEN_ID};
+        $record->{species} = $species_id;
+        $record->{barcode} = '';
+        $record->{sample_coordinator} = $s->{SAMPLE_COORDINATOR};
+        # collection = models.ForeignKey(SampleCollection, on_delete=models.CASCADE, verbose_name="Collection")
+        $record->{purpose_of_specimen} = $s->{PURPOSE_OF_SPECIMEN};
+        $record->{gal} = $s->{GAL};
+        $record->{collector_sample_id} = $s->{COLLECTOR_SAMPLE_ID};
+        $record->{copo_date} = $s->{time_updated};
 
         print STDERR $s->{TAXON_ID},"\n";
         print STDERR $s->{SCIENTIFIC_NAME},"\n";
@@ -141,6 +179,26 @@ sub getSamples {
         print STDERR $s->{time_updated},"\n";
         print STDERR $s->{status},"\n";
         print STDERR "-----------------------\n";
+        #wrap it all up in JSON string
+        my $insert = encode_json $record;
+        # CHECK if sample exists in tracker. If so, we will PATCH. If not, POST.
+        my $query = "$erga_status_url/sample/?biosampleAccession=$sample_accession ";
+        #print "$query\n";
+        $client->GET($query);
+        my $response3 = decode_json $client->responseContent();
+        if ($response3->{count} > 0) {
+          #PATCH
+          print STDERR "Updating existing record... ";
+          $client->PATCH("$erga_status_url/sample/", $insert);
+          print STDERR "\nResponse:",$client->responseContent(),"\n";
+        }else{
+          #POST
+          print STDERR "Inserting... ";
+          $client->POST("$erga_status_url/sample/", $insert);
+          print STDERR "\nResponse:",$client->responseContent(),"\n";
+        }
+
+
 
       }
     }
