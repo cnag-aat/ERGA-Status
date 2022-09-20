@@ -35,6 +35,7 @@ router.register(r'assembly_project', api.AssemblyProjectViewSet)
 router.register(r'assembly', api.AssemblyViewSet)
 router.register(r'busco_db', api.BUSCOdbViewSet)
 router.register(r'busco_version', api.BUSCOversionViewSet)
+router.register(r'sample', api.SampleViewSet)
 
 
 urlpatterns = [
