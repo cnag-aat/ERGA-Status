@@ -9,7 +9,7 @@ my $client = REST::Client->new();
 $client->addHeader('Content-Type', 'application/json');
 $client->addHeader('charset', 'UTF-8');
 $client->addHeader('Accept', 'application/json');
-$client->addHeader('Authorization' => 'Basic '.encode_base64('erga-test1:Rd08N1Sg'));
+$client->addHeader('Authorization' => 'Basic '.encode_base64('user1:Rd08N1Sg'));
 my $erga_status_url="https://genomes.cnag.cat/erga-status/api";
 
 my $copoclient = REST::Client->new();
@@ -32,12 +32,12 @@ sub getSamples {
   #Retrieve copo_ids from COPO for ERGA project
   $copoclient->GET("$copo_url/sample/erga/");
   my $response1 = decode_json $copoclient->responseContent();
-  print STDERR "$response1\n";
-  print STDERR $response1->{data},"\n";
+  #print STDERR "$response1\n";
+  #print STDERR $response1->{data},"\n";
   my $sample_array = $response1->{data};
   foreach my $record (@$sample_array){
     my $copo_id = $record->{copo_id};
-    print STDERR "$copo_id\n";
+    print STDERR "COPO ID: $copo_id\n";
     $copoclient->GET("$copo_url/sample/copo_id/$copo_id/");
     my $response2 = decode_json $copoclient->responseContent();
     #print STDERR "$response2\n";
@@ -49,6 +49,7 @@ sub getSamples {
         # check if sample exists and update or insert.
         # need to get species using tolid_prefix or TAXON_ID
         # try to match up with collection or collection_team and set status
+        print STDERR "$s->{status}\n";
         next if $s->{status} ne 'accepted';
         next if $s->{PURPOSE_OF_SPECIMEN} =~/BARCODING/;
         my $tolid = $s->{public_name};
@@ -60,16 +61,19 @@ sub getSamples {
         my $species_query = "$erga_status_url/species/?tolid_prefix=$tolid_prefix ";
         my $species_id = '';
         $client->GET($species_query);
-        my $response4 = decode_json $client->responseContent();
-        if ($response4->{count} < 1) {
-          print STDERR "Species doesn't exist. Please add first.\n";
+        my $species_response = decode_json $client->responseContent();
+        print STDERR $client->responseContent();
+        print STDERR "\n$species_response\n";
+        if ($species_response->{count} < 1) {
+          print STDERR "Species '",$s->{SCIENTIFIC_NAME}," ($tolid_prefix) doesn't exist. Please add first.\n";
           next;
         }else{
-          my $species_url = $response1->{results}->[0]->{url};
-          $species_url =~/(\d+)\/$/;
-          $species_id = $1;
+          my $species_url = $species_response->{results}->[0]->{url};
+          #$species_url =~/(\d+)\/$/;
+          $species_id = $species_url;
+          print STDERR "Species ID: $species_id\n";
         }
-
+        print STDERR "building insert\n";
         #build insert
         my $record = {};
         $record->{biosampleAccession} = $sample_accession;
