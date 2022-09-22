@@ -410,7 +410,7 @@ class SpecimenTable(tables.Table):
 class SampleTable(tables.Table):
     # biosampleAccession = tables.TemplateColumn( '<a href="https://www.ebi.ac.uk/biosamples/samples/{{record.biosampleAccession}}"{{record.biosampleAccession}}</a>',empty_values=(), verbose_name='BioSample')
     def render_biosampleAccession(self, value, record):
-        html = '<a href="https://www.ebi.ac.uk/biosamples/samples/'+value+'">'+escape(value)+'</a>'
+        html = '<a target="blank" href="https://www.ebi.ac.uk/biosamples/samples/'+value+'">'+escape(value)+'</a>'
         return mark_safe(html)
     class Meta:
         model = Sample
