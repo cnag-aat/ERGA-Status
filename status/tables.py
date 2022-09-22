@@ -158,7 +158,7 @@ class AssemblyTable(tables.Table):
 class AssemblyProjectTable(tables.Table):
     export_formats = ['csv', 'tsv']
     assemblies = tables.TemplateColumn('<a href="{% url \'assembly_list\' %}?project={{record.pk}}">assemblies</a>',empty_values=(), verbose_name='Assemblies')
-    status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</a>',empty_values=(), verbose_name='Status')
+    status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</span>',empty_values=(), verbose_name='Status')
     species = tables.Column(linkify=True)
     team = tables.Column(linkify=True)
 
