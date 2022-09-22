@@ -408,6 +408,7 @@ class SpecimenTable(tables.Table):
         paginate = {"per_page": 100}
 
 class SampleTable(tables.Table):
+    status = tables.TemplateColumn( '<a href="https://www.ebi.ac.uk/biosamples/samples/{{record.biosampleAccession}}"{{record.biosampleAccession}}</a>',empty_values=(), verbose_name='BioSample')
 
     class Meta:
         model = Sample
