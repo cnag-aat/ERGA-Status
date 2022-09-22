@@ -350,17 +350,17 @@ class Specimen(models.Model):
     collection = models.ForeignKey(SampleCollection, on_delete=models.CASCADE, verbose_name="Collection")
 
 class Sample(models.Model):
-    biosampleAccession = models.CharField(max_length=20, help_text='BioSample Accession', null=True, blank=True)
-    tolid = models.CharField(max_length=20, help_text='Registered ToLID for the Specimen', null=True, blank=True)
+    biosampleAccession = models.CharField(max_length=20, help_text='BioSample Accession', null=True, blank=True, verbose_name="BioSample")
+    tolid = models.CharField(max_length=20, help_text='Registered ToLID for the Specimen', null=True, blank=True, verbose_name="ToLID")
     specimen_id = models.CharField(max_length=20, help_text='Internal Specimen ID', null=True, blank=True)
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     barcode = models.CharField(max_length=20, help_text='Tube barcode', null=True, blank=True)
     sample_coordinator = models.CharField(max_length=50, help_text='Sample coordinator', null=True, blank=True)
     # collection = models.ForeignKey(SampleCollection, on_delete=models.CASCADE, verbose_name="Collection")
     purpose_of_specimen = models.CharField(max_length=25, help_text='Purpose', null=True, blank=True)
-    gal = models.CharField(max_length=25, help_text='GAL', null=True, blank=True)
+    gal = models.CharField(max_length=25, help_text='GAL', null=True, blank=True, verbose_name="GAL")
     collector_sample_id = models.CharField(max_length=30, help_text='Collector Sample ID', null=True, blank=True)
-    copo_date = models.CharField(max_length=30, help_text='COPO Time Updated', null=True, blank=True)
+    copo_date = models.CharField(max_length=30, help_text='COPO Time Updated', null=True, blank=True, verbose_name="date")
 
 class Sequencing(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
