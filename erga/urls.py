@@ -37,6 +37,7 @@ router.register(r'busco_db', api.BUSCOdbViewSet)
 router.register(r'busco_version', api.BUSCOversionViewSet)
 router.register(r'sample', api.SampleViewSet)
 router.register(r'sample_collection', api.SampleCollectionViewSet)
+router.register(r'collection_team', api.CollectionTeamViewSet)
 
 
 urlpatterns = [
