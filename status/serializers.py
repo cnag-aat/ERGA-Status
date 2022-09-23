@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from status.models import *
 from rest_framework_bulk import BulkSerializerMixin
+from django.contrib.auth.models import User
 
 class TaxonKingdomSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
