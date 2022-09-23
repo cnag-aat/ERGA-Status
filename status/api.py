@@ -125,3 +125,11 @@ class CollectionTeamViewSet(BulkModelViewSet):
     queryset = CollectionTeam.objects.all()
     serializer_class = CollectionTeamSerializer
     filter_fields = '__all__'
+
+class UserViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows Samples to be viewed or edited.
+    """
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    filter_fields = '__all__'
