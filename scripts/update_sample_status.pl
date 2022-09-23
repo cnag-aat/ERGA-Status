@@ -118,6 +118,19 @@ sub getSamples {
           $client->POST("$erga_status_url/sample/", $insert);
           print STDERR "\nResponse:",$client->responseContent(),"\n";
         }
+        my $sample_collection_record = {};
+        $sample_collection_record->{species} = $species_id;
+        if ($s->{PURPOSE_OF_SPECIMEN} =~/REFERENCE_GENOME/){
+          $sample_collection_record->{genomic_sample_status} = 'COPO';
+        }
+        if ($s->{PURPOSE_OF_SPECIMEN} =~/RNA_SEQUENCING/){
+          $sample_collection_record->{rna_sample_status} = 'COPO';
+        }
+        my $status_insert = encode_json $sample_collection_record;
+        print STDERR "Updating status... ";
+        $client->POST("$erga_status_url/sample_collection/", $status_insert);
+        print STDERR "\nResponse:",$client->responseContent(),"\n";
+
       }
     }
   }
