@@ -21,7 +21,7 @@ class OverviewTable(tables.Table):
     #     }
     # )
     genomic_sample_status = tables.Column(accessor='samplecollection.genomic_sample_status',verbose_name='Genomic Sample',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
-    hic_sample_status = tables.Column(accessor='samplecollection.hic_sample_status',verbose_name='HiC Sample',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
+    # hic_sample_status = tables.Column(accessor='samplecollection.hic_sample_status',verbose_name='HiC Sample',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     rna_sample_status = tables.Column(accessor='samplecollection.rna_sample_status',verbose_name='RNA Sample',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     genomic_seq_status = tables.Column(accessor='sequencing.genomic_seq_status',verbose_name='gDNA-Seq',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
     hic_seq_status = tables.Column(accessor='sequencing.hic_seq_status',verbose_name='HiC-Seq',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
@@ -47,9 +47,9 @@ class OverviewTable(tables.Table):
     def value_genomic_sample_status(self, value):
         return value
 
-    def render_hic_sample_status(self, value, record):
-        html = '<a href="/erga-status/collection/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
-        return mark_safe(html)
+    # def render_hic_sample_status(self, value, record):
+    #     html = '<a href="/erga-status/collection/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+    #     return mark_safe(html)
 
     def value_hic_sample_status(self, value):
         return value
@@ -114,7 +114,8 @@ class OverviewTable(tables.Table):
         model = TargetSpecies
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        fields = ('tolid_prefix', 'scientific_name','genomic_sample_status','hic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','curation_status','annotation_status','submission_status')
+        # fields = ('tolid_prefix', 'scientific_name','genomic_sample_status','hic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','curation_status','annotation_status','submission_status')
+        fields = ('tolid_prefix', 'scientific_name','genomic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','curation_status','annotation_status','submission_status')
 
 class TargetSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']
@@ -174,7 +175,7 @@ class AssemblyProjectTable(tables.Table):
 class SampleCollectionTable(tables.Table):
     export_formats = ['csv', 'tsv']
     genomic_sample_status = tables.TemplateColumn('<span class="{{record.genomic_sample_status}}">{{record.genomic_sample_status}}</span>',empty_values=(), verbose_name='Genomic Sample')
-    hic_sample_status = tables.TemplateColumn('<span class="{{record.hic_sample_status}}">{{record.hic_sample_status}}</span>',empty_values=(), verbose_name='HiC Sample')
+    # hic_sample_status = tables.TemplateColumn('<span class="{{record.hic_sample_status}}">{{record.hic_sample_status}}</span>',empty_values=(), verbose_name='HiC Sample')
     rna_sample_status = tables.TemplateColumn('<span class="{{record.rna_sample_status}}">{{record.rna_sample_status}}</span>',empty_values=(), verbose_name='RNA Sample')
     species = tables.Column(linkify=True)
     specimens = tables.TemplateColumn('<a href="{% url \'specimen_list\' %}?collection={{record.pk}}">specimens</a>',empty_values=(), verbose_name='Specimen(s)')
@@ -182,8 +183,8 @@ class SampleCollectionTable(tables.Table):
 
     def value_genomic_sample_status(self, value):
         return value
-    def value_hic_sample_status(self, value):
-        return value
+    # def value_hic_sample_status(self, value):
+    #     return value
     def value_rna_sample_status(self, value):
         return value
 
@@ -191,7 +192,8 @@ class SampleCollectionTable(tables.Table):
         model = SampleCollection
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        fields = ('species', 'team', 'specimens','note', 'genomic_sample_status','hic_sample_status','rna_sample_status')
+        #fields = ('species', 'team', 'specimens','note', 'genomic_sample_status','hic_sample_status','rna_sample_status')
+        fields = ('species', 'team', 'specimens','note', 'genomic_sample_status','rna_sample_status')
 
 class SequencingTable(tables.Table):
     genomic_seq_status = tables.TemplateColumn('<span class="{{record.genomic_seq_status}}">{{record.genomic_seq_status}}</span>',empty_values=(), verbose_name='gDNA Status')
