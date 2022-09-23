@@ -68,6 +68,11 @@ class SampleSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializ
         model = Sample
         fields = '__all__'
 
+class CollectionTeamSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = CollectionTeam
+        fields = '__all__'
+
 class SampleCollectionSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = SampleCollection
