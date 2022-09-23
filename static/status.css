@@ -133,6 +133,15 @@
   border-radius: 12px;
   width: 80;
 }
+.COPO {
+  background-color: #0087a3;
+  color: White;
+  padding: 3px;
+  padding-right: 31px;
+  padding-left: 32px;
+  border-radius: 12px;
+  width: 80;
+}
 .Submitted {
   background-color: #0087a3;
   color: White;
@@ -232,4 +241,3 @@
   background-color: #f0f0f0;
   opacity: 1;
   }
-  
