@@ -327,7 +327,7 @@ class CollectionTeam(models.Model):
 
 class SampleCollection(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
-    team = models.ForeignKey(CollectionTeam, on_delete=models.CASCADE, verbose_name="collection team")
+    team = models.ForeignKey(CollectionTeam, on_delete=models.CASCADE, verbose_name="collection team", null=True, blank=True)
     genomic_sample_status = models.CharField(max_length=12, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
     rna_sample_status = models.CharField(max_length=12, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
     #hic_sample_status = models.CharField(max_length=12, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
