@@ -56,7 +56,7 @@ sub getSamples {
         my $tolid_prefix = $tolid;
         $tolid_prefix =~ s/\d+$//;
         my $sample_accession = $s->{biosampleAccession};
-
+        my $species_pk = 0;
         # CHECK for species in tracker. Skip if species not there?
         my $species_query = "$erga_status_url/species/?tolid_prefix=$tolid_prefix ";
         my $species_id = '';
@@ -69,7 +69,7 @@ sub getSamples {
           next;
         }else{
           my $species_url = $species_response->{results}->[0]->{url};
-          #$species_url =~/(\d+)\/$/;
+          $species_url =~/(\d+)\/$/; $species_pk=$1;
           $species_id = $species_url;
           print STDERR "Species ID: $species_id\n";
         }
@@ -109,8 +109,9 @@ sub getSamples {
         my $response3 = decode_json $client->responseContent();
         if ($response3->{count} > 0) {
           #PATCH
-          print STDERR "Updating existing record... ";
-          $client->PATCH("$erga_status_url/sample/", $insert);
+          print STDERR "Updating existing record: ",
+            $response3 ->{results}->[0]->{url},"... \n";
+          $client->PATCH($response3 ->{results}->[0]->{url}, $insert);
           print STDERR "\nResponse:",$client->responseContent(),"\n";
         }else{
           #POST
@@ -127,10 +128,19 @@ sub getSamples {
           $sample_collection_record->{rna_sample_status} = 'COPO';
         }
         my $status_insert = encode_json $sample_collection_record;
-        print STDERR "Updating status... ";
-        $client->POST("$erga_status_url/sample_collection/", $status_insert);
-        print STDERR "\nResponse:",$client->responseContent(),"\n";
-
+        my $sample_collection_query = "$erga_status_url/sample_collection/?species=".$species_pk;
+        #print "$query\n";
+        $client->GET($sample_collection_query);
+        print STDERR "Sample Collection Query Response:", $client->responseContent(),"\n";
+        my $response4 = decode_json $client->responseContent();
+        if ($response4->{count} > 0) {
+          print STDERR "Updating sample collection record... ";
+          $client->PATCH($response4 ->{results}->[0]->{url}, $status_insert);
+          print STDERR "\nResponse:",$client->responseContent(),"\n";
+        }else{
+          $client->POST("$erga_status_url/sample_collection/", $status_insert);
+          print STDERR "\nResponse:",$client->responseContent(),"\n";
+        }
       }
     }
   }
