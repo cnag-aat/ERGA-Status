@@ -358,7 +358,7 @@ class Sample(models.Model):
     sample_coordinator = models.CharField(max_length=50, help_text='Sample coordinator', null=True, blank=True)
     # collection = models.ForeignKey(SampleCollection, on_delete=models.CASCADE, verbose_name="Collection")
     purpose_of_specimen = models.CharField(max_length=30, help_text='Purpose', null=True, blank=True)
-    gal = models.CharField(max_length=100, help_text='GAL', null=True, blank=True, verbose_name="GAL")
+    gal = models.CharField(max_length=120, help_text='GAL', null=True, blank=True, verbose_name="GAL")
     collector_sample_id = models.CharField(max_length=40, help_text='Collector Sample ID', null=True, blank=True)
     copo_date = models.CharField(max_length=30, help_text='COPO Time Updated', null=True, blank=True, verbose_name="date")
 
