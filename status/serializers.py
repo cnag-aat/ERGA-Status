@@ -84,6 +84,11 @@ class SequencingSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSeri
         model = Sequencing
         fields = '__all__'
 
+class SequencingTeamSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = SequencingTeam
+        fields = '__all__'
+
 class ReadsSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Reads

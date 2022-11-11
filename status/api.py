@@ -134,6 +134,14 @@ class SequencingViewSet(BulkModelViewSet):
     serializer_class = SequencingSerializer
     filter_fields = '__all__'
 
+class SequencingTeamViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows Sequencing projects to be viewed or edited.
+    """
+    queryset = SequencingTeam.objects.all()
+    serializer_class = SequencingTeamSerializer
+    filter_fields = '__all__'
+
 class ReadsViewSet(BulkModelViewSet):
     """
     API endpoint that allows Reads to be viewed or edited.
