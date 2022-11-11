@@ -79,6 +79,16 @@ class SampleCollectionSerializer(BulkSerializerMixin, serializers.HyperlinkedMod
         model = SampleCollection
         fields = '__all__'
 
+class SequencingSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Sequencing
+        fields = '__all__'
+
+class ReadsSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Reads
+        fields = '__all__'
+
 class UserSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User
