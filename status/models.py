@@ -393,6 +393,11 @@ class Reads(models.Model):
     hic_yield = models.BigIntegerField(null=True, blank=True, verbose_name="Hi-C yield")
     short_yield = models.BigIntegerField(null=True, blank=True, verbose_name="Short read yield")
     rnaseq_numlibs = models.IntegerField(null=True, blank=True, verbose_name="RNAseq libs")
+    ont_ena = models.CharField(max_length=12, null=True, blank=True, verbose_name="ONT Accession")
+    hifi_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="HiFi Accession")
+    hic_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="Hi-C Accession")
+    short_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="Short read Accession")
+    rnaseq_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="RNAseq Accession")
 
     class Meta:
         verbose_name_plural = 'reads'
