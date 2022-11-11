@@ -45,13 +45,16 @@ if ($ena_json){
       $client->GET($species_query);
       my $species_response = decode_json $client->responseContent();
       my $species_url = $species_response->{results}->[0]->{url};
-      print STDERR $species_url and exit;
-      my $sequencing_query = "$erga_status_url/species/?species=".$species_url;
+      print STDERR $species_url,"\n";
+      $species_url =~/(\d+)\/$/;
+      my $species_id = $1;
+      my $sequencing_query = "$erga_status_url/sequencing/?species=".$species_id;
       print STDERR $sequencing_query,"\n";
       $client->GET($sequencing_query);
       my $sequencing_response = decode_json $client->responseContent();
       my $sequencing_url = $sequencing_response->{results}->[0]->{url};
-      print STDERR $species_url and exit;
+      $sequencing_url =~/(\d+)\/$/;
+      my $sequencing_id = $1;
       print STDERR $r->{instrument_platform},"\t",$r->{library_strategy},"\n";
       my $reads_record = {};
       $reads_record->{ont_ena} = $study_accession if $r->{instrument_platform} eq 'OXFORD_NANOPORE';
@@ -60,7 +63,7 @@ if ($ena_json){
       $reads_record->{rnaseq_ena} = $study_accession if $r->{instrument_platform} eq 'ILLUMINA' and $r->{library_strategy} eq 'RNA-Seq';
       $reads_record->{hic_ena} = $study_accession if $r->{instrument_platform} eq 'ILLUMINA' and $r->{library_strategy} eq 'Hi-C';
       my $insert = encode_json $reads_record;
-      my $reads_query = "$erga_status_url/reads/?project=$proj_url";
+      my $reads_query = "$erga_status_url/reads/?project=$sequencing_id";
       #print "$query\n";
       $client->GET($reads_query);
       my $reads_response = decode_json $client->responseContent();
