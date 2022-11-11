@@ -223,6 +223,11 @@ class ReadsTable(tables.Table):
     hic_yield = tables.Column(verbose_name="Hi-C yield")
     short_yield = tables.Column(verbose_name="Short read yield")
     rnaseq_numlibs = tables.Column(verbose_name="RNAseq libs")
+    ont_ena = tables.Column(verbose_name="ONT Accession")
+    hifi_ena = tables.Column(verbose_name="HiFi Accession")
+    hic_ena = tables.Column(verbose_name="Hi-C Accession")
+    short_ena = tables.Column(verbose_name="Illumina WGS Accession")
+    rnaseq_ena = tables.Column(verbose_name="RNAseq Accession")
 
     def render_project(self, value, record):
         url = reverse('sequencing_list')
@@ -358,7 +363,7 @@ class ReadsTable(tables.Table):
         model = Reads
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        fields = ('project', 'ont_yield', 'hifi_yield', 'short_yield','hic_yield','rnaseq_numlibs')
+        fields = ('project', 'ont_yield', 'ont_ena','hifi_yield', 'hifi_ena','short_yield','short_ena','hic_yield','hic_ena','rnaseq_numlibs','rnaseq_ena')
 
 class CurationTable(tables.Table):
     status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</span>',empty_values=(), verbose_name='Status')
