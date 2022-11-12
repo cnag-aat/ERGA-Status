@@ -223,11 +223,11 @@ class ReadsTable(tables.Table):
     hic_yield = tables.Column(verbose_name="Hi-C yield")
     short_yield = tables.Column(verbose_name="Short read yield")
     rnaseq_numlibs = tables.Column(verbose_name="RNAseq libs")
-    ont_ena = tables.Column(verbose_name="ONT Accession")
-    hifi_ena = tables.Column(verbose_name="HiFi Accession")
-    hic_ena = tables.Column(verbose_name="Hi-C Accession")
-    short_ena = tables.Column(verbose_name="Illumina WGS Accession")
-    rnaseq_ena = tables.Column(verbose_name="RNAseq Accession")
+    ont_ena = tables.Column(verbose_name="ENA")
+    hifi_ena = tables.Column(verbose_name="ENA")
+    hic_ena = tables.Column(verbose_name="ENA")
+    short_ena = tables.Column(verbose_name="ENA")
+    rnaseq_ena = tables.Column(verbose_name="ENA")
     def render_ont_ena(self, value, record):
         html = '<a target="blank" href="https://www.ebi.ac.uk/ena/browser/view/'+value+'">'+escape(value)+'</a>'
         return mark_safe(html)
