@@ -82,6 +82,7 @@ def assembly_team_detail(request, pk=None):
     response = render(request, "assembly_team_detail.html", context)
     return response
 
+@permission_required("status.sequencing_team_detail", login_url='access_denied')
 def sequencing_team_detail(request, pk=None):
     team = SequencingTeam.objects.get(pk=pk)
     context = {"team": team
