@@ -53,16 +53,19 @@ if ($ena_json){
       $client->GET($sequencing_query);
       my $sequencing_response = decode_json $client->responseContent();
       my $sequencing_url = $sequencing_response->{results}->[0]->{url};
+      print STDERR "SU:$sequencing_url\n";
       $sequencing_url =~/(\d+)\/$/;
       my $sequencing_id = $1;
       print STDERR $r->{instrument_platform},"\t",$r->{library_strategy},"\n";
       my $reads_record = {};
-      $reads_record->{ont_ena} = $study_accession if $r->{instrument_platform} eq 'OXFORD_NANOPORE';
-      $reads_record->{hifi_ena} = $study_accession if $r->{instrument_platform} eq 'PACBIO_SMRT';
-      $reads_record->{short_ena} = $study_accession if $r->{instrument_platform} eq 'ILLUMINA' and $r->{library_strategy} eq 'WGS';
-      $reads_record->{rnaseq_ena} = $study_accession if $r->{instrument_platform} eq 'ILLUMINA' and $r->{library_strategy} eq 'RNA-Seq';
-      $reads_record->{hic_ena} = $study_accession if $r->{instrument_platform} eq 'ILLUMINA' and $r->{library_strategy} eq 'Hi-C';
+      if ($r->{instrument_platform} eq 'OXFORD_NANOPORE'){$reads_record->{ont_ena} = $r->{study_accession};}
+      if ($r->{instrument_platform} eq 'PACBIO_SMRT'){$reads_record->{hifi_ena} = $r->{study_accession};}
+      if ($r->{instrument_platform} eq 'ILLUMINA' and $r->{library_strategy} eq 'WGS'){$reads_record->{short_ena} = $r->{study_accession};}
+      if ($r->{instrument_platform} eq 'ILLUMINA' and $r->{library_strategy} eq 'RNA-Seq'){$reads_record->{rnaseq_ena} = $r->{study_accession};}
+      if ($r->{instrument_platform} eq 'ILLUMINA' and $r->{library_strategy} eq 'Hi-C'){$reads_record->{hic_ena} = $r->{study_accession};}
+      $reads_record->{project} = $sequencing_url;
       my $insert = encode_json $reads_record;
+      print STDERR "$insert\n";
       my $reads_query = "$erga_status_url/reads/?project=$sequencing_id";
       #print "$query\n";
       $client->GET($reads_query);
@@ -77,7 +80,7 @@ if ($ena_json){
         #POST
         print STDERR "Inserting... \n";
         $client->POST("$erga_status_url/reads/", $insert);
-        #print STDERR "\nResponse:",$client->responseContent(),"\n";
+        print STDERR "\nResponse:",$client->responseContent(),"\n";
       }
       # genomic_seq_status = models.CharField(max_length=12, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
       #   hic_seq_status = models.CharField(max_length=12, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')

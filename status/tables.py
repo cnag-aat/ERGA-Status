@@ -228,10 +228,30 @@ class ReadsTable(tables.Table):
     hic_ena = tables.Column(verbose_name="Hi-C Accession")
     short_ena = tables.Column(verbose_name="Illumina WGS Accession")
     rnaseq_ena = tables.Column(verbose_name="RNAseq Accession")
+    def render_ont_ena(self, value, record):
+        html = '<a target="blank" href="https://www.ebi.ac.uk/ena/browser/view/'+value+'">'+escape(value)+'</a>'
+        return mark_safe(html)
+
+    def render_hifi_ena(self, value, record):
+        html = '<a target="blank" href="https://www.ebi.ac.uk/ena/browser/view/'+value+'">'+escape(value)+'</a>'
+        return mark_safe(html)
+
+    def render_hic_ena(self, value, record):
+        html = '<a target="blank" href="https://www.ebi.ac.uk/ena/browser/view/'+value+'">'+escape(value)+'</a>'
+        return mark_safe(html)
+
+    def render_short_ena(self, value, record):
+        html = '<a target="blank" href="https://www.ebi.ac.uk/ena/browser/view/'+value+'">'+escape(value)+'</a>'
+        return mark_safe(html)
+
+    def render_rnaseq_ena(self, value, record):
+        html = '<a target="blank" href="https://www.ebi.ac.uk/ena/browser/view/'+value+'">'+escape(value)+'</a>'
+        return mark_safe(html)
 
     def render_project(self, value, record):
         url = reverse('sequencing_list')
         return format_html('<a href="{}?project={}">{}</a>', url, record.project.pk, value)
+
     def value_project(self, value):
         return value
 
