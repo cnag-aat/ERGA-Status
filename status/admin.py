@@ -91,6 +91,7 @@ admin.site.register(BUSCOversion)
 admin.site.register(Specimen)
 admin.site.register(Sample)
 admin.site.register(AssemblyPipeline)
+admin.site.register(UserProfile)
 
 admin.site.unregister(User)
 admin.site.register(User, MyUserAdmin)
