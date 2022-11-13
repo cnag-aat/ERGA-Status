@@ -197,6 +197,9 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 #EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
+ACCOUNT_FORMS = {
+'signup': 'status.forms.CustomSignupForm',
+}
 
 LOGGING = {
     'version': 1,
