@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'cookielaw',
     'crispy_forms',
     'qurl_templatetag',
+    'multiselectfield',
 #    'query_string'
 ]
 
