@@ -171,12 +171,12 @@ class TaxonGenus(models.Model):
 class TargetSpecies(models.Model):
     scientific_name = models.CharField(max_length=201, blank=True, null=True, db_index=True)
     tolid_prefix = models.CharField(max_length=12, blank=True, null=True, db_index=True)
-    taxon_kingdom = models.ForeignKey(TaxonKingdom, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Kingdom")
-    taxon_phylum = models.ForeignKey(TaxonPhylum, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Phylum")
-    taxon_class = models.ForeignKey(TaxonClass, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Class")
-    taxon_order = models.ForeignKey(TaxonOrder, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Order")
-    taxon_family = models.ForeignKey(TaxonFamily, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Family")
-    taxon_genus = models.ForeignKey(TaxonGenus, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Genus")
+    taxon_kingdom = models.ForeignKey(TaxonKingdom, blank=True, null=True, on_delete=SET_NULL, verbose_name="Kingdom")
+    taxon_phylum = models.ForeignKey(TaxonPhylum, blank=True, null=True, on_delete=SET_NULL, verbose_name="Phylum")
+    taxon_class = models.ForeignKey(TaxonClass, blank=True, null=True, on_delete=SET_NULL, verbose_name="Class")
+    taxon_order = models.ForeignKey(TaxonOrder, blank=True, null=True, on_delete=SET_NULL, verbose_name="Order")
+    taxon_family = models.ForeignKey(TaxonFamily, blank=True, null=True, on_delete=SET_NULL, verbose_name="Family")
+    taxon_genus = models.ForeignKey(TaxonGenus, blank=True, null=True, on_delete=SET_NULL, verbose_name="Genus")
     # taxon_species = models.ForeignKey(TaxonSpecies, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Species")
     chromosome_number = models.IntegerField(null=True, blank=True)
     haploid_number = models.IntegerField(null=True, blank=True)
@@ -222,7 +222,7 @@ class AnnotationTeam(models.Model):
     affiliation = models.CharField(max_length=100)
     lead = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        # on_delete=models.CASCADE,
+        on_delete=SET_NULL,
         related_name='annotation_team_lead'
     )
     class Meta:
@@ -240,7 +240,7 @@ class SubmissionTeam(models.Model):
     affiliation = models.CharField(max_length=100)
     lead = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        # on_delete=models.CASCADE,
+        on_delete=SET_NULL,
         related_name='submission_team_lead'
     )
     class Meta:
@@ -258,7 +258,7 @@ class AssemblyTeam(models.Model):
     affiliation = models.CharField(max_length=100)
     contact = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        # on_delete=models.CASCADE,
+        on_delete=SET_NULL,
         related_name='assembly_team_lead'
     )
 
@@ -277,7 +277,7 @@ class CurationTeam(models.Model):
     affiliation = models.CharField(max_length=100)
     lead = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        # on_delete=models.CASCADE,
+        on_delete=SET_NULL,
         related_name='curation_team_lead'
     )
     class Meta:
@@ -295,17 +295,17 @@ class SequencingTeam(models.Model):
     affiliation = models.CharField(max_length=100)
     lead = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        # on_delete=models.CASCADE,
+        on_delete=SET_NULL,
         related_name='sequencing_team_lead'
     )
     reception = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        # on_delete=models.CASCADE,
+        on_delete=SET_NULL,
         related_name='sample_reception'
     )
     delivery = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        # on_delete=models.CASCADE,
+        on_delete=SET_NULL,
         related_name='data_delivery'
     )
     class Meta:
@@ -322,7 +322,7 @@ class CollectionTeam(models.Model):
     affiliation = models.CharField(max_length=100)
     coordinator = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        # on_delete=models.CASCADE,
+        on_delete=SET_NULL,
         related_name='collection_team_lead'
     )
 
@@ -336,7 +336,7 @@ class CollectionTeam(models.Model):
 
 class SampleCollection(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species",unique=True)
-    team = models.ForeignKey(CollectionTeam, verbose_name="collection team", null=True, blank=True)
+    team = models.ForeignKey(CollectionTeam, on_delete=SET_NULL, verbose_name="collection team", null=True, blank=True)
     genomic_sample_status = models.CharField(max_length=12, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
     rna_sample_status = models.CharField(max_length=12, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
     #hic_sample_status = models.CharField(max_length=12, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
@@ -373,7 +373,7 @@ class Sample(models.Model):
 
 class Sequencing(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
-    team = models.ForeignKey(SequencingTeam, verbose_name="sequencing team")
+    team = models.ForeignKey(SequencingTeam, on_delete=SET_NULL, verbose_name="sequencing team")
     genomic_seq_status = models.CharField(max_length=12, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
     hic_seq_status = models.CharField(max_length=12, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
     rna_seq_status = models.CharField(max_length=12, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
@@ -416,7 +416,7 @@ class Reads(models.Model):
 
 class Curation(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
-    team = models.ForeignKey(CurationTeam, verbose_name="curation team")
+    team = models.ForeignKey(CurationTeam, on_delete=SET_NULL, verbose_name="curation team")
     status = models.CharField(max_length=12, help_text='Status', choices=CURATION_STATUS_CHOICES, default=CURATION_STATUS_CHOICES[0][0])
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
 
@@ -428,7 +428,7 @@ class Curation(models.Model):
 
 class Annotation(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
-    team = models.ForeignKey(AnnotationTeam, verbose_name="annotation team")
+    team = models.ForeignKey(AnnotationTeam, on_delete=SET_NULL, verbose_name="annotation team")
     status = models.CharField(max_length=12, help_text='Status', choices=ANNOTATION_STATUS_CHOICES, default=ANNOTATION_STATUS_CHOICES[0][0])
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
 
@@ -440,7 +440,7 @@ class Annotation(models.Model):
 
 class Submission(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
-    team = models.ForeignKey(SubmissionTeam, verbose_name="submission team")
+    team = models.ForeignKey(SubmissionTeam, on_delete=SET_NULL, verbose_name="submission team")
     status = models.CharField(max_length=12, help_text='Status', choices=SUBMISSION_STATUS_CHOICES, default='Waiting')
     datatype = models.CharField(max_length=12, help_text='Data Type', choices=SUBMISSION_DATATYPE_CHOICES, default=SUBMISSION_DATATYPE_CHOICES[0][0])
     accession = models.CharField(max_length=20, help_text='ENA Accession Number', null=True, blank=True)
@@ -454,7 +454,7 @@ class Submission(models.Model):
 
 class AssemblyProject(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
-    team = models.ForeignKey(AssemblyTeam, verbose_name="assembly team")
+    team = models.ForeignKey(AssemblyTeam, on_delete=SET_NULL, verbose_name="assembly team")
     status = models.CharField(max_length=12, help_text='Status', choices=ASSEMBLY_STATUS_CHOICES, default=ASSEMBLY_STATUS_CHOICES[0][0])
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
 
@@ -504,7 +504,7 @@ class BUSCOversion(models.Model):
 class Assembly(models.Model):
     project = models.ForeignKey(AssemblyProject, on_delete=models.CASCADE, verbose_name="Assembly project")
     description = models.CharField(null=True, blank=True, max_length=100)
-    pipeline = models.ForeignKey(AssemblyPipeline, verbose_name="Assembly pipeline",null=True, blank=True )
+    pipeline = models.ForeignKey(AssemblyPipeline, on_delete=SET_NULL, verbose_name="Assembly pipeline",null=True, blank=True )
     type = models.CharField(max_length=20, help_text='Type of assembly', choices=ASSEMBLY_TYPE_CHOICES, default='Primary')
     span = models.BigIntegerField(null=True, blank=True, verbose_name="Assembly span")
     contig_n50 = models.BigIntegerField(null=True, blank=True, verbose_name="Contig N50")
@@ -512,8 +512,8 @@ class Assembly(models.Model):
     chromosome_level =  models.NullBooleanField(blank=True, null=True, verbose_name="Chr level")
     percent_placed = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True, verbose_name="Pct. placed")
     busco = models.CharField(null=True, blank=True, max_length=60, verbose_name="BUSCO")
-    busco_db = models.ForeignKey(BUSCOdb, on_delete=models.CASCADE, verbose_name="BUSCO db", null=True, blank=True)
-    busco_version = models.ForeignKey(BUSCOversion, on_delete=models.CASCADE, verbose_name="BUSCO version",null=True, blank=True)
+    busco_db = models.ForeignKey(BUSCOdb, on_delete=SET_NULL, verbose_name="BUSCO db", null=True, blank=True)
+    busco_version = models.ForeignKey(BUSCOversion, on_delete=SET_NULL, verbose_name="BUSCO version",null=True, blank=True)
     qv = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True, verbose_name="QV")
 
     class Meta:
