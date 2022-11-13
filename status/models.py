@@ -524,6 +524,10 @@ class Assembly(models.Model):
         return self.project.species.tolid_prefix + '.' + self.type
 
 class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=CASCADE)
+    user = models.ForeignKey(
+            settings.AUTH_USER_MODEL,
+            on_delete=models.CASCADE,
+            related_name='submission_team_lead'
+        )
     roles = MultiSelectField(choices=ROLE_CHOICES)
     affiliation = models.CharField(max_length=100)
