@@ -22,8 +22,14 @@ class CustomSignupForm(SignupForm):
 
     def save(self, request):
         user = super(CustomSignupForm, self).save(request)
+        profile = UserProfile()
+        profile.save(commit = False)
         status.userprofile.roles = self.cleaned_data['roles']
         user.first_name = self.cleaned_data['first_name']
         user.last_name = self.cleaned_data['last_name']
         user.save()
+        user.profile = profile
+        profile.user = user
+        profile.roles = self.cleaned_data['roles']
+        profile.save()
         return user
