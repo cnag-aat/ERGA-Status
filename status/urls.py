@@ -16,6 +16,7 @@ from status.views import SpecimenListView
 from status.views import SampleListView
 from status.views import HomeView
 from status.views import OverView
+from status.views import AccessDeniedView
 
 urlpatterns = [
     path("", HomeView.as_view(), name="home"),
