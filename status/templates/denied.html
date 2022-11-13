@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load static %}
+{% load bootstrap4 %}
+{% block page_content %}
+<div class="row">
+  <div class="col-md-12">
+    <p>
+    <div class="card mb-2">
+      <div class="card-body">
+        <h5 class="card-title">Access denied!</h5>
+        <p>Only genome teams can view genome team contact details. Please
+          <a href="{% url 'account_login' %}">LOGIN</a> to be able to view this page.
+          If you are on a genome team or are coordinating one and have yet registered,
+          please <a href="{% url 'account_signup' %}">REGISTER HERE</a> and wait for admin
+          approval.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
