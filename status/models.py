@@ -1,7 +1,7 @@
 from django.db import models
 import os
 from django.conf import settings
-
+from multiselectfield import MultiSelectField
 
 # Create your models here.
 STATUS_CHOICES = (
@@ -81,6 +81,16 @@ ASSEMBLY_TYPE_CHOICES = (
     ('Endosymbiont', 'Endosymbiont')
 )
 
+ROLE_CHOICES = (
+    ('assembly_team_lead', 'Assembly Team Lead'),
+    ('sequencing_team_lead', 'Sequencing Team Lead'),
+    ('annotation_team_lead', 'Annotation Team Lead'),
+    ('sample_coordinator', 'Sample Coordinator'),
+    ('genome_team_coordinator', 'Genome Team Coordinator'),
+    ('sample_reception', 'Sample Reception'),
+    ('assembly_curation', 'Assembly Curation'),
+    ('assembly_team_lead', 'Assembly Team Lead')
+)
 
 class TaxonKingdom(models.Model):
     name = models.CharField(max_length=100)
@@ -512,3 +522,8 @@ class Assembly(models.Model):
 
     def __str__(self):
         return self.project.species.tolid_prefix + '.' + self.type
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=CASCADE)
+    roles = MultiSelectField(choices=ROLE_CHOICES)
+    affiliation = models.CharField(max_length=100)
