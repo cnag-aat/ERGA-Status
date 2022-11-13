@@ -4,14 +4,15 @@ from django import forms
 
 class CustomSignupForm(SignupForm):
 	ROLE_CHOICES = (
-    ('assembly_team_lead', 'Assembly Team Lead'),
-    ('sequencing_team_lead', 'Sequencing Team Lead'),
-    ('annotation_team_lead', 'Annotation Team Lead'),
-    ('sample_coordinator', 'Sample Coordinator'),
-    ('genome_team_coordinator', 'Genome Team Coordinator'),
-    ('sample_reception', 'Sample Reception'),
-    ('assembly_curation', 'Assembly Curation'),
-    ('assembly_team_lead', 'Assembly Team Lead'),)
+        ('assembly_team_lead', 'Assembly Team Lead'),
+        ('sequencing_team_lead', 'Sequencing Team Lead'),
+        ('annotation_team_lead', 'Annotation Team Lead'),
+        ('sample_coordinator', 'Sample Coordinator'),
+        ('genome_team_coordinator', 'Genome Team Coordinator'),
+        ('sample_reception', 'Sample Reception'),
+        ('assembly_curation', 'Assembly Curation'),
+        ('assembly_team_lead', 'Assembly Team Lead')
+    )
 
     first_name = forms.CharField(max_length=30, label='First Name')
 	last_name = forms.CharField(max_length=30, label='Last Name')
