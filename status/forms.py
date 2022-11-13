@@ -15,6 +15,7 @@ ROLE_CHOICES = (
 class CustomSignupForm(SignupForm):
     first_name = forms.CharField(max_length=30, label='First Name')
     last_name = forms.CharField(max_length=30, label='Last Name')
+    affiliation = forms.CharField(max_length=100, label='Affiliation')
     roles = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple,choices=ROLE_CHOICES)
     # class Meta():
     #     model = User
@@ -30,5 +31,6 @@ class CustomSignupForm(SignupForm):
         user.profile = profile
         profile.user = user
         profile.roles = self.cleaned_data['roles']
+        profile.affiliation = self.cleaned_data['affiliation']
         profile.save()
         return user

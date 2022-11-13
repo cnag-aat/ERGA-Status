@@ -531,3 +531,5 @@ class UserProfile(models.Model):
         )
     roles = MultiSelectField(choices=ROLE_CHOICES)
     affiliation = models.CharField(max_length=100)
+    def __str__(self):
+        return self.user.username
