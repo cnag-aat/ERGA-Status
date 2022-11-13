@@ -75,6 +75,7 @@ def species_detail(request, pk=None, scientific_name=None):
     response = render(request, "species_detail.html", context)
     return response
 
+@permission_required("status.assembly_team_detail", login_url='access_denied')
 def assembly_team_detail(request, pk=None):
     team = AssemblyTeam.objects.get(pk=pk)
     context = {"team": team
@@ -90,6 +91,7 @@ def sequencing_team_detail(request, pk=None):
     response = render(request, "sequencing_team_detail.html", context)
     return response
 
+@permission_required("status.curation_team_detail", login_url='access_denied')
 def curation_team_detail(request, pk=None):
     team = CurationTeam.objects.get(pk=pk)
     context = {"team": team
@@ -97,6 +99,7 @@ def curation_team_detail(request, pk=None):
     response = render(request, "curation_team_detail.html", context)
     return response
 
+@permission_required("status.collection_team_detail", login_url='access_denied')
 def collection_team_detail(request, pk=None):
     team = CollectionTeam.objects.get(pk=pk)
     context = {"team": team
@@ -104,6 +107,7 @@ def collection_team_detail(request, pk=None):
     response = render(request, "collection_team_detail.html", context)
     return response
 
+@permission_required("status.annotation_team_detail", login_url='access_denied')
 def annotation_team_detail(request, pk=None):
     team = AnnotationTeam.objects.get(pk=pk)
     context = {"team": team
@@ -262,3 +266,6 @@ class SubmissionListView(ExportMixin, SingleTableMixin, FilterView):
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
+
+class AccessDeniedView(TemplateView):
+    template_name = 'denied.html'

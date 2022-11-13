@@ -47,5 +47,6 @@ urlpatterns = [
     path("curation/", CurationListView.as_view(), name="curation_list"),
     path("annotation/", AnnotationListView.as_view(), name="annotation_list"),
     path("submission/", SubmissionListView.as_view(), name="submission_list"),
+    path('access_denied/', AccessDeniedView.as_view(), name="access_denied"),
 
 ]
