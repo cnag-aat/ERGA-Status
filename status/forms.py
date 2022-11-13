@@ -12,9 +12,8 @@ ROLE_CHOICES = (
 ('assembly_team_lead', 'Assembly Team Lead')
 )
 class CustomSignupForm(SignupForm):
-
     first_name = forms.CharField(max_length=30, label='First Name')
-	last_name = forms.CharField(max_length=30, label='Last Name')
+    last_name = forms.CharField(max_length=30, label='Last Name')
     roles = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple,choices=ROLE_CHOICES)
     class Meta():
         model = User
