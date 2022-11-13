@@ -88,7 +88,7 @@ ROLE_CHOICES = (
     ('sample_coordinator', 'Sample Coordinator'),
     ('genome_team_coordinator', 'Genome Team Coordinator'),
     ('sample_reception', 'Sample Reception'),
-    ('assembly_curation', 'Assembly Curation'),)
+    ('assembly_curation', 'Assembly Curation'),
 )
 
 class TaxonKingdom(models.Model):
