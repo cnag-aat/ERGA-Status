@@ -10,7 +10,6 @@ ROLE_CHOICES = (
 ('genome_team_coordinator', 'Genome Team Coordinator'),
 ('sample_reception', 'Sample Reception'),
 ('assembly_curation', 'Assembly Curation'),
-('assembly_team_lead', 'Assembly Team Lead')
 )
 class CustomSignupForm(SignupForm):
     first_name = forms.CharField(max_length=30, label='First Name')
