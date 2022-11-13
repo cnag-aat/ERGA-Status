@@ -527,7 +527,7 @@ class UserProfile(models.Model):
     user = models.ForeignKey(
             settings.AUTH_USER_MODEL,
             on_delete=models.CASCADE,
-            related_name='submission_team_lead'
+            related_name='user_profile'
         )
     roles = MultiSelectField(choices=ROLE_CHOICES)
     affiliation = models.CharField(max_length=100)
