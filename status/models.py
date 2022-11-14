@@ -28,6 +28,7 @@ SEQUENCING_STATUS_CHOICES = (
     ('TopUp', 'TopUp'),
     ('External', 'External'),
     ('Submitted', 'Submitted'),
+    ('Done', 'Done'),
     ('Issue', 'Issue')
 )
 
