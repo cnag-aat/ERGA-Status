@@ -453,10 +453,10 @@ class GenomeTeamsTable(tables.Table):
     annotation_team = tables.Column(accessor='annotation.team',verbose_name='Annotation',linkify=True)
 
 
-    edit_collection = tables.LinkColumn(
+    edit_sampling = tables.LinkColumn(
         viewname = 'admin:status_samplecollection_change',
         args=[A('pk')],
-        accessor=A('__str__')  # or whatever attribute of your instance you want to display
+        accessor=A('species')  # or whatever attribute of your instance you want to display
         )
     tolid_prefix = tables.Column(linkify=True)
     scientific_name = tables.Column(linkify=True)
@@ -466,4 +466,4 @@ class GenomeTeamsTable(tables.Table):
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
         # fields = ('tolid_prefix', 'scientific_name','genomic_sample_status','hic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','curation_status','annotation_status','submission_status')
-        fields = ('tolid_prefix', 'scientific_name','collection_team','edit_collection','sequencing_team','assembly_team','annotation_team')
+        fields = ('tolid_prefix', 'scientific_name','collection_team','edit_sampling','sequencing_team','assembly_team','annotation_team')
