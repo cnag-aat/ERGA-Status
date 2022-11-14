@@ -455,8 +455,9 @@ class GenomeTeamsTable(tables.Table):
 
     edit_sampling = tables.LinkColumn(
         viewname = 'admin:status_samplecollection_change',
-        args=[A('pk')],
-        accessor=A('species')  # or whatever attribute of your instance you want to display
+        # args=[A('pk')],
+        # accessor=A('species'),
+        kwargs={"pk": tables.A("pk")}, empty_values=()  # or whatever attribute of your instance you want to display
         )
     tolid_prefix = tables.Column(linkify=True)
     scientific_name = tables.Column(linkify=True)
