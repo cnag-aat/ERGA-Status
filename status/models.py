@@ -18,6 +18,7 @@ COLLECTION_STATUS_CHOICES = (
     ('Sampling', 'Sampling'),
     ('Resampling', 'Resampling'),
     ('COPO', 'COPO'),
+    ('Submitted', 'Submitted'),
     ('Issue', 'Issue')
 )
 
@@ -33,8 +34,8 @@ SEQUENCING_STATUS_CHOICES = (
 ASSEMBLY_STATUS_CHOICES = (
     ('Waiting', 'Waiting'),
     ('Assembling', 'Assembling'),
-    ('Scaffolding', 'Scaffolding'),
     ('Contigs', 'Contigs'),
+    ('Scaffolding', 'Scaffolding'),
     ('Scaffolds', 'Scaffolds'),
     ('Curating', 'Curating'),
     ('Done', 'Done'),
