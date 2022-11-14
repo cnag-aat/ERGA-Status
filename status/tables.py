@@ -449,7 +449,7 @@ class GenomeTeamsTable(tables.Table):
     export_formats = ['csv', 'tsv','xls']
     collection_team = tables.Column(accessor='samplecollection.team',verbose_name='Sampling',linkify=True)
     sequencing_team = tables.Column(accessor='sequencing.team',verbose_name='Sequencing',linkify=True)
-    assembly_team = tables.Column(accessor='assembly.team',verbose_name='Assembly',linkify=True)
+    assembly_team = tables.Column(accessor='assemblyproject.team',verbose_name='Assembly',linkify=True)
     annotation_team = tables.Column(accessor='annotation.team',verbose_name='Annotation',linkify=True)
 
     edit_sampling = tables.Column(verbose_name='Edit sampling')
