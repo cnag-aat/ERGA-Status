@@ -17,6 +17,7 @@ from status.views import SampleListView
 from status.views import HomeView
 from status.views import OverView
 from status.views import AccessDeniedView
+from status.views import GenomeTeamsView
 
 urlpatterns = [
     path("", HomeView.as_view(), name="home"),
@@ -49,5 +50,6 @@ urlpatterns = [
     path("annotation/", AnnotationListView.as_view(), name="annotation_list"),
     path("submission/", SubmissionListView.as_view(), name="submission_list"),
     path('access_denied/', AccessDeniedView.as_view(), name="access_denied"),
+    path('teams/', GenomeTeamsView.as_view(), name="genome_teams"),
 
 ]
