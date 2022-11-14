@@ -269,3 +269,11 @@ class SubmissionListView(ExportMixin, SingleTableMixin, FilterView):
 
 class AccessDeniedView(TemplateView):
     template_name = 'denied.html'
+
+class GenomeTeamsView(ExportMixin, SingleTableMixin, FilterView):
+    model = TargetSpecies
+    table_class = GenomeTeamsTable
+    template_name = 'genometeams.html'
+    export_formats = ['csv', 'tsv','xlsx','json']
+    #filterset_class = SpeciesFilter
+    table_pagination = {"per_page": 100}

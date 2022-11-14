@@ -444,3 +444,20 @@ class SampleTable(tables.Table):
         model = Sample
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
+
+class GenomeTeamsTable(tables.Table):
+    export_formats = ['csv', 'tsv','xls']
+    collection_team = tables.Column(accessor='samplecollection.team',verbose_name='Sampling')
+    sequencing_team = tables.Column(accessor='sequencing.team',verbose_name='Sequencing')
+    assembly_team = tables.Column(accessor='assembly.team',verbose_name='Assembly')
+    annotation_team = tables.Column(accessor='annotation.team',verbose_name='Annotation')
+
+    tolid_prefix = tables.Column(linkify=True)
+    scientific_name = tables.Column(linkify=True)
+
+    class Meta:
+        model = TargetSpecies
+        template_name = "django_tables2/bootstrap4.html"
+        paginate = {"per_page": 100}
+        # fields = ('tolid_prefix', 'scientific_name','genomic_sample_status','hic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','curation_status','annotation_status','submission_status')
+        fields = ('tolid_prefix', 'scientific_name','collection_team','sequencing_team','assembly_team','annotation_team')
