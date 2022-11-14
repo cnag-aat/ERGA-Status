@@ -447,10 +447,10 @@ class SampleTable(tables.Table):
 
 class GenomeTeamsTable(tables.Table):
     export_formats = ['csv', 'tsv','xls']
-    collection_team = tables.Column(accessor='samplecollection.team',verbose_name='Sampling')
-    sequencing_team = tables.Column(accessor='sequencing.team',verbose_name='Sequencing')
-    assembly_team = tables.Column(accessor='assembly.team',verbose_name='Assembly')
-    annotation_team = tables.Column(accessor='annotation.team',verbose_name='Annotation')
+    collection_team = tables.Column(accessor='samplecollection.team',verbose_name='Sampling',linkify=True)
+    sequencing_team = tables.Column(accessor='sequencing.team',verbose_name='Sequencing',linkify=True)
+    assembly_team = tables.Column(accessor='assembly.team',verbose_name='Assembly',linkify=True)
+    annotation_team = tables.Column(accessor='annotation.team',verbose_name='Annotation',linkify=True)
 
     tolid_prefix = tables.Column(linkify=True)
     scientific_name = tables.Column(linkify=True)
