@@ -26,7 +26,7 @@ SEQUENCING_STATUS_CHOICES = (
     ('Sequencing', 'Sequencing'),
     ('TopUp', 'TopUp'),
     ('External', 'External'),
-    ('Sent', 'Sent'),
+    ('Submitted', 'Submitted'),
     ('Issue', 'Issue')
 )
 
@@ -35,8 +35,10 @@ ASSEMBLY_STATUS_CHOICES = (
     ('Assembling', 'Assembling'),
     ('Scaffolding', 'Scaffolding'),
     ('Contigs', 'Contigs'),
+    ('Scaffolds', 'Scaffolds'),
+    ('Curating', 'Curating'),
     ('Done', 'Done'),
-    ('Sent', 'Sent'),
+    ('Submitted', 'Submitted'),
     ('Issue', 'Issue')
 )
 

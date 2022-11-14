@@ -27,9 +27,9 @@ class OverviewTable(tables.Table):
     hic_seq_status = tables.Column(accessor='sequencing.hic_seq_status',verbose_name='HiC-Seq',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
     rna_seq_status = tables.Column(accessor='sequencing.rna_seq_status',verbose_name='RNA-Seq',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
     assembly_status = tables.Column(accessor='assemblyproject.status',verbose_name='Assembly',attrs={"td": {"class": "analysis_col"},"th": {"class": "analysis_col"}})
-    curation_status = tables.Column(accessor='curation.status',verbose_name='Curation',attrs={"td": {"class": "analysis_col"},"th": {"class": "analysis_col"}})
+    # curation_status = tables.Column(accessor='curation.status',verbose_name='Curation',attrs={"td": {"class": "analysis_col"},"th": {"class": "analysis_col"}})
     annotation_status = tables.Column(accessor='annotation.status',verbose_name='Annotation',attrs={"td": {"class": "analysis_col"},"th": {"class": "analysis_col"}})
-    submission_status = tables.Column(accessor='submission.status',verbose_name='Submission',attrs={"td": {"class": "analysis_col"},"th": {"class": "analysis_col"}})
+    # submission_status = tables.Column(accessor='submission.status',verbose_name='Submission',attrs={"td": {"class": "analysis_col"},"th": {"class": "analysis_col"}})
 
     tolid_prefix = tables.Column(linkify=True)
     scientific_name = tables.Column(linkify=True)
@@ -89,12 +89,12 @@ class OverviewTable(tables.Table):
     def value_assembly_status(self, value):
         return value
 
-    def render_curation_status(self, value, record):
-        html = '<a href="/erga-status/curation/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
-        return mark_safe(html)
+    # def render_curation_status(self, value, record):
+    #     html = '<a href="/erga-status/curation/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+    #     return mark_safe(html)
 
-    def value_curation_status(self, value):
-        return value
+    # def value_curation_status(self, value):
+    #     return value
 
     def render_annotation_status(self, value, record):
         html = '<a href="/erga-status/annotation/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
@@ -103,19 +103,19 @@ class OverviewTable(tables.Table):
     def value_annotation_status(self, value):
         return value
 
-    def render_submission_status(self, value, record):
-        html = '<a href="/erga-status/submission/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
-        return mark_safe(html)
+    # def render_submission_status(self, value, record):
+    #     html = '<a href="/erga-status/submission/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+    #     return mark_safe(html)
 
-    def value_submission_status(self, value):
-        return value
+    # def value_submission_status(self, value):
+    #     return value
 
     class Meta:
         model = TargetSpecies
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
         # fields = ('tolid_prefix', 'scientific_name','genomic_sample_status','hic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','curation_status','annotation_status','submission_status')
-        fields = ('tolid_prefix', 'scientific_name','genomic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','curation_status','annotation_status','submission_status')
+        fields = ('tolid_prefix', 'scientific_name','genomic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','annotation_status')
 
 class TargetSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']
