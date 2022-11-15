@@ -452,12 +452,12 @@ class GenomeTeamsTable(tables.Table):
     assembly_team = tables.Column(accessor='assemblyproject.team',verbose_name='Assembly',linkify=True)
     annotation_team = tables.Column(accessor='annotation.team',verbose_name='Annotation',linkify=True)
 
-    edit_sampling = tables.Column(verbose_name='Edit sampling')
+    # edit_sampling = tables.Column(verbose_name='Edit sampling')
     # edit_sampling = tables.LinkColumn(
     #     viewname = 'admin:status_samplecollection_change',
     #     kwargs={"pk": tables.A("pk")}, empty_values=()  # or whatever attribute of your instance you want to display
     #     )
-    # def render_edit_sampling(self, value, record):
+    # def render_collection_team(self, value, record):
     #     html = '<a target="blank" href="https://www.ebi.ac.uk/ena/browser/view/'+value+'">'+escape(value)+'</a>'
     #     return mark_safe(html)
     tolid_prefix = tables.Column(linkify=True)
