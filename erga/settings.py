@@ -76,7 +76,7 @@ ROOT_URLCONF = 'erga.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        "DIRS": ["/home/www/resistome.cnag.cat/erga/erga/templates","/home/www/resistome.cnag.cat/erga/erga/templates/account/","/erga/status/templates/","/erga/erga/templates/"],
+        "DIRS": ["/home/www/resistome.cnag.cat/erga-dev/erga/templates","/home/www/resistome.cnag.cat/erga-dev/erga/templates/account/","/erga-dev/status/templates/","/erga-dev/erga/templates/"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -102,8 +102,8 @@ WSGI_APPLICATION = 'erga.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'assembly_status',
-        'USER': 'assembly_admin',
+        'NAME': 'erga_stream_dev',
+        'USER': 'ergastreamdev-admin',
         'PASSWORD': config('DB_PASSWORD'),
         'HOST': '127.0.0.1',
         'PORT': '3306',
@@ -182,13 +182,13 @@ AUTHENTICATION_BACKENDS = (
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 SITE_ID = 1
-ACCOUNT_LOGOUT_REDIRECT_URL="https://genomes.cnag.cat/erga-status/"
+ACCOUNT_LOGOUT_REDIRECT_URL="https://genomes.cnag.cat/erga-stream-dev/"
 LOGIN_REDIRECT_URL = 'home'
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS=7
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
-EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = "https://genomes.cnag.cat/erga-status/accounts/login/"
-LOGIN_URL="/erga-status/accounts/login/"
+EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = "https://genomes.cnag.cat/erga-stream-dev/accounts/login/"
+LOGIN_URL="/erga-stream-dev/accounts/login/"
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 #EMAIL_USE_TLS = False

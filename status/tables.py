@@ -41,70 +41,70 @@ class OverviewTable(tables.Table):
     #         +'"><span class="'+escape(value)+'">'+escape(value)+'</span>')
 
     def render_genomic_sample_status(self, value, record):
-        html = '<a href="/erga-status/collection/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        html = '<a href="/erga-stream-dev/collection/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
     def value_genomic_sample_status(self, value):
         return value
 
     # def render_hic_sample_status(self, value, record):
-    #     html = '<a href="/erga-status/collection/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+    #     html = '<a href="/erga-stream-dev/collection/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
     #     return mark_safe(html)
 
     def value_hic_sample_status(self, value):
         return value
 
     def render_rna_sample_status(self, value, record):
-        html = '<a href="/erga-status/collection/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        html = '<a href="/erga-stream-dev/collection/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
     def value_rna_sample_status(self, value):
         return value
 
     def render_genomic_seq_status(self, value, record):
-        html = '<a href="/erga-status/sequencing/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        html = '<a href="/erga-stream-dev/sequencing/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
     def value_genomic_seq_status(self, value):
         return value
 
     def render_hic_seq_status(self, value, record):
-        html = '<a href="/erga-status/sequencing/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        html = '<a href="/erga-stream-dev/sequencing/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
     def value_hic_seq_status(self, value):
         return value
 
     def render_rna_seq_status(self, value, record):
-        html = '<a href="/erga-status/sequencing/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        html = '<a href="/erga-stream-dev/sequencing/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
     def value_rna_seq_status(self, value):
         return value
 
     def render_assembly_status(self, value, record):
-        html = '<a href="/erga-status/projects/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        html = '<a href="/erga-stream-dev/projects/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
     def value_assembly_status(self, value):
         return value
 
     # def render_curation_status(self, value, record):
-    #     html = '<a href="/erga-status/curation/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+    #     html = '<a href="/erga-stream-dev/curation/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
     #     return mark_safe(html)
 
     # def value_curation_status(self, value):
     #     return value
 
     def render_annotation_status(self, value, record):
-        html = '<a href="/erga-status/annotation/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        html = '<a href="/erga-stream-dev/annotation/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
     def value_annotation_status(self, value):
         return value
 
     # def render_submission_status(self, value, record):
-    #     html = '<a href="/erga-status/submission/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+    #     html = '<a href="/erga-stream-dev/submission/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
     #     return mark_safe(html)
 
     # def value_submission_status(self, value):
@@ -447,10 +447,10 @@ class SampleTable(tables.Table):
 
 class GenomeTeamsTable(tables.Table):
     export_formats = ['csv', 'tsv','xls']
-    collection_team = tables.Column(accessor='samplecollection.team',verbose_name='Sampling',linkify=True)
-    sequencing_team = tables.Column(accessor='sequencing.team',verbose_name='Sequencing',linkify=True)
-    assembly_team = tables.Column(accessor='assemblyproject.team',verbose_name='Assembly',linkify=True)
-    annotation_team = tables.Column(accessor='annotation.team',verbose_name='Annotation',linkify=True)
+    collection_team = tables.Column(verbose_name='Sampling',linkify=True)
+    sequencing_team = tables.Column(verbose_name='Sequencing',linkify=True)
+    assembly_team = tables.Column(verbose_name='Assembly',linkify=True)
+    annotation_team = tables.Column(verbose_name='Annotation',linkify=True)
 
     # edit_sampling = tables.Column(verbose_name='Edit sampling')
     # edit_sampling = tables.LinkColumn(
