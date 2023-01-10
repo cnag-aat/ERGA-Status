@@ -221,11 +221,34 @@ class Synonyms(models.Model):
     def __str__(self):
         return self.name
 
+class Affiliation(models.Model):
+    affiliation = models.CharField(max_length=500, null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = 'affiliations'
+
+    def __str__(self):
+        return self.affiliation
+
+
+class Person(models.Model):
+    first_name = models.CharField(max_length=100, null=True, blank=True)
+    middle_name = models.CharField(max_length=100, null=True, blank=True)
+    last_name = models.CharField(max_length=100, null=True, blank=True)
+    affiliation = models.ManyToManyField(Affiliation)
+    orcid = models.CharField(max_length=40, null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = 'people'
+
+    def __str__(self):
+        return self.first_name + " " + self.last_name + " ("+self.affiliation+")"
+
 class AnnotationTeam(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True)
-    affiliation = models.CharField(max_length=100)
+    affiliation = models.ManyToManyField(Affiliation)
     lead = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        Person,
         on_delete=models.SET_NULL, null=True,
         related_name='annotation_team_lead'
     )
@@ -241,9 +264,9 @@ class AnnotationTeam(models.Model):
 
 class SubmissionTeam(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True)
-    affiliation = models.CharField(max_length=100)
+    affiliation = models.ManyToManyField(Affiliation)
     lead = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        Person,
         on_delete=models.SET_NULL, null=True,
         related_name='submission_team_lead'
     )
@@ -261,7 +284,7 @@ class AssemblyTeam(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True)
     affiliation = models.CharField(max_length=100)
     contact = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        Person,
         on_delete=models.SET_NULL, null=True,
         related_name='assembly_team_lead'
     )
@@ -280,7 +303,7 @@ class CurationTeam(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True)
     affiliation = models.CharField(max_length=100)
     lead = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        Person,
         on_delete=models.SET_NULL, null=True,
         related_name='curation_team_lead'
     )
@@ -296,19 +319,19 @@ class CurationTeam(models.Model):
 
 class SequencingTeam(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True)
-    affiliation = models.CharField(max_length=100)
+    affiliation = models.ManyToManyField(Affiliation)
     lead = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        Person,
         on_delete=models.SET_NULL, null=True,
         related_name='sequencing_team_lead'
     )
     reception = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        Person,
         on_delete=models.SET_NULL, null=True,
         related_name='sample_reception'
     )
     delivery = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        Person,
         on_delete=models.SET_NULL, null=True,
         related_name='data_delivery'
     )
@@ -325,7 +348,7 @@ class SequencingTeam(models.Model):
 class CollectionTeam(models.Model):
     affiliation = models.CharField(max_length=100)
     coordinator = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        Person,
         on_delete=models.SET_NULL, null=True,
         related_name='collection_team_lead'
     )
@@ -336,6 +359,39 @@ class CollectionTeam(models.Model):
 
     def __str__(self):
         return self.coordinator.username + " ("+self.affiliation+")"
+
+class TaxonomyTeam(models.Model):
+    affiliation = models.CharField(max_length=100)
+    coordinator = models.ForeignKey(
+        Person,
+        on_delete=models.SET_NULL, null=True,
+        related_name='taxonomy_team_lead'
+    )
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('taxonomy_team_detail', args=[str(self.pk)])
+
+    def __str__(self):
+        return self.coordinator.username + " ("+self.affiliation+")"
+
+
+class GenomeTeam(models.Model):
+    species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
+    sample_coordinator = models.ForeignKey(Person, on_delete=models.SET_NULL, null=True, verbose_name="sample_coordinator")
+    taxonomy_team = models.ForeignKey(TaxonomyTeam, on_delete=models.SET_NULL, null=True, verbose_name="taxonomy team")
+    collection_team = models.ForeignKey(CollectionTeam, on_delete=models.SET_NULL, null=True, verbose_name="collection team")
+    sequencing_team = models.ForeignKey(SequencingTeam, on_delete=models.SET_NULL, null=True, verbose_name="sequencing team")
+    assembly_team = models.ForeignKey(AssemblyTeam, on_delete=models.SET_NULL, null=True, verbose_name="assembly team")
+    annotation_team = models.ForeignKey(AnnotationTeam, on_delete=models.SET_NULL, null=True, verbose_name="annotation team")
+
+    class Meta:
+        verbose_name_plural = 'genome teams'
+    
+    def __str__(self):
+        return self.species.tolid_prefix
+
+
 
 
 class SampleCollection(models.Model):
@@ -533,6 +589,6 @@ class UserProfile(models.Model):
             related_name='user_profile'
         )
     roles = MultiSelectField(choices=ROLE_CHOICES)
-    affiliation = models.CharField(max_length=100)
+    affiliation = models.ManyToManyField(Affiliation)
     def __str__(self):
         return self.user.username
