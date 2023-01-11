@@ -1,5 +1,4 @@
 
-# Load initial Resistom data from excel into the database
 import django
 django.setup()
 
