@@ -27,7 +27,7 @@ while (my $line = <SPECIES>){
   chomp $line;
   my @species_data = split "\t",$line;
   print STDERR "Looking up $species_data[0] in GoaT... \n";
-  print "$species_data[0] not found! Skipping...\n" unless getSpecies(\@species_data);
+  print STDERR "$species_data[0] not found! Skipping...\n" unless getSpecies(\@species_data);
 }
 
 sub getSpecies {
@@ -40,6 +40,8 @@ sub getSpecies {
   $goatclient->GET("$goat_url"."lookup?searchTerm=$speciesquery&result=taxon&size=10&taxonomy=ncbi&suggestSize=3&gramSize=3&maxErrors=3&confidence=1&indent=4");
   my $goatresponse1 = decode_json $goatclient->responseContent();
   my $species_array = $goatresponse1->{results};
+  my $num_hits = $goatresponse1->{status}->{hits};
+  if (!$num_hits){print STDERR $species_data[0]," not found. Skipping...\n"; return 0;}
   my $taxid = $species_array->[0]->{result}->{taxon_id};
   print STDERR "Fetching taxid:$taxid from GoaT\n";# and exit;
   if ($taxid=~/^[\d]*$/){
