@@ -22,134 +22,75 @@ usage: $0 <species_list.tsv>
 
 END_HELP
 open SPECIES, "<$ARGV[0]";
+print join("\t",qw(taxon_id kingdom phylum class order family genus scientific_name tolid_prefix chromosome_number haploid_number ploidy c_value genome_size common_name synonym)),"\n";
 while (my $line = <SPECIES>){
   chomp $line;
   my @species_data = split "\t",$line;
   print STDERR "Looking up $species_data[0] in GoaT... \n";
-  die "No species data!\n" unless getSpecies(\@species_data);
+  print "$species_data[0] not found! Skipping...\n" unless getSpecies(\@species_data);
 }
-
-
-#"lookup?searchTerm=Dendarus%20foraminosus&result=taxon&size=10&taxonomy=ncbi&suggestSize=3&gramSize=3&maxErrors=3&confidence=1&indent=4"
 
 sub getSpecies {
   my $arrayref = shift;
-  my @species_data = @$array_ref;
-  print STDERR $species_data[0] and exit;
-  #Retrieve copo_ids from COPO for ERGA project
-  $goatclient->GET("$goat_url/"."lookup?searchTerm=$speciesquery&result=taxon&size=10&taxonomy=ncbi&suggestSize=3&gramSize=3&maxErrors=3&confidence=1&indent=4");
+  my @species_data = @$arrayref;
+  my $speciesquery = $species_data[0];
+  my $space = '%20';
+  $speciesquery=~s/ /$space/g;
+  my $query = "$goat_url"."lookup?searchTerm=$speciesquery&result=taxon&size=10&taxonomy=ncbi&suggestSize=3&gramSize=3&maxErrors=3&confidence=1&indent=4";
+  $goatclient->GET("$goat_url"."lookup?searchTerm=$speciesquery&result=taxon&size=10&taxonomy=ncbi&suggestSize=3&gramSize=3&maxErrors=3&confidence=1&indent=4");
   my $goatresponse1 = decode_json $goatclient->responseContent();
-  #print STDERR "$response1\n";
-  #print STDERR $response1->{data},"\n";
-  my $sample_array = $goatresponse1->{data};
-  foreach my $record (@$sample_array){
-    my $copo_id = $record->{copo_id};
-    print STDERR "COPO ID: $copo_id\n";
-    $goatclient->GET("$goat_url/sample/copo_id/$copo_id/");
+  my $species_array = $goatresponse1->{results};
+  my $taxid = $species_array->[0]->{result}->{taxon_id};
+  print STDERR "Fetching taxid:$taxid from GoaT\n";# and exit;
+  if ($taxid=~/^[\d]*$/){
+    $goatclient->GET("$goat_url"."record?recordId=$taxid&result=taxon&taxonomy=ncbi");
     my $goatresponse2 = decode_json $goatclient->responseContent();
-    #print STDERR "$response2\n";
-    my $number_found = $response2->{number_found};
-    print STDERR "$number_found samples found for $copo_id\n";
-    if ($number_found){
-      my $sample_details = $response2->{data};
-      foreach my $s (@$sample_details){
-        # check if sample exists and update or insert.
-        # need to get species using tolid_prefix or TAXON_ID
-        # try to match up with collection or collection_team and set status
-        print STDERR "$s->{status}\n";
-        next if $s->{status} ne 'accepted';
-        next if $s->{PURPOSE_OF_SPECIMEN} =~/BARCODING/;
-        my $tolid = $s->{public_name};
-        my $tolid_prefix = $tolid;
-        $tolid_prefix =~ s/\d+$//;
-        my $sample_accession = $s->{biosampleAccession};
-        my $species_pk = 0;
-        # CHECK for species in tracker. Skip if species not there?
-        my $species_query = "$erga_status_url/species/?tolid_prefix=$tolid_prefix ";
-        my $species_id = '';
-        $client->GET($species_query);
-        my $species_response = decode_json $client->responseContent();
-        print STDERR $client->responseContent();
-        print STDERR "\n$species_response\n";
-        if ($species_response->{count} < 1) {
-          print STDERR "Species '",$s->{SCIENTIFIC_NAME}," ($tolid_prefix) doesn't exist. Please add first.\n";
-          next;
-        }else{
-          my $species_url = $species_response->{results}->[0]->{url};
-          $species_url =~/(\d+)\/$/; $species_pk=$1;
-          $species_id = $species_url;
-          print STDERR "Species ID: $species_id\n";
-        }
-        print STDERR "building insert\n";
-        #build insert
-        my $record = {};
-        $record->{biosampleAccession} = $sample_accession;
-        $record->{tolid} = $s->{public_name};
-        $record->{specimen_id} = $s->{SPECIMEN_ID};
-        $record->{species} = $species_id;
-        $record->{barcode} = '';
-        $record->{sample_coordinator} = $s->{SAMPLE_COORDINATOR};
-        # collection = models.ForeignKey(SampleCollection, on_delete=models.CASCADE, verbose_name="Collection")
-        $record->{purpose_of_specimen} = $s->{PURPOSE_OF_SPECIMEN};
-        $record->{gal} = $s->{GAL};
-        $record->{collector_sample_id} = $s->{COLLECTOR_SAMPLE_ID};
-        $record->{copo_date} = $s->{time_updated};
+    #print Data::Dumper->Dump([$goatresponse2]) and exit;
+    my $record = $goatresponse2->{records}->[0]->{record};
+    #print Data::Dumper->Dump([$record]);
+    my %out;
+    $out{'taxon_id'}=$taxid;
+    $out{'scientific_name'}=$record->{'scientific_name'};
+    $out{'chromosome_number'}=$record->{attributes}->{'chromosome_number'}->{'value'};
+    $out{'haploid_number'}=$record->{attributes}->{'haploid_number'}->{'value'};
+    $out{'c_value'}=$record->{attributes}->{'c_value'}->{'value'};
+    $out{'genome_size'}=$record->{attributes}->{'genome_size'}->{'value'};
+    $out{'ploidy'}=$record->{attributes}->{'ploidy'}->{'value'};
 
-        print STDERR $s->{TAXON_ID},"\n";
-        print STDERR $s->{SCIENTIFIC_NAME},"\n";
-        print STDERR $s->{public_name},"\n";
-        print STDERR $s->{SPECIMEN_ID},"\n";
-        print STDERR $s->{SAMPLE_COORDINATOR},"\n";
-        print STDERR $s->{PURPOSE_OF_SPECIMEN},"\n";
-        print STDERR $s->{GAL},"\n";
-        print STDERR $s->{COLLECTOR_SAMPLE_ID},"\n";
-        print STDERR $s->{biosampleAccession},"\n";
-        print STDERR $s->{time_updated},"\n";
-        print STDERR $s->{status},"\n";
-        print STDERR "-----------------------\n";
-        #wrap it all up in JSON string
-        my $insert = encode_json $record;
-        # CHECK if sample exists in tracker. If so, we will PATCH. If not, POST.
-        my $query = "$erga_status_url/sample/?biosampleAccession=$sample_accession ";
-        #print "$query\n";
-        $client->GET($query);
-        my $response3 = decode_json $client->responseContent();
-        if ($response3->{count} > 0) {
-          #PATCH
-          print STDERR "Updating existing record: ",
-            $response3 ->{results}->[0]->{url},"... \n";
-          $client->PATCH($response3 ->{results}->[0]->{url}, $insert);
-          print STDERR "\nResponse:",$client->responseContent(),"\n";
-        }else{
-          #POST
-          print STDERR "Inserting... ";
-          $client->POST("$erga_status_url/sample/", $insert);
-          print STDERR "\nResponse:",$client->responseContent(),"\n";
-        }
-        my $sample_collection_record = {};
-        $sample_collection_record->{species} = $species_id;
-        if ($s->{PURPOSE_OF_SPECIMEN} =~/REFERENCE_GENOME/){
-          $sample_collection_record->{genomic_sample_status} = 'Submitted';
-        }
-        if ($s->{PURPOSE_OF_SPECIMEN} =~/RNA_SEQUENCING/){
-          $sample_collection_record->{rna_sample_status} = 'Submitted';
-        }
-        my $status_insert = encode_json $sample_collection_record;
-        my $sample_collection_query = "$erga_status_url/sample_collection/?species=".$species_pk;
-        #print "$query\n";
-        $client->GET($sample_collection_query);
-        print STDERR "Sample Collection Query Response:", $client->responseContent(),"\n";
-        my $response4 = decode_json $client->responseContent();
-        if ($response4->{count} > 0) {
-          print STDERR "Updating sample collection record... ";
-          $client->PATCH($response4 ->{results}->[0]->{url}, $status_insert);
-          print STDERR "\nResponse:",$client->responseContent(),"\n";
-        }else{
-          $client->POST("$erga_status_url/sample_collection/", $status_insert);
-          print STDERR "\nResponse:",$client->responseContent(),"\n";
-        }
-      }
+    $out{'common_name'}=exists($record->{attributes}->{'common_name'})?$record->{attributes}->{'common_name'}->{'value'}:'';
+    $out{'synonym'}=exists($record->{attributes}->{'synonym'})?$record->{attributes}->{'synonym'}->{'value'}:'';
+    foreach my $taxrec (@{$record->{'taxon_names'}}){
+      $out{'tolid_prefix'} = $taxrec->{'name'} if $taxrec->{'class'} eq 'tolid_prefix';
     }
+    foreach my $lin (@{$record->{'lineage'}}){
+      $out{'kingdom'} = $lin->{'scientific_name'} if $lin->{'taxon_rank'} eq 'kingdom';
+      $out{'phylum'} = $lin->{'scientific_name'} if $lin->{'taxon_rank'} eq 'phylum';
+      $out{'class'} = $lin->{'scientific_name'} if $lin->{'taxon_rank'} eq 'class';
+      $out{'order'} = $lin->{'scientific_name'} if $lin->{'taxon_rank'} eq 'order';
+      $out{'family'} = $lin->{'scientific_name'} if $lin->{'taxon_rank'} eq 'family';
+      $out{'genus'} = $lin->{'scientific_name'} if $lin->{'taxon_rank'} eq 'genus';
+    }
+    print join(
+      "\t",
+        ($out{'taxon_id'},
+        $out{'kingdom'},
+        $out{'phylum'},
+        $out{'class'},
+        $out{'order'},
+        $out{'family'},
+        $out{'genus'},
+        $out{'scientific_name'},
+        $out{'tolid_prefix'},
+        $out{'chromosome_number'},
+        $out{'haploid_number'},
+        $out{'ploidy'},
+        $out{'c_value'},
+        $out{'genome_size'},
+        $out{'common_name'},
+        $out{'synonym'}
+        )
+      ),"\n";
   }
+
   return 1;
 }
