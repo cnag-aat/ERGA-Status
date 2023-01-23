@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'qurl_templatetag',
     'multiselectfield',
+    'modelclone',
 #    'query_string'
 ]
 

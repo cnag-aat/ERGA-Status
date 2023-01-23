@@ -9,34 +9,15 @@
   <div class="col-md-12">
     <div class="card mb-12">
       <div class="card-body">
-        <h5 class="card-title">Sequencing Team</h5>
-        <p>Institution: {{ team.affiliation }}</p>
-        </br>
-
-        <div class="card mb-12">
-          <div class="card-body">
-            <h5 class="card-title">Team Lead</h5>
-            Name: {{ team.lead.first_name }} {{ team.lead.last_name }}</br>
-            email: {{ team.lead.email }}</br>
-          </div>
-        </div>
-
-        <div class="card mb-12">
-          <div class="card-body">
-            <h5 class="card-title">Sample Reception</h5>
-            Name: {{ team.reception.first_name }} {{ team.reception.last_name }}</br>
-            email: {{ team.reception.email }}</br>
-          </div>
-        </div>
-
-        <div class="card mb-12">
-          <div class="card-body">
-            <h5 class="card-title">Data Transfer</h5>
-            Name: {{ team.delivery.first_name }} {{ team.delivery.last_name }}</br>
-            email: {{ team.delivery.email }}</br>
-          </div>
-        </div>
-
+        <h5 class="card-title">{{ team.name }} (created {{ team.created }})</h5>
+        Lead: {{ team.lead.first_name }} {{ team.lead.last_name }}</br>
+        email: {{ team.lead.email }}</br>
+      </div>
+    </div>
+    <div class="card mb-12">
+      <div class="card-body">
+        <h5 class="card-title">{{ team.name }}  Members</h5>
+        {% for mem in team.members.all %}{{ mem }}<br/>{% endfor %}
       </div>
     </div>
   </div>
