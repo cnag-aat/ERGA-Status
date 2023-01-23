@@ -271,7 +271,7 @@ class AccessDeniedView(TemplateView):
     template_name = 'denied.html'
 
 class GenomeTeamsView(ExportMixin, SingleTableMixin, FilterView):
-    model = TargetSpecies
+    model = GenomeTeam
     table_class = GenomeTeamsTable
     template_name = 'genometeams.html'
     export_formats = ['csv', 'tsv','xlsx','json']

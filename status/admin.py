@@ -65,6 +65,11 @@ class MyUserAdmin(UserAdmin):
     list_filter = UserAdmin.list_filter + ('groups__name',)
     list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'group')
 
+
+@register(GenomeTeam)
+class GenomeTeamAdmin(admin.ModelAdmin):
+    save_as = True
+
 admin.site.register(CommonNames)
 admin.site.register(Synonyms)
 admin.site.register(AssemblyTeam)
@@ -82,6 +87,12 @@ admin.site.register(Curation)
 admin.site.register(SubmissionTeam)
 admin.site.register(Submission)
 admin.site.register(SequencingTeam)
+admin.site.register(VoucheringTeam)
+admin.site.register(BarcodingTeam)
+admin.site.register(TaxonomyTeam)
+admin.site.register(SampleHandlingTeam)
+admin.site.register(CommunityAnnotationTeam)
+admin.site.register(ExtractionTeam)
 admin.site.register(Sequencing)
 admin.site.register(Reads)
 admin.site.register(AnnotationTeam)
@@ -92,8 +103,9 @@ admin.site.register(Specimen)
 admin.site.register(Sample)
 admin.site.register(AssemblyPipeline)
 admin.site.register(UserProfile)
-admin.site.register(GenomeTeam)
+#admin.site.register(GenomeTeam)
 admin.site.register(Person)
+admin.site.register(Affiliation)
 
 admin.site.unregister(User)
 admin.site.register(User, MyUserAdmin)

@@ -125,7 +125,7 @@ class TargetSpeciesTable(tables.Table):
         model = TargetSpecies
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        fields = ('tolid_prefix', 'scientific_name','taxon_id', 'genome_size', 'c_value','ploidy','chromosome_number','haploid_number','taxon_kingdom','taxon_phylum','taxon_class','taxon','taxon_family','taxon_genus')
+        fields = ('tolid_prefix', 'scientific_name','taxon_id', 'genome_size', 'c_value','ploidy','chromosome_number','haploid_number','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus')
 
 class AssemblyTable(tables.Table):
     export_formats = ['csv', 'tsv']
@@ -447,9 +447,15 @@ class SampleTable(tables.Table):
 
 class GenomeTeamsTable(tables.Table):
     export_formats = ['csv', 'tsv','xls']
-    collection_team = tables.Column(verbose_name='Sampling',linkify=True)
+    collection_team = tables.Column(verbose_name='Collection',linkify=True)
+    taxonomy_team = tables.Column(verbose_name='Taxonomy',linkify=True)
+    barcoding_team = tables.Column(verbose_name='Barcoding',linkify=True)
+    vouchering_team = tables.Column(verbose_name='Vouchering',linkify=True)
+    sample_handling_team = tables.Column(verbose_name='Sample Handling',linkify=True)
+    extraction_team = tables.Column(verbose_name='Extraction',linkify=True)
     sequencing_team = tables.Column(verbose_name='Sequencing',linkify=True)
     assembly_team = tables.Column(verbose_name='Assembly',linkify=True)
+    community_annotation_team = tables.Column(verbose_name='Community Annotation',linkify=True)
     annotation_team = tables.Column(verbose_name='Annotation',linkify=True)
 
     # edit_sampling = tables.Column(verbose_name='Edit sampling')
@@ -460,12 +466,11 @@ class GenomeTeamsTable(tables.Table):
     # def render_collection_team(self, value, record):
     #     html = '<a target="blank" href="https://www.ebi.ac.uk/ena/browser/view/'+value+'">'+escape(value)+'</a>'
     #     return mark_safe(html)
-    tolid_prefix = tables.Column(linkify=True)
-    scientific_name = tables.Column(linkify=True)
+    
 
     class Meta:
-        model = TargetSpecies
+        model = GenomeTeam
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
         # fields = ('tolid_prefix', 'scientific_name','genomic_sample_status','hic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','curation_status','annotation_status','submission_status')
-        fields = ('tolid_prefix', 'scientific_name','collection_team','sequencing_team','assembly_team','annotation_team')
+        #fields = ( 'species','sample_coordinator','taxonomy_team','collection_team','sequencing_team','assembly_team','annotation_team')
