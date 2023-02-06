@@ -49,7 +49,7 @@ sub getSamples {
   my $sample_array = $response1->{data};
   foreach my $record (@$sample_array){
     my $copo_id = $record->{copo_id};
-    next if $copo_id ne '6204f9735cf948bd32acf113';
+    #next if $copo_id ne '6204f9735cf948bd32acf113';
     print STDERR "COPO ID: $copo_id\n";
     $copoclient->GET("$copo_url/sample/copo_id/$copo_id/");
     my $response2 = decode_json $copoclient->responseContent();
@@ -96,23 +96,23 @@ sub getSamples {
         my $collection_insert = encode_json $collection_record;
         $client->GET($collection_query);
         my $collection_response = decode_json $client->responseContent();
-        print STDERR $client->responseContent();
-        print STDERR "\n$collection_response\n";
+        #print STDERR $client->responseContent();
+        #print STDERR "\n$collection_response\n";
         if ($collection_response->{count} < 1) {
           print STDERR "Collection record for ",$s->{SCIENTIFIC_NAME}," ($tolid_prefix) doesn't exist. Creating it.\n";
           ### create it
           $client->POST("$erga_status_url/sample_collection/", $collection_insert);
           my $new_collection_response = decode_json $client->responseContent();
           $collection_id = $new_collection_response->{results}->[0]->{url};
-          print STDERR "Created Collection ID: $collection_id\n";
+          #print STDERR "Created Collection ID: $collection_id\n";
         }else{
           $collection_id = $collection_response->{results}->[0]->{url};
-          print STDERR "Collection ID: $collection_id\n";
+          #print STDERR "Collection ID: $collection_id\n";
         }
 
         ###### ADD code for Specimen insert first, then do sample insert ######
         #wrap it all up in JSON string
-        print STDERR "building specimen insert\n";
+        #print STDERR "building specimen insert\n";
         #build insert
         my $specimen_record = {};
         $specimen_record->{species} = $species_id;
@@ -133,10 +133,10 @@ sub getSamples {
         
         my $specimen_fk = '';
         my $specimen_insert = encode_json $specimen_record;
-        print STDERR "$specimen_insert\n";
+        #print STDERR "$specimen_insert\n";
         # CHECK if sample exists in tracker. If so, we will PATCH. If not, POST.
         my $specimen_query = "$erga_status_url/specimen/?specimen_id=".$s->{SPECIMEN_ID};
-        print "$specimen_query\n";
+        #print "$specimen_query\n";
         $client->GET($specimen_query);
         my $specimen_response = decode_json $client->responseContent();
         if ($specimen_response->{count} > 0) {
@@ -145,12 +145,12 @@ sub getSamples {
             $specimen_response->{results}->[0]->{url},"... \n";
           $specimen_fk = $specimen_response->{results}->[0]->{url};
           $client->PATCH($specimen_response->{results}->[0]->{url}, $specimen_insert);
-          print STDERR "\nResponse:",$client->responseContent(),"\n";
+          #print STDERR "\nResponse:",$client->responseContent(),"\n";
         }else{
           #POST
           print STDERR "Inserting... ";
           $client->POST("$erga_status_url/specimen/", $specimen_insert);
-          print STDERR "\nResponse:",$client->responseContent(),"\n";
+          #print STDERR "\nResponse:",$client->responseContent(),"\n";
           my $new_specimen_response = decode_json $client->responseContent();
           $specimen_fk = $new_specimen_response->{results}->[0]->{url}
         }
@@ -185,12 +185,12 @@ sub getSamples {
           print STDERR "Updating existing record: ",
             $response3 ->{results}->[0]->{url},"... \n";
           $client->PATCH($response3->{results}->[0]->{url}, $insert);
-          print STDERR "\nResponse:",$client->responseContent(),"\n";
+          #print STDERR "\nResponse:",$client->responseContent(),"\n";
         }else{
           #POST
           print STDERR "Inserting... ";
           $client->POST("$erga_status_url/sample/", $insert);
-          print STDERR "\nResponse:",$client->responseContent(),"\n";
+          #print STDERR "\nResponse:",$client->responseContent(),"\n";
         }
         my $sample_collection_record = {};
         $sample_collection_record->{species} = $species_id;
@@ -204,15 +204,15 @@ sub getSamples {
         my $sample_collection_query = "$erga_status_url/sample_collection/?species=".$species_pk;
         #print "$query\n";
         $client->GET($sample_collection_query);
-        print STDERR "Sample Collection Query Response:", $client->responseContent(),"\n";
+        #print STDERR "Sample Collection Query Response:", $client->responseContent(),"\n";
         my $response4 = decode_json $client->responseContent();
         if ($response4->{count} > 0) {
           print STDERR "Updating sample collection record... ";
           $client->PATCH($response4 ->{results}->[0]->{url}, $status_insert);
-          print STDERR "\nResponse:",$client->responseContent(),"\n";
+          #print STDERR "\nResponse:",$client->responseContent(),"\n";
         }else{
           $client->POST("$erga_status_url/sample_collection/", $status_insert);
-          print STDERR "\nResponse:",$client->responseContent(),"\n";
+          #print STDERR "\nResponse:",$client->responseContent(),"\n";
         }
       }
     }
