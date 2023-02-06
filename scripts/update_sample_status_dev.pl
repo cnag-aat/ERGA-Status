@@ -73,9 +73,14 @@ sub getSamples {
           $species_id = $species_url;
           print STDERR "Species ID: $species_id\n";
         }
-        print STDERR "building insert\n";
+        ###### ADD code for Speciment insert first, then do sample insert ######
+
+
+        ########################################################################
+        print STDERR "building sample insert\n";
         #build insert
         my $record = {};
+        $record->{copo_id} = $copo_id;
         $record->{biosampleAccession} = $sample_accession;
         $record->{tolid} = $s->{public_name};
         $record->{specimen_id} = $s->{SPECIMEN_ID};
@@ -88,18 +93,7 @@ sub getSamples {
         $record->{collector_sample_id} = $s->{COLLECTOR_SAMPLE_ID};
         $record->{copo_date} = $s->{time_updated};
 
-        print STDERR $s->{TAXON_ID},"\n";
-        print STDERR $s->{SCIENTIFIC_NAME},"\n";
-        print STDERR $s->{public_name},"\n";
-        print STDERR $s->{SPECIMEN_ID},"\n";
-        print STDERR $s->{SAMPLE_COORDINATOR},"\n";
-        print STDERR $s->{PURPOSE_OF_SPECIMEN},"\n";
-        print STDERR $s->{GAL},"\n";
-        print STDERR $s->{COLLECTOR_SAMPLE_ID},"\n";
-        print STDERR $s->{biosampleAccession},"\n";
-        print STDERR $s->{time_updated},"\n";
-        print STDERR $s->{status},"\n";
-        print STDERR "-----------------------\n";
+
         #wrap it all up in JSON string
         my $insert = encode_json $record;
         # CHECK if sample exists in tracker. If so, we will PATCH. If not, POST.
