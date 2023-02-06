@@ -584,6 +584,14 @@ class Specimen(models.Model):
     proxy_voucher_link = models.CharField(max_length=200, null=True, blank=True)
     voucher_institution = models.CharField(max_length=200, null=True, blank=True)
     
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('specimen_list', args=[str(self.pk)])
+    
+    def __str__(self):
+        return self.tolid
+
+    
 class Sample(models.Model):
     copo_id = models.CharField(max_length=30, help_text='COPO ID', null=True, blank=True, verbose_name="CopoID")
     biosampleAccession = models.CharField(max_length=20, help_text='BioSample Accession', null=True, blank=True, verbose_name="BioSample")
