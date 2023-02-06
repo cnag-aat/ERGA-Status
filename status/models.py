@@ -594,7 +594,8 @@ class Sample(models.Model):
     collector_sample_id = models.CharField(max_length=40, help_text='Collector Sample ID', null=True, blank=True)
     copo_date = models.CharField(max_length=30, help_text='COPO Time Updated', null=True, blank=True, verbose_name="date")
     specimen = models.ForeignKey(Specimen, on_delete=models.CASCADE, verbose_name="Specimen",null=True, blank=True)
-
+    species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species",null=True, blank=True)
+    
 class Sequencing(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     #team = models.ForeignKey(SequencingTeam, on_delete=models.SET_NULL, null=True, verbose_name="sequencing team")

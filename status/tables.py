@@ -444,7 +444,13 @@ class CommunityAnnotationTable(tables.Table):
         fields = ('species', 'team', 'note', 'status') """
 
 class SpecimenTable(tables.Table):
-
+    species = tables.Column(linkify=True)
+    samples = tables.TemplateColumn('<a href="{% url \'sample_list\' %}?specimen={{record.pk}}">samples</a>',empty_values=(), verbose_name='Samples')
+    
+    #collection = tables.Column(linkify=True)
+    def render_collection(self, value, record):
+        html = '<a href="/erga-stream-dev/collection/?species='+str(record.species.pk)+'">'+escape(value)+'</a>'
+        return mark_safe(html)
     class Meta:
         model = Specimen
         template_name = "django_tables2/bootstrap4.html"
@@ -453,7 +459,12 @@ class SpecimenTable(tables.Table):
 class SampleTable(tables.Table):
     # biosampleAccession = tables.TemplateColumn( '<a href="https://www.ebi.ac.uk/biosamples/samples/{{record.biosampleAccession}}"{{record.biosampleAccession}}</a>',empty_values=(), verbose_name='BioSample')
     species = tables.Column(linkify=True)
-    copo = tables.TemplateColumn('<a href="{% url \'copo\' %}/{{record.copo_id}}/">copo</a>',empty_values=(), verbose_name='COPO Record')
+    specimen = tables.Column(linkify=True)
+    #copo = tables.TemplateColumn('<a href="{% url \'copo\' %}/{{record.copo_id}}/">copo</a>',empty_values=(), verbose_name='COPO Record')
+    def render_copo_id(self, value, record):
+        html = '<a target="blank" <a href="/erga-stream-dev/copo/'+ value +'">'+escape(value)+'</a>'
+        return mark_safe(html)
+
     def render_biosampleAccession(self, value, record):
         html = '<a target="blank" href="https://www.ebi.ac.uk/biosamples/samples/'+value+'">'+escape(value)+'</a>'
         return mark_safe(html)

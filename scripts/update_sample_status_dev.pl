@@ -49,7 +49,7 @@ sub getSamples {
   my $sample_array = $response1->{data};
   foreach my $record (@$sample_array){
     my $copo_id = $record->{copo_id};
-    #next if $copo_id ne '6204f9735cf948bd32acf113';
+    next if $copo_id ne '6204f9735cf948bd32acf113';
     print STDERR "COPO ID: $copo_id\n";
     $copoclient->GET("$copo_url/sample/copo_id/$copo_id/");
     my $response2 = decode_json $copoclient->responseContent();
@@ -142,9 +142,10 @@ sub getSamples {
         if ($specimen_response->{count} > 0) {
           #PATCH
           print STDERR "Updating existing record: ",
-            $specimen_response->{results}->[0]->{url},"... \n";
+          $specimen_response->{results}->[0]->{url},"... \n";
           $specimen_fk = $specimen_response->{results}->[0]->{url};
           $client->PATCH($specimen_response->{results}->[0]->{url}, $specimen_insert);
+          $specimen_fk = $specimen_response->{results}->[0]->{url}
           #print STDERR "\nResponse:",$client->responseContent(),"\n";
         }else{
           #POST
@@ -162,7 +163,6 @@ sub getSamples {
         my $record = {};
         $record->{copo_id} = $copo_id;
         $record->{biosampleAccession} = $sample_accession;
-        $record->{tolid} = $s->{public_name};
         $record->{specimen} = $specimen_fk;
         $record->{barcode} = '';
         $record->{sample_coordinator} = $s->{SAMPLE_COORDINATOR};
@@ -171,8 +171,8 @@ sub getSamples {
         $record->{gal} = $s->{GAL};
         $record->{collector_sample_id} = $s->{COLLECTOR_SAMPLE_ID};
         $record->{copo_date} = $s->{time_updated};
-
-
+        $record->{species} = $species_id;
+        
         #wrap it all up in JSON string
         my $insert = encode_json $record;
         # CHECK if sample exists in tracker. If so, we will PATCH. If not, POST.
