@@ -88,7 +88,7 @@ sub getSamples {
         }
         ###### Check for Collection object
                 # CHECK for species in tracker. Skip if species not there?
-        my $collection_query = "$erga_status_url/collection/?species=$species_id";
+        my $collection_query = "$erga_status_url/sample_collection/?species=$species_id";
         my $collection_id = '';
         my $collection_record = {};
         $collection_record->{species} = $species_id;
