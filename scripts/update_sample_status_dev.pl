@@ -24,15 +24,16 @@ usage: $0
 END_HELP
 
 my $all_species_query = "$erga_status_url/species/ ";
-my @targetspecies = ();
+my %targetspecies = ();
 $client->GET($all_species_query);
 my $all_species_response = decode_json $client->responseContent();
 if ($all_species_response->{count} > 0) {
   for my $i (@{$all_species_response->{results}}){
     print STDERR $i->{scientific_name},"\n";
+    $targetspecies{$i->{scientific_name}}++;
   }
 }
-exit;
+
 my $sample_data;
 print STDERR "Ingesting data from COPO... \n";
 die "No sample data!\n" unless $sample_data=(getSamples($sample_data));
@@ -57,6 +58,7 @@ sub getSamples {
     if ($number_found){
       my $sample_details = $response2->{data};
       foreach my $s (@$sample_details){
+        next if !exists($targetspecies{$s->{SCIENTIFIC_NAME}});
         # check if sample exists and update or insert.
         # need to get species using tolid_prefix or TAXON_ID
         # try to match up with collection or collection_team and set status
