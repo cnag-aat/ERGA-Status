@@ -28,6 +28,7 @@ class OverviewTable(tables.Table):
     rna_seq_status = tables.Column(accessor='sequencing.rna_seq_status',verbose_name='RNA-Seq',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
     assembly_status = tables.Column(accessor='assemblyproject.status',verbose_name='Assembly',attrs={"td": {"class": "analysis_col"},"th": {"class": "analysis_col"}})
     # curation_status = tables.Column(accessor='curation.status',verbose_name='Curation',attrs={"td": {"class": "analysis_col"},"th": {"class": "analysis_col"}})
+    community_annotation_status = tables.Column(accessor='communityannotation.status',verbose_name='Community Annotation',attrs={"td": {"class": "analysis_col"},"th": {"class": "analysis_col"}})
     annotation_status = tables.Column(accessor='annotation.status',verbose_name='Annotation',attrs={"td": {"class": "analysis_col"},"th": {"class": "analysis_col"}})
     # submission_status = tables.Column(accessor='submission.status',verbose_name='Submission',attrs={"td": {"class": "analysis_col"},"th": {"class": "analysis_col"}})
 
@@ -120,12 +121,13 @@ class OverviewTable(tables.Table):
 class TargetSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']
     scientific_name = tables.Column(linkify=True)
-    tolid_prefix = tables.Column(linkify=True)
+    #tolid_prefix = tables.Column(linkify=True)
     class Meta:
         model = TargetSpecies
         template_name = "django_tables2/bootstrap4.html"
+        #order_by = 'taxon_kingdom,taxon_phylum,taxon_class,taxon_order,taxon_family,taxon_genus,scientific_name' # use dash for descending order
         paginate = {"per_page": 100}
-        fields = ('tolid_prefix', 'scientific_name','taxon_id', 'genome_size', 'c_value','ploidy','chromosome_number','haploid_number','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus')
+        fields = ('scientific_name','taxon_id', 'genome_size', 'c_value','ploidy','chromosome_number','haploid_number','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus')
 
 class AssemblyTable(tables.Table):
     export_formats = ['csv', 'tsv']
@@ -161,7 +163,7 @@ class AssemblyProjectTable(tables.Table):
     assemblies = tables.TemplateColumn('<a href="{% url \'assembly_list\' %}?project={{record.pk}}">assemblies</a>',empty_values=(), verbose_name='Assemblies')
     status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</span>',empty_values=(), verbose_name='Status')
     species = tables.Column(linkify=True)
-    team = tables.Column(linkify=True)
+    team = tables.Column(accessor='species__genometeam__assembly_team',linkify=True)
 
     def value_status(self, value):
         return value
@@ -179,7 +181,7 @@ class SampleCollectionTable(tables.Table):
     rna_sample_status = tables.TemplateColumn('<span class="{{record.rna_sample_status}}">{{record.rna_sample_status}}</span>',empty_values=(), verbose_name='RNA Sample')
     species = tables.Column(linkify=True)
     specimens = tables.TemplateColumn('<a href="{% url \'specimen_list\' %}?collection={{record.pk}}">specimens</a>',empty_values=(), verbose_name='Specimen(s)')
-    team = tables.Column(linkify=True)
+    team = tables.Column(accessor='species__genometeam__collection_team',linkify=True)
 
     def value_genomic_sample_status(self, value):
         return value
@@ -200,7 +202,7 @@ class SequencingTable(tables.Table):
     hic_seq_status = tables.TemplateColumn('<span class="{{record.hic_seq_status}}">{{record.hic_seq_status}}</span>',empty_values=(), verbose_name='HiC Status')
     rna_seq_status = tables.TemplateColumn('<span class="{{record.rna_seq_status}}">{{record.rna_seq_status}}</span>',empty_values=(), verbose_name='RNA Status')
     species = tables.Column(linkify=True)
-    team = tables.Column(linkify=True)
+    team = tables.Column(accessor='species__genometeam__sequencing_team',linkify=True)
     reads = tables.TemplateColumn('<a href="{% url \'reads_list\' %}?project={{record.pk}}">reads</a>',empty_values=(), verbose_name='Reads')
 
     def value_genomic_seq_status(self, value):
@@ -388,7 +390,7 @@ class ReadsTable(tables.Table):
 class CurationTable(tables.Table):
     status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</span>',empty_values=(), verbose_name='Status')
     species = tables.Column(linkify=True)
-    team = tables.Column(linkify=True)
+    team = tables.Column(accessor='species__genometeam__curation_team',linkify=True)
 
     def value_status(self, value):
         return value
@@ -402,7 +404,7 @@ class CurationTable(tables.Table):
 class AnnotationTable(tables.Table):
     status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</span>',empty_values=(), verbose_name='Status')
     species = tables.Column(linkify=True)
-    team = tables.Column(linkify=True)
+    team = tables.Column(accessor='species__genometeam__annotation_team',linkify=True)
 
     def value_status(self, value):
         return value
@@ -413,7 +415,21 @@ class AnnotationTable(tables.Table):
         paginate = {"per_page": 100}
         fields = ('species', 'team', 'note', 'status')
 
-class SubmissionTable(tables.Table):
+class CommunityAnnotationTable(tables.Table):
+    status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</span>',empty_values=(), verbose_name='Status')
+    species = tables.Column(linkify=True)
+    team = tables.Column(accessor='species__genometeam__community_annotation_team',linkify=True)
+
+    def value_status(self, value):
+        return value
+
+    class Meta:
+        model = Annotation
+        template_name = "django_tables2/bootstrap4.html"
+        paginate = {"per_page": 100}
+        fields = ('species', 'team', 'note', 'status')
+
+""" class SubmissionTable(tables.Table):
     status = tables.TemplateColumn('<span class="{{record.status}}">{{record.status}}</span>',empty_values=(), verbose_name='Status')
     species = tables.Column(linkify=True)
     team = tables.Column(linkify=True)
@@ -425,7 +441,7 @@ class SubmissionTable(tables.Table):
         model = Submission
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        fields = ('species', 'team', 'note', 'status')
+        fields = ('species', 'team', 'note', 'status') """
 
 class SpecimenTable(tables.Table):
 
@@ -437,6 +453,7 @@ class SpecimenTable(tables.Table):
 class SampleTable(tables.Table):
     # biosampleAccession = tables.TemplateColumn( '<a href="https://www.ebi.ac.uk/biosamples/samples/{{record.biosampleAccession}}"{{record.biosampleAccession}}</a>',empty_values=(), verbose_name='BioSample')
     species = tables.Column(linkify=True)
+    copo = tables.TemplateColumn('<a href="{% url \'copo\' %}/{{record.copo_id}}/">copo</a>',empty_values=(), verbose_name='COPO Record')
     def render_biosampleAccession(self, value, record):
         html = '<a target="blank" href="https://www.ebi.ac.uk/biosamples/samples/'+value+'">'+escape(value)+'</a>'
         return mark_safe(html)
@@ -447,30 +464,20 @@ class SampleTable(tables.Table):
 
 class GenomeTeamsTable(tables.Table):
     export_formats = ['csv', 'tsv','xls']
+    sample_handling_team = tables.Column(verbose_name='Sample Handling',linkify=True)
+    sample_coordinator = tables.Column(verbose_name='Sample Coordinator',linkify=True)
     collection_team = tables.Column(verbose_name='Collection',linkify=True)
     taxonomy_team = tables.Column(verbose_name='Taxonomy',linkify=True)
     barcoding_team = tables.Column(verbose_name='Barcoding',linkify=True)
     vouchering_team = tables.Column(verbose_name='Vouchering',linkify=True)
-    sample_handling_team = tables.Column(verbose_name='Sample Handling',linkify=True)
-    extraction_team = tables.Column(verbose_name='Extraction',linkify=True)
+    biobanking_team = tables.Column(verbose_name='Biobanking',linkify=True)
     sequencing_team = tables.Column(verbose_name='Sequencing',linkify=True)
     assembly_team = tables.Column(verbose_name='Assembly',linkify=True)
     community_annotation_team = tables.Column(verbose_name='Community Annotation',linkify=True)
     annotation_team = tables.Column(verbose_name='Annotation',linkify=True)
-
-    # edit_sampling = tables.Column(verbose_name='Edit sampling')
-    # edit_sampling = tables.LinkColumn(
-    #     viewname = 'admin:status_samplecollection_change',
-    #     kwargs={"pk": tables.A("pk")}, empty_values=()  # or whatever attribute of your instance you want to display
-    #     )
-    # def render_collection_team(self, value, record):
-    #     html = '<a target="blank" href="https://www.ebi.ac.uk/ena/browser/view/'+value+'">'+escape(value)+'</a>'
-    #     return mark_safe(html)
-    
+    extraction_team = tables.Column(verbose_name='Extraction',linkify=True)
 
     class Meta:
         model = GenomeTeam
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        # fields = ('tolid_prefix', 'scientific_name','genomic_sample_status','hic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','curation_status','annotation_status','submission_status')
-        #fields = ( 'species','sample_coordinator','taxonomy_team','collection_team','sequencing_team','assembly_team','annotation_team')

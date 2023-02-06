@@ -7,6 +7,14 @@
   padding-left: 21px;
   border-radius: 12px;
 }
+.Long_Listed {
+  background-color: #C0C0C0;
+  color: White;
+  padding: 3px;
+  padding-right: 5px;
+  padding-left: 5px;
+  border-radius: 12px;
+}
 .Received {
   background-color: #99987d;
   color: White;
@@ -76,6 +84,15 @@
   padding: 3px;
   padding-right: 15px;
   padding-left: 15px;
+  border-radius: 12px;
+  width: 80;
+}
+.Collecting {
+  background-color: #009f83;
+  color: White;
+  padding: 3px;
+  padding-right: 6px;
+  padding-left: 6px;
   border-radius: 12px;
   width: 80;
 }

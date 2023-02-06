@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load static %}
+{% load render_table from django_tables2 %}
+{% load bootstrap4 %}
+{% block page_content %}
+
+<p>
+<div class="row m-1">
+  <div class="col-md-12">
+    <div class="card mb-12">
+      <div class="card-body">
+        <h5 class="card-title">{{ profile.first_name }} {{ profile.last_name }}</h5>
+        <table class="table">
+          <tr><td>First name:</td><td> {{ profile.first_name }}</br></td></tr>
+          <tr><td>Middle name:</td><td>{{ profile.middle_name|default_if_none:"" }} </br></td></tr>
+          <tr><td>Last name:</td><td>{{ profile.last_name }} </br></td></tr>
+          <tr><td>Email:</td><td>{{ profile.user.email }} </br></td></tr>
+          <tr><td>ORCiD:</td><td> {{ profile.orcid }}</br></td></tr>
+          <tr><td>Affiliations:</td><td> 
+              {% for aff in profile.affiliation.all %}
+                  {{ aff.affiliation }}</br>
+              {% endfor %}
+            </td></tr>
+            <tr><td>Roles:</td><td> 
+                {% for role in profile.roles.all %}
+                 {{ role.description }}</br>
+                {% endfor %}
+              </td></tr>
+          <tr><td>Lead:</td><td> {{ profile.lead|yesno }}</br></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

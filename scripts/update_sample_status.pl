@@ -76,6 +76,7 @@ sub getSamples {
         print STDERR "building insert\n";
         #build insert
         my $record = {};
+        $record->{copo_id} = $copo_id;
         $record->{biosampleAccession} = $sample_accession;
         $record->{tolid} = $s->{public_name};
         $record->{specimen_id} = $s->{SPECIMEN_ID};

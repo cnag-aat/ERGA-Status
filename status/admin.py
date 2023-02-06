@@ -65,7 +65,13 @@ class MyUserAdmin(UserAdmin):
     list_filter = UserAdmin.list_filter + ('groups__name',)
     list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'group')
 
-
+@register(Author)
+class AuthorAdmin(admin.ModelAdmin):
+    list_display = (
+        'author',
+        'species',
+        'role'
+    )
 @register(GenomeTeam)
 class GenomeTeamAdmin(admin.ModelAdmin):
     save_as = True
@@ -73,29 +79,27 @@ class GenomeTeamAdmin(admin.ModelAdmin):
 admin.site.register(CommonNames)
 admin.site.register(Synonyms)
 admin.site.register(AssemblyTeam)
-# admin.site.register(AssemblyProject)
-@register(AssemblyProject)
-class AssemblyProjectAdmin(admin.ModelAdmin):
-    list_display = ('species','team', 'note','status',)
-    search_fields = ['species', 'team', 'status',]
 
+admin.site.register(AssemblyProject)
 admin.site.register(Assembly)
 admin.site.register(CollectionTeam)
 admin.site.register(SampleCollection)
 admin.site.register(CurationTeam)
 admin.site.register(Curation)
-admin.site.register(SubmissionTeam)
-admin.site.register(Submission)
+# admin.site.register(SubmissionTeam)
+# admin.site.register(Submission)
 admin.site.register(SequencingTeam)
 admin.site.register(VoucheringTeam)
 admin.site.register(BarcodingTeam)
 admin.site.register(TaxonomyTeam)
 admin.site.register(SampleHandlingTeam)
 admin.site.register(CommunityAnnotationTeam)
+admin.site.register(BiobankingTeam)
 admin.site.register(ExtractionTeam)
 admin.site.register(Sequencing)
 admin.site.register(Reads)
 admin.site.register(AnnotationTeam)
+admin.site.register(CommunityAnnotation)
 admin.site.register(Annotation)
 admin.site.register(BUSCOdb)
 admin.site.register(BUSCOversion)
@@ -105,7 +109,9 @@ admin.site.register(AssemblyPipeline)
 admin.site.register(UserProfile)
 #admin.site.register(GenomeTeam)
 admin.site.register(Person)
+#admin.site.register(Author)
 admin.site.register(Affiliation)
+admin.site.register(Role)
 
 admin.site.unregister(User)
 admin.site.register(User, MyUserAdmin)

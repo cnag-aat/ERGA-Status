@@ -34,6 +34,8 @@ ALLOWED_HOSTS = ['resistome.cnag.cat','resistome.cnag.es','resistome.cnag.eu','g
 # Application definition
 
 INSTALLED_APPS = [
+    'dal',
+    'dal_select2',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -59,6 +61,8 @@ INSTALLED_APPS = [
     'qurl_templatetag',
     'multiselectfield',
     'modelclone',
+    'django_addanother',
+    'django_popup_view_field',
 #    'query_string'
 ]
 
@@ -108,7 +112,10 @@ DATABASES = {
         'PASSWORD': config('DB_PASSWORD'),
         'HOST': '127.0.0.1',
         'PORT': '3306',
-    }
+    },
+    'OPTIONS': {
+     "init_command": "SET foreign_key_checks = 0;",
+     },
 }
 
 #DATABASES = {
@@ -184,6 +191,7 @@ AUTHENTICATION_BACKENDS = (
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 SITE_ID = 1
 ACCOUNT_LOGOUT_REDIRECT_URL="https://genomes.cnag.cat/erga-stream-dev/"
+DEFAULT_DOMAIN="https://genomes.cnag.cat/erga-stream-dev/"
 LOGIN_REDIRECT_URL = 'home'
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS=7
 ACCOUNT_EMAIL_REQUIRED = True
@@ -198,7 +206,7 @@ EMAIL_PORT = 25
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 #EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
-
+NOTIFICATIONS = True
 ACCOUNT_FORMS = {
 'signup': 'status.forms.CustomSignupForm',
 }

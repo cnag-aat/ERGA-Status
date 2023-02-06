@@ -10,20 +10,21 @@
     <div class="card mb-12">
       <div class="card-body">
         <h5 class="card-title">{{ species.tolid_prefix }}</h5>
-        <table>
-          <tr><td>Scientific name:</td><td> {{ species.scientific_name }}</br></td></tr>
+        <table class="table">
+          <tr><td>Scientific name:</td><td><i>{{ species.scientific_name }}</i></br></td></tr>
           <tr><td>Taxon ID</td><td>{{ species.taxon_id }} <a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{ species.taxon_id }}"><code>NCBI</code></a>&nbsp;<a href="https://goat.genomehubs.org/record?recordId={{ species.taxon_id }}&result=taxon&taxonomy=ncbi"><code>GoaT</code></a></br></td></tr>
-            <tr><td>Taxonomy:</td><td> {{ species.taxon_kingdom }}:
-        {{ species.taxon_phylum}}:
-        {{ species.taxon_class }}:
-        {{ species.taxon_order }}:
-        {{ species.taxon_family }}:
-        {{ species.taxon_genus }}</br></td></tr>
+            <tr><td>Taxonomy:</td><td> 
+              {{ species.taxon_kingdom }}:
+              {{ species.taxon_phylum}}:
+              {{ species.taxon_class }}:
+              {{ species.taxon_order }}:
+              {{ species.taxon_family }}:
+              {{ species.taxon_genus }}</br></td></tr>
           <tr><td>Number of chromosomes:</td><td> {{ species.chromosome_number }}</br></td></tr>
           <tr><td>Haploid number:</td><td> {{ species.haploid_number }}</br></td></tr>
           <tr><td>Ploidy:</td><td> {{ species.ploidy }}</br></td></tr>
           <tr><td>C-value:</td><td> {{ species.c_value }}</br></td></tr>
-          <tr><td>Genome size:</td><td>{{ species.genome_size }}</br></td></tr>
+          <tr><td>Genome size:</td><td>{{ species.genome_size }} bp</br></td></tr>
         </table>
       </div>
     </div>

@@ -9,19 +9,18 @@
   <div class="col-md-12">
     <div class="card mb-12">
       <div class="card-body">
-        <h5 class="card-title">{{ team.name }} (created {{ team.created }})</h5>
-        Lead: {{ team.lead.first_name }} {{ team.lead.last_name }}</br>
-        email: {{ team.lead.email }}</br>
+        <h5 class="card-title">{{ team.name }}</h5>
+        Lead: <a href="{% url 'user_profile' team.lead.pk %}">{{ team.lead.first_name }} {{ team.lead.last_name }}</a></br>
+        email: {{ team.lead.user.email }}</br>
       </div>
     </div>
     <div class="card mb-12">
       <div class="card-body">
         <h5 class="card-title">{{ team.name }}  Members</h5>
-        {% for mem in team.members.all %}{{ mem }}<br/>{% endfor %}
+        {% for mem in team.members.all %}<a href="{% url 'user_profile' mem.pk %}">{{ mem.first_name }} {{ mem.last_name }}</a><br/>{% endfor %}
       </div>
     </div>
+    <i>last modified: {{ team.modified }}</i>
   </div>
 </div>
 {% endblock %}
-
-

@@ -16,7 +16,7 @@
     </div>
     <div class="card mb-12">
       <div class="card-body">
-        <h5 class="card-title">{{ team.name }}  Members</h5>
+        <h5 class="card-title">{{ team.name }} Members</h5>
         {% for mem in team.members.all %}<a href="{% url 'user_profile' mem.pk %}">{{ mem.first_name }} {{ mem.last_name }}</a><br/>{% endfor %}
       </div>
     </div>

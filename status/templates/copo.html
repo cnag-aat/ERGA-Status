@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static %}
+{% load bootstrap4 %}
+{% block page_content %}
+<div class="row">
+  <div class="col-md-12">
+    <p>
+    {% if response.number_found == 1 %}
+    {% for i in response.data %}
+    <div class="card mb-2">
+      <div class="card-body">
+        <h5 class="card-title"><b>{{ i.copo_id }}</b></h5>
+        <table class="table table-striped">
+        {% for key, value in i.items %}
+          <tr><td>{{ key }}</td><td>{{ value }}</td></tr>
+        {% endfor %}
+        </table>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% if response.number_found == 0 %}
+    <div class="card mb-2">
+      <div class="card-body">
+        <h5 class="card-title"><b>COPO record not found.</b></h5>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

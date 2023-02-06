@@ -3,6 +3,10 @@ import os
 import django.utils
 from django.conf import settings
 from multiselectfield import MultiSelectField
+from django.core.mail import send_mail
+
+def default_domain(request):
+    return {'default_domain': settings.DEFAULT_DOMAIN}
 
 # Create your models here.
 STATUS_CHOICES = (
@@ -15,8 +19,8 @@ STATUS_CHOICES = (
 )
 
 COLLECTION_STATUS_CHOICES = (
-    ('Waiting', 'Waiting'),
-    ('Sampling', 'Sampling'),
+    ('Long_Listed', 'Long_Listed'),
+    ('Collecting', 'Collecting'),
     ('Resampling', 'Resampling'),
     ('COPO', 'COPO'),
     ('Submitted', 'Submitted'),
@@ -25,6 +29,8 @@ COLLECTION_STATUS_CHOICES = (
 
 SEQUENCING_STATUS_CHOICES = (
     ('Waiting', 'Waiting'),
+    ('Received', 'Received'),
+    ('Extracted', 'Extracted'),
     ('Sequencing', 'Sequencing'),
     ('TopUp', 'TopUp'),
     ('External', 'External'),
@@ -87,14 +93,27 @@ ASSEMBLY_TYPE_CHOICES = (
 )
 
 ROLE_CHOICES = (
-    ('assembly_team_lead', 'Assembly Team Lead'),
-    ('sequencing_team_lead', 'Sequencing Team Lead'),
-    ('annotation_team_lead', 'Annotation Team Lead'),
+    ('sample_handling_team', 'Sample Handling Team'),
     ('sample_coordinator', 'Sample Coordinator'),
-    ('genome_team_coordinator', 'Genome Team Coordinator'),
-    ('sample_reception', 'Sample Reception'),
-    ('assembly_curation', 'Assembly Curation'),
+    ('collection_team', 'Collection Team'),
+    ('taxonomy_team', 'Taxonomy Team'),
+    ('vouchering_team', 'Vouchering Team'),
+    ('barcoding_team', 'Barcoding Team'),
+    ('sequencing_team', 'Sequencing Team'),
+    ('assembly_team', 'Assembly Team'),
+    ('community_annotation_team_', 'Community Annotation Team'),
+    ('annotation_team', 'Annotation Team'),
+    ('other', 'Other'),
 )
+
+class Role(models.Model):
+    description = models.CharField(max_length=100, choices=ROLE_CHOICES, default='other')
+    class Meta:
+        verbose_name_plural = 'roles'
+
+    def __str__(self):
+        return self.description
+
 
 class TaxonKingdom(models.Model):
     name = models.CharField(max_length=100)
@@ -231,6 +250,27 @@ class Affiliation(models.Model):
     def __str__(self):
         return self.affiliation
 
+class UserProfile(models.Model):
+    user = models.ForeignKey(
+            settings.AUTH_USER_MODEL,
+            on_delete=models.CASCADE,
+            related_name='user_profile'
+        )
+    first_name = models.CharField(max_length=60, verbose_name="First name")
+    middle_name = models.CharField(null=True, blank=True, max_length=60, verbose_name="Middle name")
+    last_name = models.CharField(max_length=60, verbose_name="Last name")
+    roles = models.ManyToManyField(Role,default='other')
+    lead = models.BooleanField(default=False)
+    affiliation = models.ManyToManyField(Affiliation)
+    orcid = models.CharField(null=True, blank=True, max_length=60, verbose_name="ORCID")
+    
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('user_profile', args=[str(self.pk)])
+
+    def __str__(self):
+        return self.first_name + " " + self.last_name
+
 
 class Person(models.Model):
     first_name = models.CharField(max_length=100, null=True, blank=True)
@@ -249,11 +289,11 @@ class Person(models.Model):
 class AnnotationTeam(models.Model):
     name = models.CharField(max_length=100)
     lead = models.ForeignKey(
-        Person,
-        on_delete=models.SET_NULL, null=True,
+        UserProfile,
+        on_delete=models.CASCADE,
         related_name='annotation_team_lead'
     )
-    members = models.ManyToManyField(Person)
+    members = models.ManyToManyField(UserProfile)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
@@ -264,56 +304,57 @@ class AnnotationTeam(models.Model):
         return reverse('annotation_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.name 
+        return self.lead.first_name +" (" + self.name + ")"
 
 class CommunityAnnotationTeam(models.Model):
     name = models.CharField(max_length=100)
     lead = models.ForeignKey(
-        Person,
-        on_delete=models.SET_NULL, null=True,
+        UserProfile,
+        on_delete=models.CASCADE, 
         related_name='community_annotation_team_lead'
     )
-    members = models.ManyToManyField(Person)
+    members = models.ManyToManyField(UserProfile)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
-        verbose_name_plural = 'annotation teams'
+        verbose_name_plural = 'Community annotation teams'
 
     def get_absolute_url(self):
         from django.urls import reverse
         return reverse('community_annotation_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.name 
+        return self.lead.first_name +" (" + self.name + ")"
 
-class SubmissionTeam(models.Model):
+class BiobankingTeam(models.Model):
     name = models.CharField(max_length=100)
     lead = models.ForeignKey(
-        Person,
-        on_delete=models.SET_NULL, null=True,
-        related_name='submission_team_lead'
+        #UserProfile,
+        UserProfile,
+        on_delete=models.CASCADE, 
+        related_name='biobanking_team_lead'
     )
-    members = models.ManyToManyField(Person)
+    members = models.ManyToManyField(UserProfile)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
-        verbose_name_plural = 'submission teams'
+        verbose_name_plural = 'biobanking teams'
 
     def get_absolute_url(self):
         from django.urls import reverse
-        return reverse('submission_team_detail', args=[str(self.pk)])
+        return reverse('biobanking_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.name 
+        return self.lead.first_name +" (" + self.name + ")"
 
 class AssemblyTeam(models.Model):
     name = models.CharField(max_length=100)
     lead = models.ForeignKey(
-        Person,
-        on_delete=models.SET_NULL, null=True,
+        UserProfile,
+        on_delete=models.CASCADE, 
         related_name='assembly_team_lead'
     )
-    members = models.ManyToManyField(Person)
+    members = models.ManyToManyField(UserProfile)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
@@ -324,16 +365,16 @@ class AssemblyTeam(models.Model):
         return reverse('assembly_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.name # +" "+ self.created.strftime('%b %Y')
+        return self.lead.first_name +" (" + self.name + ")"
 
 class CurationTeam(models.Model):
     name = models.CharField(max_length=100)
     lead = models.ForeignKey(
-        Person,
-        on_delete=models.SET_NULL, null=True,
+        UserProfile,
+        on_delete=models.CASCADE, 
         related_name='curation_team_lead'
     )
-    members = models.ManyToManyField(Person)
+    members = models.ManyToManyField(UserProfile)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
@@ -344,16 +385,16 @@ class CurationTeam(models.Model):
         return reverse('curation_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.name
+        return self.lead.first_name +" (" + self.name + ")"
 
 class SequencingTeam(models.Model):
     name = models.CharField(max_length=100)
     lead = models.ForeignKey(
-        Person,
-        on_delete=models.SET_NULL, null=True,
+        UserProfile,
+        on_delete=models.CASCADE, 
         related_name='sequencing_team_lead'
     )
-    members = models.ManyToManyField(Person)
+    members = models.ManyToManyField(UserProfile)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
@@ -364,17 +405,17 @@ class SequencingTeam(models.Model):
         return reverse('sequencing_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.name
+        return self.lead.first_name +" (" + self.name + ")"
 
 class ExtractionTeam(models.Model):
     name = models.CharField(max_length=100)
     lead = models.ForeignKey(
-        Person,
-        on_delete=models.SET_NULL, null=True,
+        UserProfile,
+        on_delete=models.CASCADE, 
         related_name='extraction_team_lead'
     )
 
-    members = models.ManyToManyField(Person)
+    members = models.ManyToManyField(UserProfile)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
@@ -382,19 +423,19 @@ class ExtractionTeam(models.Model):
 
     def get_absolute_url(self):
         from django.urls import reverse
-        return reverse('sequencing_team_detail', args=[str(self.pk)])
+        return reverse('extraction_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.name
+        return self.lead.first_name +" (" + self.name + ")"
 
 class CollectionTeam(models.Model):
     name = models.CharField(max_length=100)
     lead = models.ForeignKey(
-        Person,
-        on_delete=models.SET_NULL, null=True,
+        UserProfile,
+        on_delete=models.CASCADE, 
         related_name='collection_team_lead'
     )
-    members = models.ManyToManyField(Person)
+    members = models.ManyToManyField(UserProfile)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     def get_absolute_url(self):
@@ -402,16 +443,16 @@ class CollectionTeam(models.Model):
         return reverse('collection_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.name 
+        return self.lead.first_name +" (" + self.name + ")"
 
 class TaxonomyTeam(models.Model):
     name = models.CharField(max_length=100)
     lead = models.ForeignKey(
-        Person,
-        on_delete=models.SET_NULL, null=True,
+        UserProfile,
+        on_delete=models.CASCADE, 
         related_name='taxonomy_team_lead'
     )
-    members = models.ManyToManyField(Person)
+    members = models.ManyToManyField(UserProfile)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     def get_absolute_url(self):
@@ -419,16 +460,16 @@ class TaxonomyTeam(models.Model):
         return reverse('taxonomy_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.name
+        return self.lead.first_name +" (" + self.name + ")"
 
 class SampleHandlingTeam(models.Model):
     name = models.CharField(max_length=100)
     lead = models.ForeignKey(
-        Person,
-        on_delete=models.SET_NULL, null=True,
+        UserProfile,
+        on_delete=models.CASCADE, 
         related_name='sample_handling_team_lead'
     )
-    members = models.ManyToManyField(Person)
+    members = models.ManyToManyField(UserProfile)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     def get_absolute_url(self):
@@ -436,16 +477,16 @@ class SampleHandlingTeam(models.Model):
         return reverse('sample_handling_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.name
+        return self.lead.first_name +" (" + self.name + ")"
 
 class VoucheringTeam(models.Model):
     name = models.CharField(max_length=100)
     lead = models.ForeignKey(
-        Person,
+        UserProfile,
         on_delete=models.SET_NULL, null=True,
         related_name='vouchering_team_lead'
     )
-    members = models.ManyToManyField(Person)
+    members = models.ManyToManyField(UserProfile)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     def get_absolute_url(self):
@@ -453,16 +494,16 @@ class VoucheringTeam(models.Model):
         return reverse('vouchering_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.name
+        return self.lead.first_name +" (" + self.name + ")"
 
 class BarcodingTeam(models.Model):
     name = models.CharField(max_length=100)
     lead = models.ForeignKey(
-        Person,
-        on_delete=models.SET_NULL, null=True,
+        UserProfile,
+        on_delete=models.CASCADE,
         related_name='barcoding_team_lead'
     )
-    members = models.ManyToManyField(Person)
+    members = models.ManyToManyField(UserProfile)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     def get_absolute_url(self):
@@ -470,22 +511,25 @@ class BarcodingTeam(models.Model):
         return reverse('barcoding_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.name
+        return self.lead.first_name +" (" + self.name + ")"
 
-class Authors(models.Model):
+class Author(models.Model):
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
-    author = models.ForeignKey(Person, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="author")
+    author = models.ForeignKey(UserProfile, on_delete=models.CASCADE, null=True, blank=True, verbose_name="author")
     role = models.CharField(max_length=50, null=True, blank=True)
     
+    def __str__(self):
+        return self.author.first_name + " " + self.author.last_name
 
 class GenomeTeam(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
-    sample_coordinator = models.ForeignKey(Person, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="sample_coordinator")
+    sample_handling_team = models.ForeignKey(SampleHandlingTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="sample handling team")
+    sample_coordinator = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="sample_coordinator")
     collection_team = models.ForeignKey(CollectionTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="collection team")
     taxonomy_team = models.ForeignKey(TaxonomyTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="taxonomy team")
     vouchering_team = models.ForeignKey(VoucheringTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="vouchering team")
     barcoding_team = models.ForeignKey(BarcodingTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="barcoding team")
-    sample_handling_team = models.ForeignKey(SampleHandlingTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="sample handling team")
+    biobanking_team = models.ForeignKey(BiobankingTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="biobanking team")
     extraction_team = models.ForeignKey(ExtractionTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="nucleic acid extraction team")
     sequencing_team = models.ForeignKey(SequencingTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="sequencing team")
     assembly_team = models.ForeignKey(AssemblyTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="assembly team")
@@ -520,27 +564,40 @@ class SampleCollection(models.Model):
         return self.species.scientific_name 
 
 class Specimen(models.Model):
+    # TISSUE_REMOVED_FOR_BIOBANKING	TISSUE_VOUCHER_ID_FOR_BIOBANKING	TISSUE_FOR_BIOBANKING	
+    # DNA_REMOVED_FOR_BIOBANKING	DNA_VOUCHER_ID_FOR_BIOBANKING	
+    # VOUCHER_ID	 PROXY_VOUCHER_ID	VOUCHER_LINK	PROXY_VOUCHER_LINK	VOUCHER_INSTITUTION
     specimen_id = models.CharField(max_length=20, help_text='Internal Specimen ID')
+    species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     barcode = models.CharField(max_length=20, help_text='Tube barcode')
     tolid = models.CharField(max_length=20, help_text='Registered ToLID for the Specimen', null=True, blank=True)
     collection = models.ForeignKey(SampleCollection, on_delete=models.CASCADE, verbose_name="Collection")
-
-class Sample(models.Model):
-    biosampleAccession = models.CharField(max_length=20, help_text='BioSample Accession', null=True, blank=True, verbose_name="BioSample")
-    tolid = models.CharField(max_length=20, help_text='Registered ToLID for the Specimen', null=True, blank=True, verbose_name="ToLID")
-    specimen_id = models.CharField(max_length=30, help_text='Internal Specimen ID', null=True, blank=True)
-    species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
-    barcode = models.CharField(max_length=20, help_text='Tube barcode', null=True, blank=True)
     sample_coordinator = models.CharField(max_length=50, help_text='Sample coordinator', null=True, blank=True)
+    tissue_removed_for_biobanking = models.BooleanField(default=False)
+    tissue_voucher_id_for_biobanking = models.CharField(max_length=50, null=True, blank=True)
+    tissue_for_biobanking = models.CharField(max_length=50, null=True, blank=True)
+    dna_removed_for_biobanking = models.BooleanField(default=False)
+    dna_voucher_id_for_biobanking = models.CharField(max_length=50, null=True, blank=True)
+    voucher_id = models.CharField(max_length=50, help_text='Voucher ID', null=True, blank=True)
+    proxy_voucher_id = models.CharField(max_length=50, help_text='Proxy voucher ID', null=True, blank=True)
+    voucher_link = models.CharField(max_length=200, null=True, blank=True)
+    proxy_voucher_link = models.CharField(max_length=200, null=True, blank=True)
+    voucher_institution = models.CharField(max_length=200, null=True, blank=True)
+    
+class Sample(models.Model):
+    copo_id = models.CharField(max_length=30, help_text='COPO ID', null=True, blank=True, verbose_name="CopoID")
+    biosampleAccession = models.CharField(max_length=20, help_text='BioSample Accession', null=True, blank=True, verbose_name="BioSample")
+    barcode = models.CharField(max_length=20, help_text='Tube barcode', null=True, blank=True)
     # collection = models.ForeignKey(SampleCollection, on_delete=models.CASCADE, verbose_name="Collection")
     purpose_of_specimen = models.CharField(max_length=30, help_text='Purpose', null=True, blank=True)
     gal = models.CharField(max_length=120, help_text='GAL', null=True, blank=True, verbose_name="GAL")
     collector_sample_id = models.CharField(max_length=40, help_text='Collector Sample ID', null=True, blank=True)
     copo_date = models.CharField(max_length=30, help_text='COPO Time Updated', null=True, blank=True, verbose_name="date")
+    specimen = models.ForeignKey(Specimen, on_delete=models.CASCADE, verbose_name="Specimen")
 
 class Sequencing(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
-    team = models.ForeignKey(SequencingTeam, on_delete=models.SET_NULL, null=True, verbose_name="sequencing team")
+    #team = models.ForeignKey(SequencingTeam, on_delete=models.SET_NULL, null=True, verbose_name="sequencing team")
     genomic_seq_status = models.CharField(max_length=12, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
     hic_seq_status = models.CharField(max_length=12, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
     rna_seq_status = models.CharField(max_length=12, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
@@ -550,6 +607,67 @@ class Sequencing(models.Model):
     hic_target = models.BigIntegerField(null=True, blank=True, verbose_name="Hi-C target")
     short_target = models.BigIntegerField(null=True, blank=True, verbose_name="Short read target")
     rnaseq_numlibs_target = models.IntegerField(null=True, blank=True, verbose_name="RNAseq libs target")
+    
+    __original_genomic_seq_status = None
+    __original_hic_seq_status = None
+    __original_rna_seq_status = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__original_genomic_seq_status = self.genomic_seq_status
+        self.__original_hic_seq_status = self.hic_seq_status
+        self.__original_rna_seq_status = self.rna_seq_status
+
+    def save(self, *args, **kwargs):
+        if settings.NOTIFICATIONS == True:
+
+            if ((self.__original_genomic_seq_status != 'Done' and self.__original_genomic_seq_status != 'Submitted') and (self.genomic_seq_status == 'Done' or self.genomic_seq_status == 'Submitted')):
+                myurl = settings.DEFAULT_DOMAIN + 'sequencing/?species='+str(self.species.pk)
+                gteam = GenomeTeam.objects.get(species=self.species)
+                assembly_team = AssemblyTeam.objects.get(genometeam=gteam)
+                send_mail(
+                    '[ERGA] Genomic sequencing for '+ self.species.scientific_name +'is done',
+                    'Dear '+ assembly_team.lead.first_name+",\n\nGenomic sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
+                    'denovo@cnag.crg.eu',
+                    [assembly_team.lead.email],
+                    fail_silently=True,
+                )
+
+            if ((self.__original_hic_seq_status != 'Done' and self.__original_hic_seq_status != 'Submitted') and (self.hic_seq_status == 'Done' or self.hic_seq_status == 'Submitted')):
+                myurl = settings.DEFAULT_DOMAIN + 'sequencing/?species='+str(self.species.pk)
+                gteam = GenomeTeam.objects.get(species=self.species)
+                assembly_team = AssemblyTeam.objects.get(genometeam=gteam)
+                send_mail(
+                    '[ERGA] Hi-C sequencing for '+ self.species.scientific_name +'is done',
+                    'Dear '+ assembly_team.lead.first_name+",\n\nHi-C sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
+                    'denovo@cnag.crg.eu',
+                    [assembly_team.lead.email],
+                    fail_silently=True,
+                )
+
+            if ((self.__original_rna_seq_status != 'Done' and self.__original_rna_seq_status != 'Submitted') and (self.rna_seq_status == 'Done' or self.rna_seq_status == 'Submitted')):
+                myurl = settings.DEFAULT_DOMAIN + 'sequencing/?species='+str(self.species.pk)
+                gteam = GenomeTeam.objects.get(species=self.species)
+                if CommunityAnnotationTeam.objects.filter(genometeam=gteam).exists():
+                    community_annotation_team = CommunityAnnotationTeam.objects.get(genometeam=gteam)
+                    send_mail(
+                        '[ERGA] RNA sequencing for '+ self.species.scientific_name +'is done',
+                        'Dear '+ community_annotation_team.lead.first_name+",\n\nRNA sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
+                        'denovo@cnag.crg.eu',
+                        [community_annotation_team.lead.email],
+                        fail_silently=True,
+                    )
+
+        if self.__original_genomic_seq_status == 'Waiting' and self.genomic_seq_status != 'Waiting':
+            gteam = GenomeTeam.objects.get(species=self.species)
+            team = SequencingTeam.objects.get(genometeam=gteam)
+            for m in team.members.all():
+                species_authors, created = Author.objects.get_or_create(
+                    species=self.species,
+                    author=m,
+                    role='sequencing'
+                )
+        super(Sequencing, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
         from django.urls import reverse
@@ -593,19 +711,49 @@ class Curation(models.Model):
     def __str__(self):
         return self.species.tolid_prefix
 
+class CommunityAnnotation(models.Model):
+    species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
+    team = models.ForeignKey(AnnotationTeam, on_delete=models.SET_NULL, null=True, verbose_name="annotation team")
+    status = models.CharField(max_length=12, help_text='Status', choices=ANNOTATION_STATUS_CHOICES, default=ANNOTATION_STATUS_CHOICES[0][0])
+    note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.status != 'Waiting':
+            gteam = GenomeTeam.objects.get(species=self.species)
+            team = CommunityAnnotationTeam.objects.get(genometeam=gteam)
+            for m in team.members.all():
+                species_authors, created = Author.objects.get_or_create(
+                    species=self.species,
+                    author=m,
+                    role='community annotation'
+                )
+        super(CommunityAnnotation, self).save(*args, **kwargs)
+
 class Annotation(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     team = models.ForeignKey(AnnotationTeam, on_delete=models.SET_NULL, null=True, verbose_name="annotation team")
     status = models.CharField(max_length=12, help_text='Status', choices=ANNOTATION_STATUS_CHOICES, default=ANNOTATION_STATUS_CHOICES[0][0])
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        if self.status != 'Waiting':
+            gteam = GenomeTeam.objects.get(species=self.species)
+            team = AnnotationTeam.objects.get(genometeam=gteam)
+            for m in team.members.all():
+                species_authors, created = Author.objects.get_or_create(
+                    species=self.species,
+                    author=m,
+                    role='annotation'
+                )
+        super(annotation, self).save(*args, **kwargs)
+ 
     class Meta:
         verbose_name_plural = 'annotation'
 
     def __str__(self):
         return self.species.scientific_name
 
-class Submission(models.Model):
+""" class Submission(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     team = models.ForeignKey(SubmissionTeam, on_delete=models.SET_NULL, null=True, verbose_name="submission team")
     status = models.CharField(max_length=12, help_text='Status', choices=SUBMISSION_STATUS_CHOICES, default='Waiting')
@@ -617,16 +765,28 @@ class Submission(models.Model):
         verbose_name_plural = 'submission'
 
     def __str__(self):
-        return self.species.scientific_name
+        return self.species.scientific_name """
 
 class AssemblyProject(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
-    team = models.ForeignKey(AssemblyTeam, on_delete=models.SET_NULL, null=True, verbose_name="assembly team")
+    #team = models.ForeignKey(AssemblyTeam, on_delete=models.SET_NULL, null=True, verbose_name="assembly team")
     status = models.CharField(max_length=12, help_text='Status', choices=ASSEMBLY_STATUS_CHOICES, default=ASSEMBLY_STATUS_CHOICES[0][0])
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
 
     class Meta:
         verbose_name_plural = 'assembly projects'
+
+    def save(self, *args, **kwargs):
+        if self.status != 'Waiting':
+            gteam = GenomeTeam.objects.get(species=self.species)
+            team = AssemblyTeam.objects.get(genometeam=gteam)
+            for m in team.members.all():
+                species_authors, created = Author.objects.get_or_create(
+                    species=self.species,
+                    author=m,
+                    role='assembly'
+                )
+        super(AssemblyProject, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
         from django.urls import reverse
@@ -689,13 +849,3 @@ class Assembly(models.Model):
     def __str__(self):
         return self.project.species.tolid_prefix + '.' + self.type
 
-class UserProfile(models.Model):
-    user = models.ForeignKey(
-            settings.AUTH_USER_MODEL,
-            on_delete=models.CASCADE,
-            related_name='user_profile'
-        )
-    roles = MultiSelectField(choices=ROLE_CHOICES)
-    affiliation = models.ManyToManyField(Affiliation)
-    def __str__(self):
-        return self.user.username

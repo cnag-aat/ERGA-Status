@@ -6,6 +6,7 @@ from django.views.generic import TemplateView
 from django.views.generic import DetailView
 from django_tables2 import SingleTableView
 from django_tables2 import RequestConfig
+from django_addanother.views import CreatePopupMixin
 
 from status.tables import *
 from django_tables2.export.views import ExportMixin
@@ -31,10 +32,20 @@ from datetime import timedelta
 import pickle
 import logging
 from django.contrib import messages
+from django.views.generic.edit import CreateView
+from django_addanother.views import CreatePopupMixin
+import requests
+
+
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
 
+
+class AffiliationCreateView(CreatePopupMixin, CreateView):
+    model = Affiliation
+    template_name = 'affiliation_form.html'
+    fields = ['affiliation']
 
 def index(request):
     return HttpResponse("Hello, world. You're at the status index.")
@@ -52,6 +63,9 @@ class TargetSpeciesListView(ExportMixin, SingleTableMixin, FilterView):
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
+
+    # def get_queryset(self):
+    #     return TargetSpecies.objects.all().order_by('taxon_kingdom').values()
 
 class OverView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
@@ -80,7 +94,47 @@ def assembly_team_detail(request, pk=None):
     team = AssemblyTeam.objects.get(pk=pk)
     context = {"team": team
                }
-    response = render(request, "assembly_team_detail.html", context)
+    response = render(request, "team_detail.html", context)
+    return response
+
+@permission_required("status.sample_handling_team_detail", login_url='access_denied')
+def sample_handling_team_detail(request, pk=None):
+    team = SampleHandlingTeam.objects.get(pk=pk)
+    context = {"team": team
+               }
+    response = render(request, "team_detail.html", context)
+    return response
+
+@permission_required("status.taxonomy_team_detail", login_url='access_denied')
+def taxonomy_team_detail(request, pk=None):
+    team = TaxonomyTeam.objects.get(pk=pk)
+    context = {"team": team
+               }
+    response = render(request, "team_detail.html", context)
+    return response
+
+@permission_required("status.vouchering_team_detail", login_url='access_denied')
+def vouchering_team_detail(request, pk=None):
+    team = VoucheringTeam.objects.get(pk=pk)
+    context = {"team": team
+               }
+    response = render(request, "team_detail.html", context)
+    return response
+
+@permission_required("status.biobanking_team_detail", login_url='access_denied')
+def biobanking_team_detail(request, pk=None):
+    team = BiobankingTeam.objects.get(pk=pk)
+    context = {"team": team
+               }
+    response = render(request, "team_detail.html", context)
+    return response
+
+@permission_required("status.barcoding_team_detail", login_url='access_denied')
+def barcoding_team_detail(request, pk=None):
+    team = BarcodingTeam.objects.get(pk=pk)
+    context = {"team": team
+               }
+    response = render(request, "team_detail.html", context)
     return response
 
 @permission_required("status.sequencing_team_detail", login_url='access_denied')
@@ -88,7 +142,15 @@ def sequencing_team_detail(request, pk=None):
     team = SequencingTeam.objects.get(pk=pk)
     context = {"team": team
                }
-    response = render(request, "sequencing_team_detail.html", context)
+    response = render(request, "team_detail.html", context)
+    return response
+
+@permission_required("status.extraction_team_detail", login_url='access_denied')
+def extraction_team_detail(request, pk=None):
+    team = ExtractionTeam.objects.get(pk=pk)
+    context = {"team": team
+               }
+    response = render(request, "team_detail.html", context)
     return response
 
 @permission_required("status.curation_team_detail", login_url='access_denied')
@@ -96,7 +158,7 @@ def curation_team_detail(request, pk=None):
     team = CurationTeam.objects.get(pk=pk)
     context = {"team": team
                }
-    response = render(request, "curation_team_detail.html", context)
+    response = render(request, "team_detail.html", context)
     return response
 
 @permission_required("status.collection_team_detail", login_url='access_denied')
@@ -104,7 +166,15 @@ def collection_team_detail(request, pk=None):
     team = CollectionTeam.objects.get(pk=pk)
     context = {"team": team
                }
-    response = render(request, "collection_team_detail.html", context)
+    response = render(request, "team_detail.html", context)
+    return response
+
+@permission_required("status.community_annotation_team_detail", login_url='access_denied')
+def community_annotation_team_detail(request, pk=None):
+    team = CommunityAnnotationTeam.objects.get(pk=pk)
+    context = {"team": team
+               }
+    response = render(request, "team_detail.html", context)
     return response
 
 @permission_required("status.annotation_team_detail", login_url='access_denied')
@@ -112,14 +182,7 @@ def annotation_team_detail(request, pk=None):
     team = AnnotationTeam.objects.get(pk=pk)
     context = {"team": team
                }
-    response = render(request, "annotation_team_detail.html", context)
-    return response
-
-def submission_team_detail(request, pk=None):
-    team = SubmissionTeam.objects.get(pk=pk)
-    context = {"team": team
-               }
-    response = render(request, "submission_team_detail.html", context)
+    response = render(request, "team_detail.html", context)
     return response
 
 class AssemblyProjectListView(ExportMixin, SingleTableMixin, FilterView):
@@ -128,11 +191,9 @@ class AssemblyProjectListView(ExportMixin, SingleTableMixin, FilterView):
     model = AssemblyProject
     table_class = AssemblyProjectTable
     template_name = 'assemblyproject.html'
-    #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_queryset(self):
-        """Filter by price if it is provided in GET parameters"""
         queryset = super(AssemblyProjectListView, self).get_queryset()
         if 'project' in self.request.GET:
             queryset = queryset.filter(pk=self.request.GET['project'])
@@ -144,7 +205,6 @@ class AssemblyListView(ExportMixin, SingleTableMixin, FilterView):
     model = Assembly
     table_class = AssemblyTable
     template_name = 'assembly.html'
-    #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
 
@@ -161,7 +221,6 @@ class SampleCollectionListView(ExportMixin, SingleTableMixin, FilterView):
     model = SampleCollection
     table_class = SampleCollectionTable
     template_name = 'collection.html'
-    #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
 
@@ -171,7 +230,6 @@ class SpecimenListView(ExportMixin, SingleTableMixin, FilterView):
     model = Specimen
     table_class = SpecimenTable
     template_name = 'specimens.html'
-    #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
 
@@ -181,9 +239,20 @@ class SampleListView(ExportMixin, SingleTableMixin, FilterView):
     model = Sample
     table_class = SampleTable
     template_name = 'samples.html'
-    #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
+
+def copo_record(request, copoid):
+    r=requests.get("https://copo-project.org/api/sample/copo_id/"+ copoid)
+    resp = ""
+    if(r.status_code == 200):
+        resp=r.json()
+    else:
+        resp = {'number_found':0}
+    #output = json.dumps(json.loads(output), indent=4))
+    #return HttpResponse(output, content_type="application/json")
+    return render(request,'copo.html',{'response':resp})
+    
 
 class SequencingListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
@@ -196,7 +265,6 @@ class SequencingListView(ExportMixin, SingleTableMixin, FilterView):
     export_formats = ['csv', 'tsv','xlsx','json']
 
     def get_queryset(self):
-        """Filter by price if it is provided in GET parameters"""
         queryset = super(SequencingListView, self).get_queryset()
         if 'project' in self.request.GET:
             queryset = queryset.filter(pk=self.request.GET['project'])
@@ -212,20 +280,6 @@ class SequencingDetailView(DetailView):
     template_name = 'sequencing_detail.html'
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
-
-    # def get_queryset(self):
-    #     """Filter by price if it is provided in GET parameters"""
-    #     queryset = super(SequencingListView, self).get_queryset()
-    #     if 'pk' in self.request.GET:
-    #         queryset = queryset.filter(pk=self.request.GET['project'])
-    #         return queryset
-
-# def SequencingSingleView(request, pk=None):
-#     seq = Sequencing.objects.get(pk=pk)
-#     context = {"seq": seq
-#                }
-#     response = render(request, "sequencing_list.html", context)
-#     return response
 
 class ReadsListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
@@ -257,15 +311,16 @@ class AnnotationListView(ExportMixin, SingleTableMixin, FilterView):
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
 
-class SubmissionListView(ExportMixin, SingleTableMixin, FilterView):
+class CommunityAnnotationListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
     # login_url = "access_denied"
-    model = Submission
-    table_class = SubmissionTable
-    template_name = 'submission.html'
+    model = CommunityAnnotation
+    table_class = CommunityAnnotationTable
+    template_name = 'community_annotation.html'
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
+
 
 class AccessDeniedView(TemplateView):
     template_name = 'denied.html'
@@ -277,3 +332,11 @@ class GenomeTeamsView(ExportMixin, SingleTableMixin, FilterView):
     export_formats = ['csv', 'tsv','xlsx','json']
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
+
+@permission_required("status.annotation_team_detail", login_url='access_denied')
+def user_profile(request, pk=None):
+    profile = UserProfile.objects.get(pk=pk)
+    context = {"profile": profile
+               }
+    response = render(request, "user_profile.html", context)
+    return response

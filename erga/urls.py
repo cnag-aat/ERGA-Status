@@ -21,6 +21,7 @@ from django.conf.urls.static import static
 from rest_framework import routers
 from status import api
 from django.conf.urls import url
+from dal import autocomplete
 # API Endpoints
 router = routers.DefaultRouter()
 router.register(r'kindom', api.TaxonKingdomViewSet)
@@ -49,4 +50,8 @@ urlpatterns = [
     url(r'^', include('status.urls')),
     url(r'^admin/', admin.site.urls, name="admin"),
     url(r'^accounts/', include('allauth.urls')),
+    url(
+        r'^django_popup_view_field/',
+        include('django_popup_view_field.urls', namespace="django_popup_view_field")
+    ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
