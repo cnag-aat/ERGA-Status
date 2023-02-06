@@ -568,8 +568,8 @@ class Specimen(models.Model):
     # DNA_REMOVED_FOR_BIOBANKING	DNA_VOUCHER_ID_FOR_BIOBANKING	
     # VOUCHER_ID	 PROXY_VOUCHER_ID	VOUCHER_LINK	PROXY_VOUCHER_LINK	VOUCHER_INSTITUTION
     specimen_id = models.CharField(max_length=20, help_text='Internal Specimen ID')
-    species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
-    barcode = models.CharField(max_length=20, help_text='Tube barcode')
+    species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species",null=True, blank=True)
+    #barcode = models.CharField(max_length=20, help_text='Tube barcode')
     tolid = models.CharField(max_length=20, help_text='Registered ToLID for the Specimen', null=True, blank=True)
     collection = models.ForeignKey(SampleCollection, on_delete=models.CASCADE, verbose_name="Collection")
     sample_coordinator = models.CharField(max_length=50, help_text='Sample coordinator', null=True, blank=True)
@@ -593,7 +593,7 @@ class Sample(models.Model):
     gal = models.CharField(max_length=120, help_text='GAL', null=True, blank=True, verbose_name="GAL")
     collector_sample_id = models.CharField(max_length=40, help_text='Collector Sample ID', null=True, blank=True)
     copo_date = models.CharField(max_length=30, help_text='COPO Time Updated', null=True, blank=True, verbose_name="date")
-    specimen = models.ForeignKey(Specimen, on_delete=models.CASCADE, verbose_name="Specimen")
+    specimen = models.ForeignKey(Specimen, on_delete=models.CASCADE, verbose_name="Specimen",null=True, blank=True)
 
 class Sequencing(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
