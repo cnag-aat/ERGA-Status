@@ -49,6 +49,7 @@ sub getSamples {
   my $sample_array = $response1->{data};
   foreach my $record (@$sample_array){
     my $copo_id = $record->{copo_id};
+    next if $copo_id ne '6204f9735cf948bd32acf113';
     print STDERR "COPO ID: $copo_id\n";
     $copoclient->GET("$copo_url/sample/copo_id/$copo_id/");
     my $response2 = decode_json $copoclient->responseContent();
