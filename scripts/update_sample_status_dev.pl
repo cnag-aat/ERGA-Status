@@ -55,7 +55,7 @@ sub getSamples {
     my $response2 = decode_json $copoclient->responseContent();
     #print STDERR "$response2\n";
     my $number_found = $response2->{number_found};
-    print STDERR "$number_found samples found for $copo_id\n";
+    #print STDERR "$number_found samples found for $copo_id\n";
     if ($number_found){
       my $sample_details = $response2->{data};
       foreach my $s (@$sample_details){
@@ -145,7 +145,7 @@ sub getSamples {
           $specimen_response->{results}->[0]->{url},"... \n";
           $specimen_fk = $specimen_response->{results}->[0]->{url};
           $client->PATCH($specimen_response->{results}->[0]->{url}, $specimen_insert);
-          $specimen_fk = $specimen_response->{results}->[0]->{url}
+          #$specimen_fk = $specimen_response->{results}->[0]->{url}
           #print STDERR "\nResponse:",$client->responseContent(),"\n";
         }else{
           #POST
@@ -175,6 +175,7 @@ sub getSamples {
         
         #wrap it all up in JSON string
         my $insert = encode_json $record;
+        print STDERR "$insert\n";
         # CHECK if sample exists in tracker. If so, we will PATCH. If not, POST.
         my $query = "$erga_status_url/sample/?biosampleAccession=$sample_accession ";
         #print "$query\n";
