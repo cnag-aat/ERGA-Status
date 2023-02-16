@@ -63,7 +63,7 @@ INSTALLED_APPS = [
     'modelclone',
     'django_addanother',
     'django_popup_view_field',
-#    'query_string'
+    'tagging'
 ]
 
 MIDDLEWARE = [

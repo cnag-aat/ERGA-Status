@@ -20,6 +20,7 @@ from status.views import OverView
 from status.views import AccessDeniedView
 from status.views import GenomeTeamsView
 from status.views import AffiliationCreateView
+from status.views import AuthorsView
 
 urlpatterns = [
     path("", HomeView.as_view(), name="home"),
@@ -29,7 +30,8 @@ urlpatterns = [
     path("species/?scientific_name=<scientific_name>", views.species_detail, name="species_detail"),
     path("assemblies/", AssemblyListView.as_view(), name="assembly_list"),
     path("specimens/", SpecimenListView.as_view(), name="specimen_list"),
-    path("specimens/<int:pk>/", SpecimenListView.as_view(), name="specimen_list"),
+    path("specimens/?collection=<collection>", SpecimenListView.as_view(), name="specimen_list"),
+    path("specimens/<int:id>/", SpecimenListView.as_view(), name="specimen_list"),
     path("samples/", SampleListView.as_view(), name="sample_list"),
     path("projects/", AssemblyProjectListView.as_view(), name="assembly_project_list"),
     path("projects/?species=<scientific_name>", AssemblyProjectListView.as_view(), name="assembly_project_list"),
@@ -65,5 +67,7 @@ urlpatterns = [
     path('create_affiliation/', AffiliationCreateView.as_view(), name="create_affiliation"),
     path("user_profile/<int:pk>/", views.user_profile, name="user_profile"),
     path("copo/<str:copoid>/", views.copo_record, name="copo"),
+    path('authors/', AuthorsView.as_view(), name="author_list"),
+    
 
 ]

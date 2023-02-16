@@ -62,16 +62,22 @@ body {
           <a class="nav-link" id="specieslink" href="{% url 'species_list' %}"><i id=speciesspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Species</a>
         </li>
         <li class="nav-item active">
-          <a class="nav-link" id="sampleslink" href="{% url 'sample_list' %}"><i id=samplesspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Samples</a>
+          <a class="nav-link" id="specimenslink" href="{% url 'specimen_list' %}"><i id=specimensspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Specimens</a>
         </li>
         <li class="nav-item active">
-          <a class="nav-link" id="teamslink" href="{% url 'genome_teams' %}"><i id=speciesspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Teams</a>
+          <a class="nav-link" id="sampleslink" href="{% url 'sample_list' %}"><i id=samplesspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Samples</a>
         </li>
         <li class="nav-item active">
           <a class="nav-link" id="readslink" href="{% url 'reads_list' %}"><i id=readsspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Reads</a>
         </li>
         <li class="nav-item active">
           <a class="nav-link" id="assemblylink" href="{% url 'assembly_list' %}"><i id=assemblyspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Assemblies</a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" id="teamslink" href="{% url 'genome_teams' %}"><i id=speciesspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Teams</a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" id="authorslink" href="{% url 'author_list' %}"><i id=authorsspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Authors</a>
         </li>
       </ul>
       <ul class="navbar-nav ml-auto">
@@ -233,6 +239,14 @@ body {
       const readslink = document.getElementById('readslink');
     	readslink.addEventListener('click', () => {
         $("#readsspinner").show();
+      })
+      const specimenslink = document.getElementById('specimenslink');
+    	readslink.addEventListener('click', () => {
+        $("#specimensspinner").show();
+      })
+      const authorslink = document.getElementById('authorslink');
+    	readslink.addEventListener('click', () => {
+        $("#authorsspinner").show();
       })
     }
 

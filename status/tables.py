@@ -127,7 +127,7 @@ class TargetSpeciesTable(tables.Table):
         template_name = "django_tables2/bootstrap4.html"
         #order_by = 'taxon_kingdom,taxon_phylum,taxon_class,taxon_order,taxon_family,taxon_genus,scientific_name' # use dash for descending order
         paginate = {"per_page": 100}
-        fields = ('scientific_name','taxon_id', 'genome_size', 'c_value','ploidy','chromosome_number','haploid_number','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus')
+        fields = ('scientific_name','tags','taxon_id', 'genome_size', 'c_value','ploidy','chromosome_number','haploid_number','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus')
 
 class AssemblyTable(tables.Table):
     export_formats = ['csv', 'tsv']
@@ -216,7 +216,7 @@ class SequencingTable(tables.Table):
         model = Sequencing
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        fields = ('species', 'team', 'note', 'reads', 'genomic_seq_status','hic_seq_status','rna_seq_status')
+        fields = ('species', 'team', 'recipe', 'note', 'reads', 'genomic_seq_status','hic_seq_status','rna_seq_status')
 
 class ReadsTable(tables.Table):
     project = tables.LinkColumn('sequencing_list')
@@ -261,8 +261,8 @@ class ReadsTable(tables.Table):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
         css_class = '<i class="fas fa-ban fa-lg"></i>'
-        if (rs.hifi_target >  0):
-            threshmet = int(value)/(rs.hifi_target * rs.species.genome_size)
+        if (rs.recipe.hifi_target >  0):
+            threshmet = int(value)/(rs.recipe.hifi_target * rs.species.genome_size)
             css_class = '<i class="fas fa-battery-empty fa-lg empty-color"></i>'
             if(threshmet > 0.25):
                 css_class = '<i class="fas fa-battery-quarter fa-lg quarter-color"></i>'
@@ -286,8 +286,8 @@ class ReadsTable(tables.Table):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
         css_class = '<i class="fas fa-ban fa-lg"></i>'
-        if (rs.hic_target >  0):
-            threshmet = int(value)/(rs.hic_target * rs.species.genome_size)
+        if (rs.recipe.hic_target >  0):
+            threshmet = int(value)/(rs.recipe.hic_target * rs.species.genome_size)
             css_class = '<i class="fas fa-battery-empty fa-lg empty-color"></i>'
             if(threshmet > 0.25):
                 css_class = '<i class="fas fa-battery-quarter fa-lg quarter-color"></i>'
@@ -311,8 +311,8 @@ class ReadsTable(tables.Table):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
         css_class = '<i class="fas fa-ban fa-lg"></i>'
-        if (rs.short_target >  0):
-            threshmet = int(value)/(rs.short_target * rs.species.genome_size)
+        if (rs.recipe.short_target >  0):
+            threshmet = int(value)/(rs.recipe.short_target * rs.species.genome_size)
             css_class = '<i class="fas fa-battery-empty fa-lg empty-color"></i>'
             if(threshmet > 0.25):
                 css_class = '<i class="fas fa-battery-quarter fa-lg quarter-color"></i>'
@@ -360,8 +360,8 @@ class ReadsTable(tables.Table):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
         css_class = '<i class="fas fa-ban fa-lg"></i>'
-        if (rs.ont_target >  0):
-            threshmet = int(value)/(rs.ont_target * rs.species.genome_size)
+        if (rs.recipe.ont_target >  0):
+            threshmet = int(value)/(rs.recipe.ont_target * rs.species.genome_size)
             css_class = '<i class="fas fa-battery-empty fa-lg empty-color"></i>'
             if(threshmet > 0.25):
                 css_class = '<i class="fas fa-battery-quarter fa-lg quarter-color"></i>'
@@ -459,7 +459,11 @@ class SpecimenTable(tables.Table):
 class SampleTable(tables.Table):
     # biosampleAccession = tables.TemplateColumn( '<a href="https://www.ebi.ac.uk/biosamples/samples/{{record.biosampleAccession}}"{{record.biosampleAccession}}</a>',empty_values=(), verbose_name='BioSample')
     species = tables.Column(linkify=True)
-    specimen = tables.Column(linkify=True)
+    def render_specimen(self, value, record):
+        html = '<a target="blank" <a href="/erga-stream-dev/specimens/'+ str(record.specimen.pk) +'/">'+escape(value)+'</a>'
+        return mark_safe(html)
+
+    #specimen = tables.Column(linkify=True)
     #copo = tables.TemplateColumn('<a href="{% url \'copo\' %}/{{record.copo_id}}/">copo</a>',empty_values=(), verbose_name='COPO Record')
     def render_copo_id(self, value, record):
         html = '<a target="blank" <a href="/erga-stream-dev/copo/'+ value +'">'+escape(value)+'</a>'
@@ -492,3 +496,36 @@ class GenomeTeamsTable(tables.Table):
         model = GenomeTeam
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
+
+class AuthorsTable(tables.Table):
+    export_formats = ['csv', 'tsv', 'json']
+    # def render_author(self, value, record):
+    #     html = '<a target="blank" <a href="/erga-stream-dev/specimens/'+ str(record.specimen.pk) +'/">'+escape(value)+'</a>'
+    #     return mark_safe(html)
+    #team = tables.Column(accessor='author',linkify=True)
+    name = tables.TemplateColumn("{{record.author.last_name}},{{record.author.first_name}}{%if record.author.middle_name %} {{record.author.middle_name}}{% endif %}",empty_values=(), verbose_name='Author')
+    affiliation = tables.Column(accessor='author__affiliation')
+    orcid = tables.Column(accessor='author__orcid')
+
+    def render_affiliation(self, value, table):
+        alist = ""
+        afirst = True
+
+        affs = list(value.all())
+
+        for a in affs:
+            if not afirst:
+                alist += "<br />"
+            else:
+                afirst = False
+
+            alist += a.affiliation
+
+        return mark_safe(alist)
+    
+    class Meta:
+        model = Author
+        template_name = "django_tables2/bootstrap4.html"
+        #order_by = 'taxon_kingdom,taxon_phylum,taxon_class,taxon_order,taxon_family,taxon_genus,scientific_name' # use dash for descending order
+        paginate = {"per_page": 100}
+        fields = ('species','role','name','affiliation','orcid')

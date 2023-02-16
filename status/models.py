@@ -4,6 +4,11 @@ import django.utils
 from django.conf import settings
 from multiselectfield import MultiSelectField
 from django.core.mail import send_mail
+from django.urls import reverse
+import tagging
+from tagging.fields import TagField
+#from tagging.registry import register
+
 
 def default_domain(request):
     return {'default_domain': settings.DEFAULT_DOMAIN}
@@ -114,7 +119,26 @@ class Role(models.Model):
     def __str__(self):
         return self.description
 
+TAG_CHOICES = (
+    ('erga_long_list', 'ERGA Long List'),
+    ('bge', 'BGE short list'),
+    ('cbp', 'CBP'),
+    ('erga_pilot', 'ERGA_Pilot'),
+    ('wp11', 'WP11'),
+    ('dtol', 'DTOL'),
+    ('greece_hsp', 'GreeceHSp'),
+    ('slovenia_hsp', 'SloveniaHSp'),
+    ('spain_hsp', 'SpainHsp')
+)
 
+class Tag(models.Model):
+    tag = models.CharField(max_length=50, choices=TAG_CHOICES, default='erga_long_list')
+    class Meta:
+        verbose_name_plural = 'tags'
+
+    def __str__(self):
+        return self.tag
+    
 class TaxonKingdom(models.Model):
     name = models.CharField(max_length=100)
     class Meta:
@@ -194,6 +218,7 @@ class TaxonGenus(models.Model):
 
 class TargetSpecies(models.Model):
     scientific_name = models.CharField(max_length=201, blank=True, null=True, db_index=True)
+    tags = models.ManyToManyField(Tag,default='ERGA_Long_List')
     tolid_prefix = models.CharField(max_length=12, blank=True, null=True, db_index=True)
     taxon_kingdom = models.ForeignKey(TaxonKingdom, blank=True, null=True, on_delete=models.SET_NULL, verbose_name="Kingdom")
     taxon_phylum = models.ForeignKey(TaxonPhylum, blank=True, null=True, on_delete=models.SET_NULL, verbose_name="Phylum")
@@ -214,12 +239,12 @@ class TargetSpecies(models.Model):
         ordering = ['taxon_kingdom', 'taxon_phylum', 'taxon_class', 'taxon_order','taxon_family','taxon_genus','scientific_name']
 
     def get_absolute_url(self):
-        from django.urls import reverse
         return reverse('species_detail', args=[str(self.scientific_name)])
 
     def __str__(self):
         return self.scientific_name
         #return self.scientific_name +" (" + self.tolid_prefix + ")"
+
 
 class CommonNames(models.Model):
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="Genus/species")
@@ -265,7 +290,6 @@ class UserProfile(models.Model):
     orcid = models.CharField(null=True, blank=True, max_length=60, verbose_name="ORCID")
     
     def get_absolute_url(self):
-        from django.urls import reverse
         return reverse('user_profile', args=[str(self.pk)])
 
     def __str__(self):
@@ -300,7 +324,6 @@ class AnnotationTeam(models.Model):
         verbose_name_plural = 'annotation teams'
 
     def get_absolute_url(self):
-        from django.urls import reverse
         return reverse('annotation_team_detail', args=[str(self.pk)])
 
     def __str__(self):
@@ -320,7 +343,6 @@ class CommunityAnnotationTeam(models.Model):
         verbose_name_plural = 'Community annotation teams'
 
     def get_absolute_url(self):
-        from django.urls import reverse
         return reverse('community_annotation_team_detail', args=[str(self.pk)])
 
     def __str__(self):
@@ -341,7 +363,6 @@ class BiobankingTeam(models.Model):
         verbose_name_plural = 'biobanking teams'
 
     def get_absolute_url(self):
-        from django.urls import reverse
         return reverse('biobanking_team_detail', args=[str(self.pk)])
 
     def __str__(self):
@@ -361,7 +382,6 @@ class AssemblyTeam(models.Model):
         verbose_name_plural = 'assembly teams'
 
     def get_absolute_url(self):
-        from django.urls import reverse
         return reverse('assembly_team_detail', args=[str(self.pk)])
 
     def __str__(self):
@@ -381,7 +401,6 @@ class CurationTeam(models.Model):
         verbose_name_plural = 'curation teams'
 
     def get_absolute_url(self):
-        from django.urls import reverse
         return reverse('curation_team_detail', args=[str(self.pk)])
 
     def __str__(self):
@@ -401,7 +420,6 @@ class SequencingTeam(models.Model):
         verbose_name_plural = 'sequencing teams'
 
     def get_absolute_url(self):
-        from django.urls import reverse
         return reverse('sequencing_team_detail', args=[str(self.pk)])
 
     def __str__(self):
@@ -422,7 +440,6 @@ class ExtractionTeam(models.Model):
         verbose_name_plural = 'extraction teams'
 
     def get_absolute_url(self):
-        from django.urls import reverse
         return reverse('extraction_team_detail', args=[str(self.pk)])
 
     def __str__(self):
@@ -439,7 +456,6 @@ class CollectionTeam(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     def get_absolute_url(self):
-        from django.urls import reverse
         return reverse('collection_team_detail', args=[str(self.pk)])
 
     def __str__(self):
@@ -456,7 +472,6 @@ class TaxonomyTeam(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     def get_absolute_url(self):
-        from django.urls import reverse
         return reverse('taxonomy_team_detail', args=[str(self.pk)])
 
     def __str__(self):
@@ -473,7 +488,6 @@ class SampleHandlingTeam(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     def get_absolute_url(self):
-        from django.urls import reverse
         return reverse('sample_handling_team_detail', args=[str(self.pk)])
 
     def __str__(self):
@@ -490,7 +504,6 @@ class VoucheringTeam(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     def get_absolute_url(self):
-        from django.urls import reverse
         return reverse('vouchering_team_detail', args=[str(self.pk)])
 
     def __str__(self):
@@ -507,7 +520,6 @@ class BarcodingTeam(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     def get_absolute_url(self):
-        from django.urls import reverse
         return reverse('barcoding_team_detail', args=[str(self.pk)])
 
     def __str__(self):
@@ -547,7 +559,7 @@ class GenomeTeam(models.Model):
 
 class SampleCollection(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species",unique=True)
-    team = models.ForeignKey(CollectionTeam, on_delete=models.SET_NULL, null=True, verbose_name="collection team", blank=True)
+    #team = models.ForeignKey(CollectionTeam, on_delete=models.SET_NULL, null=True, verbose_name="collection team", blank=True)
     genomic_sample_status = models.CharField(max_length=12, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
     rna_sample_status = models.CharField(max_length=12, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
     #hic_sample_status = models.CharField(max_length=12, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
@@ -557,7 +569,6 @@ class SampleCollection(models.Model):
         verbose_name_plural = 'collection'
 
     def get_absolute_url(self):
-        from django.urls import reverse
         return reverse('collection_list', args=[self.species])
 
     def __str__(self):
@@ -585,7 +596,6 @@ class Specimen(models.Model):
     voucher_institution = models.CharField(max_length=200, null=True, blank=True)
     
     def get_absolute_url(self):
-        from django.urls import reverse
         return reverse('specimen_list', args=[str(self.pk)])
     
     def __str__(self):
@@ -604,6 +614,19 @@ class Sample(models.Model):
     specimen = models.ForeignKey(Specimen, on_delete=models.CASCADE, verbose_name="Specimen",null=True, blank=True)
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species",null=True, blank=True)
     
+class Recipe(models.Model):
+    name = models.CharField(max_length=50, unique=True, verbose_name="Recipe name")
+    ont_target = models.BigIntegerField(null=True, blank=True, verbose_name="ONT target")
+    hifi_target = models.BigIntegerField(null=True, blank=True, verbose_name="HiFi target")
+    hic_target = models.BigIntegerField(null=True, blank=True, verbose_name="Hi-C target")
+    short_target = models.BigIntegerField(null=True, blank=True, verbose_name="Short read target")
+        
+    class Meta:
+        verbose_name_plural = 'recipes'
+
+    def __str__(self):
+        return self.name
+
 class Sequencing(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     #team = models.ForeignKey(SequencingTeam, on_delete=models.SET_NULL, null=True, verbose_name="sequencing team")
@@ -611,11 +634,12 @@ class Sequencing(models.Model):
     hic_seq_status = models.CharField(max_length=12, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
     rna_seq_status = models.CharField(max_length=12, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
-    ont_target = models.BigIntegerField(null=True, blank=True, verbose_name="ONT target")
-    hifi_target = models.BigIntegerField(null=True, blank=True, verbose_name="HiFi target")
-    hic_target = models.BigIntegerField(null=True, blank=True, verbose_name="Hi-C target")
-    short_target = models.BigIntegerField(null=True, blank=True, verbose_name="Short read target")
-    rnaseq_numlibs_target = models.IntegerField(null=True, blank=True, verbose_name="RNAseq libs target")
+    # ont_target = models.BigIntegerField(null=True, blank=True, verbose_name="ONT target")
+    # hifi_target = models.BigIntegerField(null=True, blank=True, verbose_name="HiFi target")
+    # hic_target = models.BigIntegerField(null=True, blank=True, verbose_name="Hi-C target")
+    # short_target = models.BigIntegerField(null=True, blank=True, verbose_name="Short read target")
+    rnaseq_numlibs_target = models.IntegerField(null=True, blank=True, default=3, verbose_name="RNAseq libs target")
+    recipe = models.ForeignKey(Recipe, on_delete=models.SET_NULL, to_field='name', default='HiFi25', verbose_name="Recipe", null=True)
     
     __original_genomic_seq_status = None
     __original_hic_seq_status = None
@@ -679,8 +703,6 @@ class Sequencing(models.Model):
         super(Sequencing, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
-        from django.urls import reverse
-        #return reverse('sequencing_list',kwargs=)
         return reverse('sequencing_list', args=[str(self.pk)])
 
     class Meta:
@@ -708,9 +730,10 @@ class Reads(models.Model):
     def __str__(self):
         return self.project.species.scientific_name
 
+
 class Curation(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
-    team = models.ForeignKey(CurationTeam, on_delete=models.SET_NULL, null=True, verbose_name="curation team")
+    #team = models.ForeignKey(CurationTeam, on_delete=models.SET_NULL, null=True, verbose_name="curation team")
     status = models.CharField(max_length=12, help_text='Status', choices=CURATION_STATUS_CHOICES, default=CURATION_STATUS_CHOICES[0][0])
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
 
@@ -722,7 +745,7 @@ class Curation(models.Model):
 
 class CommunityAnnotation(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
-    team = models.ForeignKey(AnnotationTeam, on_delete=models.SET_NULL, null=True, verbose_name="annotation team")
+    #team = models.ForeignKey(AnnotationTeam, on_delete=models.SET_NULL, null=True, verbose_name="annotation team")
     status = models.CharField(max_length=12, help_text='Status', choices=ANNOTATION_STATUS_CHOICES, default=ANNOTATION_STATUS_CHOICES[0][0])
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
 
@@ -740,7 +763,7 @@ class CommunityAnnotation(models.Model):
 
 class Annotation(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
-    team = models.ForeignKey(AnnotationTeam, on_delete=models.SET_NULL, null=True, verbose_name="annotation team")
+    #team = models.ForeignKey(AnnotationTeam, on_delete=models.SET_NULL, null=True, verbose_name="annotation team")
     status = models.CharField(max_length=12, help_text='Status', choices=ANNOTATION_STATUS_CHOICES, default=ANNOTATION_STATUS_CHOICES[0][0])
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
 
@@ -754,7 +777,7 @@ class Annotation(models.Model):
                     author=m,
                     role='annotation'
                 )
-        super(annotation, self).save(*args, **kwargs)
+        super(Annotation, self).save(*args, **kwargs)
  
     class Meta:
         verbose_name_plural = 'annotation'
@@ -798,7 +821,6 @@ class AssemblyProject(models.Model):
         super(AssemblyProject, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
-        from django.urls import reverse
         return reverse('assembly_project_list', args=[str(self.pk)])
 
     def __str__(self):
@@ -815,7 +837,6 @@ class AssemblyPipeline(models.Model):
         verbose_name_plural = 'assembly pipelines'
 
     def get_absolute_url(self):
-        from django.urls import reverse
         return reverse('assembly_pipeline_detail', args=[str(self.pk)])
 
     def __str__(self):

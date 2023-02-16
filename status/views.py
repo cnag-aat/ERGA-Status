@@ -35,6 +35,9 @@ from django.contrib import messages
 from django.views.generic.edit import CreateView
 from django_addanother.views import CreatePopupMixin
 import requests
+from django.shortcuts import get_object_or_404
+#from status.filters import SpecimenFilter
+
 
 
 # Get an instance of a logger
@@ -229,10 +232,17 @@ class SpecimenListView(ExportMixin, SingleTableMixin, FilterView):
     # login_url = "access_denied"
     model = Specimen
     table_class = SpecimenTable
+    #filterset_class = SpecimenFilter
     template_name = 'specimens.html'
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
-
+    def get_queryset(self):
+        #self.id = get_object_or_404(Specimen, pk=self.kwargs['id'])
+        if 'id' in self.kwargs:
+            return Specimen.objects.filter(pk=self.kwargs['id'])
+        if 'collection' in self.kwargs:
+            return Specimen.objects.filter(collection=self.kwargs['collection'])
+    
 class SampleListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
     # login_url = "access_denied"
@@ -340,3 +350,11 @@ def user_profile(request, pk=None):
                }
     response = render(request, "user_profile.html", context)
     return response
+
+class AuthorsView(ExportMixin, SingleTableMixin, FilterView):
+    model = Author
+    table_class = AuthorsTable
+    template_name = 'authors.html'
+    export_formats = ['csv', 'tsv','xlsx','json']
+    #filterset_class = SpeciesFilter
+    table_pagination = {"per_page": 100}
