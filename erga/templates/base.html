@@ -27,10 +27,9 @@
 <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
 <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY" crossorigin="anonymous"></script>
 <script src="https://kit.fontawesome.com/0636c1cb0c.js" crossorigin="anonymous"></script>
-<!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script> -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/js/bootstrap.min.js"></script>
-
 <style>
 body {
  padding-bottom: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
@@ -47,7 +46,6 @@ body {
 </style>
 {% if not view.is_popup %}
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <!-- <div class="container-fluid"> -->
     <a class="navbar-brand" href="{% url 'home' %}"><img src="{% static "ERGA.png" %}" width=150 alt="ERGA"></a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -55,58 +53,61 @@ body {
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
-        <li class="nav-item active">
+        <li class="nav-item">
           <a class="nav-link" id="overviewlink" href="{% url 'overview' %}"><i id=overviewspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Status</a>
         </li>
-        <li class="nav-item active">
+        <li class="nav-item">
           <a class="nav-link" id="specieslink" href="{% url 'species_list' %}"><i id=speciesspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Species</a>
         </li>
-        <li class="nav-item active">
+        <li class="nav-item">
           <a class="nav-link" id="specimenslink" href="{% url 'specimen_list' %}"><i id=specimensspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Specimens</a>
         </li>
-        <li class="nav-item active">
+        <li class="nav-item">
           <a class="nav-link" id="sampleslink" href="{% url 'sample_list' %}"><i id=samplesspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Samples</a>
         </li>
-        <li class="nav-item active">
+        <li class="nav-item">
           <a class="nav-link" id="readslink" href="{% url 'reads_list' %}"><i id=readsspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Reads</a>
         </li>
-        <li class="nav-item active">
+        <li class="nav-item">
           <a class="nav-link" id="assemblylink" href="{% url 'assembly_list' %}"><i id=assemblyspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Assemblies</a>
         </li>
-        <li class="nav-item active">
+        <li class="nav-item">
           <a class="nav-link" id="teamslink" href="{% url 'genome_teams' %}"><i id=speciesspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Teams</a>
         </li>
-        <li class="nav-item active">
-          <a class="nav-link" id="authorslink" href="{% url 'author_list' %}"><i id=authorsspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Authors</a>
-        </li>
-      </ul>
-      <ul class="navbar-nav ml-auto">
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'admin:index' %}">Edit</a>
+          <a class="nav-link" id="authorslink" href="{% url 'author_list' %}"><i id=authorsspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Authors</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'api-root' %}">API</a>
         </li>
+      </ul>
+      <ul class="navbar-nav ml-auto">
+
+        
 
         {% if user.is_authenticated %}
         <li class="nav-item">
           <p class="navbar-text">Logged in as <strong>{{ user.username }}</strong>.</p>
+          </li>     
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'admin:index' %}">Edit Tables</a>
           </li>
-          <li class="nav-item active">
-            <a class="nav-link" href="{% url 'account_logout' %}">Logout</a>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'edit_profile' %}">Update Profile</a>
           </li>
-          <li class="nav-item active">
+          <li class="nav-item">
             <a class="nav-link" href="{% url 'account_email' %}">Change E-mail</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'account_logout' %}"><i class="fas fa-sign-out-alt fa-lg"></i></a>
+          </li>
           {% else %}
-          <li class="nav-item active">
-          <a class="nav-link" href="{% url 'account_login' %}">Login/Register</a>
+          <li class="nav-item">
+          <a class="nav-link" href="{% url 'account_login' %}"><i class="fas fa-sign-in-alt fa-lg"></i></a>
           </li>
           {% endif %}
       </ul>
     </div>
-  <!-- </div> -->
-
 </nav>
 {% endif %}
 <div class="row">

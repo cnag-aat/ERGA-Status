@@ -32,7 +32,7 @@
       <button class="btn btn-link" onclick="openNav()">☰ Filters</button>
     </div>
     <div class="col d-flex justify-content-end">
-    Download:
+      <i class="fas fa-download" color="#0d6efd"></i>
     {% for format in view.export_formats %}
     <a href="{% export_url format %}">
         <code>&nbsp;.{{ format }}</code>

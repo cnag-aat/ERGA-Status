@@ -34,13 +34,21 @@ class OverviewTable(tables.Table):
 
     tolid_prefix = tables.Column(linkify=True)
     scientific_name = tables.Column(linkify=True)
+    #log = tables.Column(accessor='updatestatus',verbose_name='Log')
+    log = tables.TemplateColumn('<a href="/erga-stream-dev/log/?species={{record.id}}"><i class="fas fa-history"></i></a>',empty_values=(), verbose_name='log')
     attrs={"td": {"class": "overview-table"}}
     #targetspecies=TargetSpecies.objects.get(=pk)
     # def render_collection_status(self, value):
     #     return mark_safe('<a href="'+
     #         url('collection_list',kwargs={'scientific_name': record.scientific_name})
     #         +'"><span class="'+escape(value)+'">'+escape(value)+'</span>')
-
+    # def render_log(self, value, record):
+    #     if(record.scientific_name):
+    #         html = '<a href="/erga-stream-dev/log/?species='+str(record.scientific_name.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+    #         return mark_safe(html) 
+    #     else:
+    #         return ''
+      
     def render_genomic_sample_status(self, value, record):
         html = '<a href="/erga-stream-dev/collection/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
@@ -116,7 +124,7 @@ class OverviewTable(tables.Table):
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
         # fields = ('tolid_prefix', 'scientific_name','genomic_sample_status','hic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','curation_status','annotation_status','submission_status')
-        fields = ('tolid_prefix', 'scientific_name','genomic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','annotation_status')
+        fields = ('tolid_prefix', 'scientific_name','log','genomic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','annotation_status','community_annotation_status')
 
 class TargetSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']
@@ -529,3 +537,19 @@ class AuthorsTable(tables.Table):
         #order_by = 'taxon_kingdom,taxon_phylum,taxon_class,taxon_order,taxon_family,taxon_genus,scientific_name' # use dash for descending order
         paginate = {"per_page": 100}
         fields = ('species','role','name','affiliation','orcid')
+
+class StatusUpdateTable(tables.Table):
+    export_formats = ['csv', 'tsv','xls']
+    # status = tables.Column(accessor='samplecollection.genomic_sample_status',verbose_name='Genomic Sample',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
+    species = tables.Column(linkify=True)
+    attrs={"td": {"class": "overview-table"}}
+
+    def render_status(self, value, record):
+        html = '<span class="'+escape(value)+'">'+escape(value)+'</span>'
+        return mark_safe(html)
+    
+    class Meta:
+        model = StatusUpdate
+        template_name = "django_tables2/bootstrap4.html"
+        paginate = {"per_page": 100}
+        fields = ('species', 'process','status','note','timestamp')

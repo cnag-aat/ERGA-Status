@@ -4,6 +4,8 @@ from django.views.generic import ListView
 from status.models import *
 from django.views.generic import TemplateView
 from django.views.generic import DetailView
+from django.views.generic.edit import FormView
+from django.views.generic.edit import UpdateView
 from django_tables2 import SingleTableView
 from django_tables2 import RequestConfig
 from django_addanother.views import CreatePopupMixin
@@ -37,6 +39,9 @@ from django_addanother.views import CreatePopupMixin
 import requests
 from django.shortcuts import get_object_or_404
 #from status.filters import SpecimenFilter
+#from status.forms import (EditProfileForm, ProfileForm)
+from status.forms import ProfileUpdateForm
+from django.urls import reverse_lazy
 
 
 
@@ -55,6 +60,9 @@ def index(request):
 
 class HomeView(TemplateView):
     template_name = 'index.html'
+
+class SuccessView(TemplateView):
+    template_name = 'success.html'
 
 # Create your views here.
 class TargetSpeciesListView(ExportMixin, SingleTableMixin, FilterView):
@@ -343,7 +351,7 @@ class GenomeTeamsView(ExportMixin, SingleTableMixin, FilterView):
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
 
-@permission_required("status.annotation_team_detail", login_url='access_denied')
+@permission_required("status.user_profile", login_url='access_denied')
 def user_profile(request, pk=None):
     profile = UserProfile.objects.get(pk=pk)
     context = {"profile": profile
@@ -358,3 +366,81 @@ class AuthorsView(ExportMixin, SingleTableMixin, FilterView):
     export_formats = ['csv', 'tsv','xlsx','json']
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
+
+# @login_required
+# def edit_profile(request):
+#     if request.method == 'POST':
+#         form = EditProfileForm(request.POST, instance=request.user)
+#         profile_form = ProfileForm(request.POST, request.FILES, instance=request.user.userprofile)  # request.FILES is show the selected image or file
+
+#         if form.is_valid() and profile_form.is_valid():
+#             user_form = form.save()
+#             custom_form = profile_form.save(False)
+#             custom_form.user = user_form
+#             custom_form.save()
+#             return redirect('status:user_profile')
+#     else:
+#         form = EditProfileForm(instance=request.user)
+#         profile_form = ProfileForm(instance=request.user.userprofile)
+#         args = {}
+#         # args.update(csrf(request))
+#         args['form'] = form
+#         args['profile_form'] = profile_form
+#         return render(request, 'edit_profile.html', args)
+class EditProfileView(FormView):
+    model = UserProfile
+    fields = ['first_name','middle_name','last_name','affiliation','orcid','roles','lead']
+    template_name = 'status/userprofile_update_form.html'
+    form_class = ProfileUpdateForm
+    success_url = reverse_lazy('success')
+
+    def get_form(self, form_class = ProfileUpdateForm):
+        """
+        Check if the user already saved contact details. If so, then show
+        the form populated with those details, to let user change them.
+        """
+        try:
+            profile = UserProfile.objects.get(user=self.request.user)
+            return form_class(instance=profile, **self.get_form_kwargs())
+        except UserProfile.DoesNotExist:
+            return form_class(**self.get_form_kwargs())
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        form.save()
+        return super(EditProfileView, self).form_valid(form)
+    
+class LogView(ExportMixin, SingleTableMixin, FilterView):
+    # permission_required = "resistome.view_sample"
+    # login_url = "access_denied"
+    model = StatusUpdate
+    table_class = StatusUpdateTable
+    template_name = 'log.html'
+    #filterset_class = SpeciesFilter
+    table_pagination = {"per_page": 100}
+    export_formats = ['csv', 'tsv','xlsx','json']
+
+    # def get_queryset(self):
+    #     queryset = super(StatusUpdate, self).get_queryset()
+    #     if 'project' in self.request.GET:
+    #         queryset = queryset.filter(pk=self.request.GET['species'])
+    #         return queryset
+
+class SpeciesLogView(ExportMixin, SingleTableMixin, FilterView):
+    # permission_required = "resistome.view_sample"
+    # login_url = "access_denied"
+    model = StatusUpdate
+    table_class = StatusUpdateTable
+    template_name = 'log.html'
+    #filterset_class = SpeciesFilter
+    table_pagination = {"per_page": 100}
+    export_formats = ['csv', 'tsv','xlsx','json']
+
+    def get_queryset(self):
+        #species = TargetSpecies.objects.get(scientfic_name=self.request.GET['scientific_name'])
+        queryset = super(SpeciesLogView, self).get_queryset()
+        # if 'pk' in self.request.GET:
+        queryset = queryset.filter(species=self.request.GET['id'])
+        return queryset
+
+

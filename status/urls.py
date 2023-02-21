@@ -21,10 +21,16 @@ from status.views import AccessDeniedView
 from status.views import GenomeTeamsView
 from status.views import AffiliationCreateView
 from status.views import AuthorsView
+from status.views import EditProfileView
+from status.views import SuccessView
+from status.views import LogView
+from status.views import SpeciesLogView
 
 urlpatterns = [
     path("", HomeView.as_view(), name="home"),
     path("overview/", OverView.as_view(), name="overview"),
+    path("log/", LogView.as_view(), name="log"),
+    path("log/?species=<int:id>/", SpeciesLogView.as_view(), name="species_log"),
     path("species/", TargetSpeciesListView.as_view(), name="species_list"),
     path("species/<int:pk>/", views.species_detail, name="species_detail"),
     path("species/?scientific_name=<scientific_name>", views.species_detail, name="species_detail"),
@@ -68,6 +74,8 @@ urlpatterns = [
     path("user_profile/<int:pk>/", views.user_profile, name="user_profile"),
     path("copo/<str:copoid>/", views.copo_record, name="copo"),
     path('authors/', AuthorsView.as_view(), name="author_list"),
+    path('edit_profile/', EditProfileView.as_view(), name="edit_profile"),
+    path('success/', SuccessView.as_view(), name="success"),
     
 
 ]

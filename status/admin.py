@@ -114,6 +114,14 @@ admin.site.register(Affiliation)
 admin.site.register(Role)
 admin.site.register(Tag)
 admin.site.register(Recipe)
-
+@register(StatusUpdate)
+class StatusUpdateAdmin(admin.ModelAdmin):
+    list_display = (
+        'species',
+        'process',
+        'status',
+        'note',
+        'timestamp'
+    )
 # admin.site.unregister(User)
 # admin.site.register(User, MyUserAdmin)

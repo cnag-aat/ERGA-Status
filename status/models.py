@@ -24,6 +24,7 @@ STATUS_CHOICES = (
 )
 
 COLLECTION_STATUS_CHOICES = (
+    ('None', 'None'),
     ('Long_Listed', 'Long_Listed'),
     ('Collecting', 'Collecting'),
     ('Resampling', 'Resampling'),
@@ -117,7 +118,7 @@ class Role(models.Model):
         verbose_name_plural = 'roles'
 
     def __str__(self):
-        return self.description
+        return self.description or str(self.id)
 
 TAG_CHOICES = (
     ('erga_long_list', 'ERGA Long List'),
@@ -137,7 +138,7 @@ class Tag(models.Model):
         verbose_name_plural = 'tags'
 
     def __str__(self):
-        return self.tag
+        return self.tag or str(self.id)
     
 class TaxonKingdom(models.Model):
     name = models.CharField(max_length=100)
@@ -145,7 +146,7 @@ class TaxonKingdom(models.Model):
         verbose_name_plural = 'kingdoms'
 
     def __str__(self):
-        return self.name
+        return self.name or str(self.id)
 
 class TaxonPhylum(models.Model):
     taxon_kingdom = models.ForeignKey(TaxonKingdom, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Kingdom")
@@ -154,7 +155,7 @@ class TaxonPhylum(models.Model):
         verbose_name_plural = 'phyla'
 
     def __str__(self):
-        return self.name
+        return self.name or str(self.id)
 
 class TaxonClass(models.Model):
     taxon_kingdom = models.ForeignKey(TaxonKingdom, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Kingdom")
@@ -164,7 +165,7 @@ class TaxonClass(models.Model):
         verbose_name_plural = 'classes'
 
     def __str__(self):
-        return self.name
+        return self.name or str(self.id)
 
 class TaxonOrder(models.Model):
     taxon_kingdom = models.ForeignKey(TaxonKingdom, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Kingdom")
@@ -175,7 +176,7 @@ class TaxonOrder(models.Model):
         verbose_name_plural = 'orders'
 
     def __str__(self):
-        return self.name
+        return self.name or str(self.id)
 
 class TaxonFamily(models.Model):
     taxon_kingdom = models.ForeignKey(TaxonKingdom, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Kingdom")
@@ -187,7 +188,7 @@ class TaxonFamily(models.Model):
         verbose_name_plural = 'families'
 
     def __str__(self):
-        return self.name
+        return self.name or str(self.id)
 
 class TaxonGenus(models.Model):
     taxon_kingdom = models.ForeignKey(TaxonKingdom, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Kingdom")
@@ -200,7 +201,7 @@ class TaxonGenus(models.Model):
         verbose_name_plural = 'genera'
 
     def __str__(self):
-        return self.name
+        return self.name or str(self.id)
 
 # class TaxonSpecies(models.Model):
 #     taxon_kingdom = models.ForeignKey(TaxonKingdom, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Kingdom")
@@ -242,7 +243,7 @@ class TargetSpecies(models.Model):
         return reverse('species_detail', args=[str(self.scientific_name)])
 
     def __str__(self):
-        return self.scientific_name
+        return self.scientific_name or str(self.id)
         #return self.scientific_name +" (" + self.tolid_prefix + ")"
 
 
@@ -254,7 +255,7 @@ class CommonNames(models.Model):
         verbose_name_plural = 'common names'
 
     def __str__(self):
-        return self.name
+        return self.name or str(self.id)
 
 class Synonyms(models.Model):
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="Genus/species")
@@ -273,7 +274,7 @@ class Affiliation(models.Model):
         verbose_name_plural = 'affiliations'
 
     def __str__(self):
-        return self.affiliation
+        return self.affiliation or str(self.id)
 
 class UserProfile(models.Model):
     user = models.ForeignKey(
@@ -293,7 +294,7 @@ class UserProfile(models.Model):
         return reverse('user_profile', args=[str(self.pk)])
 
     def __str__(self):
-        return self.first_name + " " + self.last_name
+        return self.first_name + " " + self.last_name or str(self.id)
 
 
 class Person(models.Model):
@@ -308,16 +309,16 @@ class Person(models.Model):
         verbose_name_plural = 'people'
 
     def __str__(self):
-        return self.first_name + " " + self.last_name 
+        return self.first_name + " " + self.last_name  or str(self.id)
 
 class AnnotationTeam(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100,unique=True)
     lead = models.ForeignKey(
-        UserProfile,
+        UserProfile,null=True, blank=True,
         on_delete=models.CASCADE,
         related_name='annotation_team_lead'
     )
-    members = models.ManyToManyField(UserProfile)
+    members = models.ManyToManyField(UserProfile,null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
@@ -327,16 +328,16 @@ class AnnotationTeam(models.Model):
         return reverse('annotation_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.lead.first_name +" (" + self.name + ")"
+        return self.lead.first_name +" (" + self.name + ")" or str(self.id)
 
 class CommunityAnnotationTeam(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100,unique=True)
     lead = models.ForeignKey(
-        UserProfile,
+        UserProfile,null=True, blank=True,
         on_delete=models.CASCADE, 
         related_name='community_annotation_team_lead'
     )
-    members = models.ManyToManyField(UserProfile)
+    members = models.ManyToManyField(UserProfile,null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
@@ -346,17 +347,17 @@ class CommunityAnnotationTeam(models.Model):
         return reverse('community_annotation_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.lead.first_name +" (" + self.name + ")"
+        return self.lead.first_name +" (" + self.name + ")" or str(self.id)
 
 class BiobankingTeam(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100,unique=True)
     lead = models.ForeignKey(
         #UserProfile,
-        UserProfile,
+        UserProfile,null=True, blank=True,
         on_delete=models.CASCADE, 
         related_name='biobanking_team_lead'
     )
-    members = models.ManyToManyField(UserProfile)
+    members = models.ManyToManyField(UserProfile,null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
@@ -366,16 +367,16 @@ class BiobankingTeam(models.Model):
         return reverse('biobanking_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.lead.first_name +" (" + self.name + ")"
+        return self.lead.first_name +" (" + self.name + ")" or str(self.id)
 
 class AssemblyTeam(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100,unique=True)
     lead = models.ForeignKey(
-        UserProfile,
-        on_delete=models.CASCADE, 
+        UserProfile,null=True, blank=True,
+        on_delete=models.SET_NULL, 
         related_name='assembly_team_lead'
     )
-    members = models.ManyToManyField(UserProfile)
+    members = models.ManyToManyField(UserProfile,null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
@@ -385,16 +386,16 @@ class AssemblyTeam(models.Model):
         return reverse('assembly_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.lead.first_name +" (" + self.name + ")"
+        return self.name or str(self.id)
 
 class CurationTeam(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100,unique=True)
     lead = models.ForeignKey(
-        UserProfile,
+        UserProfile,null=True, blank=True,
         on_delete=models.CASCADE, 
         related_name='curation_team_lead'
     )
-    members = models.ManyToManyField(UserProfile)
+    members = models.ManyToManyField(UserProfile,null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
@@ -404,16 +405,16 @@ class CurationTeam(models.Model):
         return reverse('curation_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.lead.first_name +" (" + self.name + ")"
+        return self.lead.first_name +" (" + self.name + ")" or str(self.id)
 
 class SequencingTeam(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100,unique=True)
     lead = models.ForeignKey(
-        UserProfile,
+        UserProfile,null=True, blank=True,
         on_delete=models.CASCADE, 
         related_name='sequencing_team_lead'
     )
-    members = models.ManyToManyField(UserProfile)
+    members = models.ManyToManyField(UserProfile,null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
@@ -423,17 +424,16 @@ class SequencingTeam(models.Model):
         return reverse('sequencing_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.lead.first_name +" (" + self.name + ")"
+        return self.lead.first_name +" (" + self.name + ")" or str(self.id)
 
 class ExtractionTeam(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100,unique=True)
     lead = models.ForeignKey(
-        UserProfile,
+        UserProfile,null=True, blank=True,
         on_delete=models.CASCADE, 
         related_name='extraction_team_lead'
     )
-
-    members = models.ManyToManyField(UserProfile)
+    members = models.ManyToManyField(UserProfile,null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
@@ -443,87 +443,89 @@ class ExtractionTeam(models.Model):
         return reverse('extraction_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.lead.first_name +" (" + self.name + ")"
+        return self.lead.first_name +" (" + self.name + ")" or str(self.id)
 
 class CollectionTeam(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100,unique=True)
     lead = models.ForeignKey(
-        UserProfile,
+        UserProfile, 
+        null=True, blank=True,
         on_delete=models.CASCADE, 
         related_name='collection_team_lead'
     )
-    members = models.ManyToManyField(UserProfile)
+    members = models.ManyToManyField(UserProfile, null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     def get_absolute_url(self):
         return reverse('collection_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.lead.first_name +" (" + self.name + ")"
+        return self.name or str(self.id)
 
 class TaxonomyTeam(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100,unique=True)
     lead = models.ForeignKey(
         UserProfile,
+        null=True, blank=True,
         on_delete=models.CASCADE, 
         related_name='taxonomy_team_lead'
     )
-    members = models.ManyToManyField(UserProfile)
+    members = models.ManyToManyField(UserProfile,null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     def get_absolute_url(self):
         return reverse('taxonomy_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.lead.first_name +" (" + self.name + ")"
+        return self.lead.first_name +" (" + self.name + ")" or str(self.id)
 
 class SampleHandlingTeam(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100,unique=True)
     lead = models.ForeignKey(
-        UserProfile,
+        UserProfile,null=True, blank=True,
         on_delete=models.CASCADE, 
         related_name='sample_handling_team_lead'
     )
-    members = models.ManyToManyField(UserProfile)
+    members = models.ManyToManyField(UserProfile,null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     def get_absolute_url(self):
         return reverse('sample_handling_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.lead.first_name +" (" + self.name + ")"
+        return self.lead.first_name +" (" + self.name + ")" or str(self.id)
 
 class VoucheringTeam(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100,unique=True)
     lead = models.ForeignKey(
-        UserProfile,
-        on_delete=models.SET_NULL, null=True,
+        UserProfile,null=True, blank=True,
+        on_delete=models.SET_NULL, 
         related_name='vouchering_team_lead'
     )
-    members = models.ManyToManyField(UserProfile)
+    members = models.ManyToManyField(UserProfile,null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     def get_absolute_url(self):
         return reverse('vouchering_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.lead.first_name +" (" + self.name + ")"
+        return self.lead.first_name +" (" + self.name + ")" or str(self.id)
 
 class BarcodingTeam(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100,unique=True)
     lead = models.ForeignKey(
-        UserProfile,
+        UserProfile,null=True, blank=True,
         on_delete=models.CASCADE,
         related_name='barcoding_team_lead'
     )
-    members = models.ManyToManyField(UserProfile)
+    members = models.ManyToManyField(UserProfile,null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     def get_absolute_url(self):
         return reverse('barcoding_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.lead.first_name +" (" + self.name + ")"
+        return self.lead.first_name +" (" + self.name + ")" or str(self.id)
 
 class Author(models.Model):
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
@@ -552,7 +554,7 @@ class GenomeTeam(models.Model):
         verbose_name_plural = 'genome teams'
     
     def __str__(self):
-        return self.species.scientific_name
+        return self.species.scientific_name or str(self.id)
 
 
 
@@ -568,11 +570,34 @@ class SampleCollection(models.Model):
     class Meta:
         verbose_name_plural = 'collection'
 
+    __original_genomic_sample_status = None
+    __original_rna_sample_status = None
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__original_genomic_sample_status = self.genomic_sample_status
+        self.__original_rna_sample_status = self.rna_sample_status
+
+    def save(self, *args, **kwargs):
+        if (self.__original_genomic_sample_status != self.genomic_sample_status):
+            stat_gsamp_records, created = StatusUpdate.objects.get_or_create(
+                species=self.species,
+                process='genomic_sample',
+                status=self.genomic_sample_status
+            )
+        if (self.__original_rna_sample_status != self.rna_sample_status):
+            stat_rsamp_records, created = StatusUpdate.objects.get_or_create(
+                species=self.species,
+                process='rna_sample',
+                status=self.rna_sample_status
+            )
+        super(SampleCollection, self).save(*args, **kwargs)
+
     def get_absolute_url(self):
         return reverse('collection_list', args=[self.species])
 
     def __str__(self):
-        return self.species.scientific_name 
+        return self.species.scientific_name  or str(self.id)
 
 class Specimen(models.Model):
     # TISSUE_REMOVED_FOR_BIOBANKING	TISSUE_VOUCHER_ID_FOR_BIOBANKING	TISSUE_FOR_BIOBANKING	
@@ -599,7 +624,7 @@ class Specimen(models.Model):
         return reverse('specimen_list', args=[str(self.pk)])
     
     def __str__(self):
-        return self.tolid
+        return self.tolid or str(self.id)
 
     
 class Sample(models.Model):
@@ -625,7 +650,7 @@ class Recipe(models.Model):
         verbose_name_plural = 'recipes'
 
     def __str__(self):
-        return self.name
+        return self.name or str(self.id)
 
 class Sequencing(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
@@ -700,6 +725,24 @@ class Sequencing(models.Model):
                     author=m,
                     role='sequencing'
                 )
+        if (self.__original_genomic_seq_status != self.genomic_seq_status):
+            stat_gseq_records, created = StatusUpdate.objects.get_or_create(
+                species=self.species,
+                process='genomic_seq',
+                status=self.genomic_seq_status
+            )
+        if (self.__original_rna_seq_status != self.rna_seq_status):
+            stat_rseq_records, created = StatusUpdate.objects.get_or_create(
+                species=self.species,
+                process='rna_seq',
+                status=self.rna_seq_status
+            )
+        if (self.__original_hic_seq_status != self.hic_seq_status):
+            stat_hicseq_records, created = StatusUpdate.objects.get_or_create(
+                species=self.species,
+                process='hic_seq',
+                status=self.hic_seq_status
+            )
         super(Sequencing, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
@@ -709,7 +752,7 @@ class Sequencing(models.Model):
         verbose_name_plural = 'sequencing'
 
     def __str__(self):
-        return self.species.scientific_name
+        return self.species.scientific_name or str(self.id)
 
 class Reads(models.Model):
     project = models.ForeignKey(Sequencing, on_delete=models.CASCADE, verbose_name="Sequencing project")
@@ -728,7 +771,7 @@ class Reads(models.Model):
         verbose_name_plural = 'reads'
 
     def __str__(self):
-        return self.project.species.scientific_name
+        return self.project.species.scientific_name or str(self.id)
 
 
 class Curation(models.Model):
@@ -741,7 +784,7 @@ class Curation(models.Model):
         verbose_name_plural = 'curation'
 
     def __str__(self):
-        return self.species.tolid_prefix
+        return self.species.tolid_prefix or str(self.id)
 
 class CommunityAnnotation(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
@@ -749,6 +792,12 @@ class CommunityAnnotation(models.Model):
     status = models.CharField(max_length=12, help_text='Status', choices=ANNOTATION_STATUS_CHOICES, default=ANNOTATION_STATUS_CHOICES[0][0])
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
 
+    __original_status = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__status = self.status
+ 
     def save(self, *args, **kwargs):
         if self.status != 'Waiting':
             gteam = GenomeTeam.objects.get(species=self.species)
@@ -759,6 +808,12 @@ class CommunityAnnotation(models.Model):
                     author=m,
                     role='community annotation'
                 )
+        if (self.__original_status != self.status):
+            stat_cannot_records, created = StatusUpdate.objects.get_or_create(
+                species=self.species,
+                process='community_annotation',
+                status=self.status
+            )
         super(CommunityAnnotation, self).save(*args, **kwargs)
 
 class Annotation(models.Model):
@@ -766,6 +821,12 @@ class Annotation(models.Model):
     #team = models.ForeignKey(AnnotationTeam, on_delete=models.SET_NULL, null=True, verbose_name="annotation team")
     status = models.CharField(max_length=12, help_text='Status', choices=ANNOTATION_STATUS_CHOICES, default=ANNOTATION_STATUS_CHOICES[0][0])
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
+
+    __original_status = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__status = self.status
 
     def save(self, *args, **kwargs):
         if self.status != 'Waiting':
@@ -777,13 +838,19 @@ class Annotation(models.Model):
                     author=m,
                     role='annotation'
                 )
+        if (self.__original_status != self.status):
+            stat_annot_records, created = StatusUpdate.objects.get_or_create(
+                species=self.species,
+                process='annotation',
+                status=self.status
+            )
         super(Annotation, self).save(*args, **kwargs)
  
     class Meta:
         verbose_name_plural = 'annotation'
 
     def __str__(self):
-        return self.species.scientific_name
+        return self.species.scientific_name or str(self.id)
 
 """ class Submission(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
@@ -808,6 +875,12 @@ class AssemblyProject(models.Model):
     class Meta:
         verbose_name_plural = 'assembly projects'
 
+    __original_status = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__status = self.status
+
     def save(self, *args, **kwargs):
         if self.status != 'Waiting':
             gteam = GenomeTeam.objects.get(species=self.species)
@@ -818,13 +891,19 @@ class AssemblyProject(models.Model):
                     author=m,
                     role='assembly'
                 )
+        if (self.__original_status != self.status):
+            stat_assm_records, created = StatusUpdate.objects.get_or_create(
+                species=self.species,
+                process='assembly',
+                status=self.status
+            )
         super(AssemblyProject, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse('assembly_project_list', args=[str(self.pk)])
 
     def __str__(self):
-        return self.species.scientific_name
+        return self.species.scientific_name or str(self.id)
 
 class AssemblyPipeline(models.Model):
     name = models.CharField(max_length=30, help_text='Pipeline name')
@@ -840,7 +919,7 @@ class AssemblyPipeline(models.Model):
         return reverse('assembly_pipeline_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.name + "." + self.version
+        return self.name + "." + self.version or str(self.id)
 
 class BUSCOdb(models.Model):
     db = models.CharField(max_length=60, db_index=True)
@@ -848,7 +927,7 @@ class BUSCOdb(models.Model):
         verbose_name_plural = 'BUSCO dbs'
 
     def __str__(self):
-        return self.db
+        return self.db or str(self.id)
 
 class BUSCOversion(models.Model):
     version = models.CharField(max_length=10, db_index=True)
@@ -856,7 +935,7 @@ class BUSCOversion(models.Model):
         verbose_name_plural = 'BUSCO versions'
 
     def __str__(self):
-        return self.version
+        return self.version or str(self.id)
 
 class Assembly(models.Model):
     project = models.ForeignKey(AssemblyProject, on_delete=models.CASCADE, verbose_name="Assembly project")
@@ -877,5 +956,18 @@ class Assembly(models.Model):
         verbose_name_plural = 'assemblies'
 
     def __str__(self):
-        return self.project.species.tolid_prefix + '.' + self.type
+        return self.project.species.tolid_prefix + '.' + self.type or str(self.id)
 
+class StatusUpdate(models.Model):
+    species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
+    #team = models.ForeignKey(AssemblyTeam, on_delete=models.SET_NULL, null=True, verbose_name="assembly team")
+    process = models.CharField(max_length=30, help_text='Process')
+    status = models.CharField(max_length=20, help_text='Status')
+    note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add= True)
+
+    class Meta:
+        verbose_name_plural = 'status updates'
+
+    # def __str__(self):
+    #     return self.id
