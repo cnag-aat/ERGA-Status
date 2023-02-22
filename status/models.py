@@ -24,8 +24,8 @@ STATUS_CHOICES = (
 )
 
 COLLECTION_STATUS_CHOICES = (
-    ('None', 'None'),
-    ('Long_Listed', 'Long_Listed'),
+    ('Not collected', 'Not collected'),
+    ('Long List', 'Long List'),
     ('Collecting', 'Collecting'),
     ('Resampling', 'Resampling'),
     ('COPO', 'COPO'),
