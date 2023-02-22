@@ -50,7 +50,7 @@ class OverviewTable(tables.Table):
     #         return ''
       
     def render_genomic_sample_status(self, value, record):
-        html = '<a href="/erga-stream-dev/collection/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        html = '<a href="/erga-stream-dev/collection/?species='+str(record.pk)+'"><span class="status '+escape(value.replace(" ",''))+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
     def value_genomic_sample_status(self, value):
@@ -64,35 +64,34 @@ class OverviewTable(tables.Table):
         return value
 
     def render_rna_sample_status(self, value, record):
-        html = '<a href="/erga-stream-dev/collection/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        html = '<a href="/erga-stream-dev/collection/?species='+str(record.pk)+'"><span class="status '+escape(value.replace(" ",''))+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
     def value_rna_sample_status(self, value):
         return value
 
     def render_genomic_seq_status(self, value, record):
-        html = '<a href="/erga-stream-dev/sequencing/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        html = '<a href="/erga-stream-dev/sequencing/?species='+str(record.pk)+'"><span class="status '+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
     def value_genomic_seq_status(self, value):
         return value
 
     def render_hic_seq_status(self, value, record):
-        html = '<a href="/erga-stream-dev/sequencing/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        html = '<a href="/erga-stream-dev/sequencing/?species='+str(record.pk)+'"><span class="status '+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
     def value_hic_seq_status(self, value):
         return value
 
     def render_rna_seq_status(self, value, record):
-        html = '<a href="/erga-stream-dev/sequencing/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        html = '<a href="/erga-stream-dev/sequencing/?species='+str(record.pk)+'"><span class="status '+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
     def value_rna_seq_status(self, value):
         return value
-
     def render_assembly_status(self, value, record):
-        html = '<a href="/erga-stream-dev/projects/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        html = '<a href="/erga-stream-dev/projects/?species='+str(record.pk)+'"><span class="status '+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
     def value_assembly_status(self, value):
@@ -106,12 +105,18 @@ class OverviewTable(tables.Table):
     #     return value
 
     def render_annotation_status(self, value, record):
-        html = '<a href="/erga-stream-dev/annotation/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
+        html = '<a href="/erga-stream-dev/annotation/?species='+str(record.pk)+'"><span class="status '+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
     def value_annotation_status(self, value):
         return value
+    
+    def render_community_annotation_status(self, value, record):
+        html = '<a href="/erga-stream-dev/community_annotation/?species='+str(record.pk)+'"><span class="status '+escape(value)+'">'+escape(value)+'</span></a>'
+        return mark_safe(html)
 
+    def value_community_annotation_status(self, value):
+        return value
     # def render_submission_status(self, value, record):
     #     html = '<a href="/erga-stream-dev/submission/?species='+str(record.pk)+'"><span class="'+escape(value)+'">'+escape(value)+'</span></a>'
     #     return mark_safe(html)
@@ -545,7 +550,7 @@ class StatusUpdateTable(tables.Table):
     attrs={"td": {"class": "overview-table"}}
 
     def render_status(self, value, record):
-        html = '<span class="'+escape(value)+'">'+escape(value)+'</span>'
+        html = '<span class="status '+escape(value)+'">'+escape(value)+'</span>'
         return mark_safe(html)
     
     class Meta:

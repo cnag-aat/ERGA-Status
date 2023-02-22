@@ -123,5 +123,38 @@ with open(args.csv_file) as csvfile:
                         name=cname,
                         species=targetspecies
                     )
+            
+            collection_record, created = SampleCollection.objects.get_or_create(
+                        species=targetspecies
+                    )
+            collection_record.genomic_sample_status="Not collected"
+            collection_record.rna_sample_status="Not collected"
+            collection_record.save()
+
+            sequencing_record, created = Sequencing.objects.get_or_create(
+                        species=targetspecies
+                    )
+            sequencing_record.genomic_seq_status="Waiting"
+            sequencing_record.hic_seq_status="Waiting"
+            sequencing_record.rna_seq_status="Waiting"
+            sequencing_record.save()
+
+            assemblyproject_record, created = AssemblyProject.objects.get_or_create(
+                        species=targetspecies
+                    )
+            assemblyproject_record.status="Waiting"
+            assemblyproject_record.save()
+
+            annotation_record, created = Annotation.objects.get_or_create(
+                        species=targetspecies
+                    )
+            annotation_record.status="Waiting"
+            annotation_record.save()
+
+            cannotation_record, created = CommunityAnnotation.objects.get_or_create(
+                        species=targetspecies
+                    )
+            cannotation_record.status="Waiting"
+            cannotation_record.save()
 
 print("Finished OK")

@@ -328,7 +328,7 @@ class AnnotationTeam(models.Model):
         return reverse('annotation_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.lead.first_name +" (" + self.name + ")" or str(self.id)
+        return self.name or str(self.id)
 
 class CommunityAnnotationTeam(models.Model):
     name = models.CharField(max_length=100,unique=True)
@@ -347,7 +347,7 @@ class CommunityAnnotationTeam(models.Model):
         return reverse('community_annotation_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.lead.first_name +" (" + self.name + ")" or str(self.id)
+        return self.name or str(self.id)
 
 class BiobankingTeam(models.Model):
     name = models.CharField(max_length=100,unique=True)
@@ -367,7 +367,7 @@ class BiobankingTeam(models.Model):
         return reverse('biobanking_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.lead.first_name +" (" + self.name + ")" or str(self.id)
+        return self.name or str(self.id)
 
 class AssemblyTeam(models.Model):
     name = models.CharField(max_length=100,unique=True)
@@ -405,7 +405,7 @@ class CurationTeam(models.Model):
         return reverse('curation_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.lead.first_name +" (" + self.name + ")" or str(self.id)
+        return self.name or str(self.id)
 
 class SequencingTeam(models.Model):
     name = models.CharField(max_length=100,unique=True)
@@ -424,7 +424,7 @@ class SequencingTeam(models.Model):
         return reverse('sequencing_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.lead.first_name +" (" + self.name + ")" or str(self.id)
+        return self.name or str(self.id)
 
 class ExtractionTeam(models.Model):
     name = models.CharField(max_length=100,unique=True)
@@ -443,7 +443,7 @@ class ExtractionTeam(models.Model):
         return reverse('extraction_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.lead.first_name +" (" + self.name + ")" or str(self.id)
+        return self.name or str(self.id)
 
 class CollectionTeam(models.Model):
     name = models.CharField(max_length=100,unique=True)
@@ -477,7 +477,7 @@ class TaxonomyTeam(models.Model):
         return reverse('taxonomy_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.lead.first_name +" (" + self.name + ")" or str(self.id)
+        return self.name or str(self.id)
 
 class SampleHandlingTeam(models.Model):
     name = models.CharField(max_length=100,unique=True)
@@ -493,7 +493,7 @@ class SampleHandlingTeam(models.Model):
         return reverse('sample_handling_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.lead.first_name +" (" + self.name + ")" or str(self.id)
+        return self.name or str(self.id)
 
 class VoucheringTeam(models.Model):
     name = models.CharField(max_length=100,unique=True)
@@ -509,7 +509,7 @@ class VoucheringTeam(models.Model):
         return reverse('vouchering_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.lead.first_name +" (" + self.name + ")" or str(self.id)
+        return self.name or str(self.id)
 
 class BarcodingTeam(models.Model):
     name = models.CharField(max_length=100,unique=True)
@@ -525,7 +525,7 @@ class BarcodingTeam(models.Model):
         return reverse('barcoding_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.lead.first_name +" (" + self.name + ")" or str(self.id)
+        return self.name or str(self.id)
 
 class Author(models.Model):
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
@@ -562,8 +562,8 @@ class GenomeTeam(models.Model):
 class SampleCollection(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species",unique=True)
     #team = models.ForeignKey(CollectionTeam, on_delete=models.SET_NULL, null=True, verbose_name="collection team", blank=True)
-    genomic_sample_status = models.CharField(max_length=12, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
-    rna_sample_status = models.CharField(max_length=12, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
+    genomic_sample_status = models.CharField(max_length=20, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
+    rna_sample_status = models.CharField(max_length=20, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
     #hic_sample_status = models.CharField(max_length=12, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
 
@@ -655,9 +655,9 @@ class Recipe(models.Model):
 class Sequencing(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     #team = models.ForeignKey(SequencingTeam, on_delete=models.SET_NULL, null=True, verbose_name="sequencing team")
-    genomic_seq_status = models.CharField(max_length=12, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
-    hic_seq_status = models.CharField(max_length=12, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
-    rna_seq_status = models.CharField(max_length=12, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
+    genomic_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
+    hic_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
+    rna_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
     # ont_target = models.BigIntegerField(null=True, blank=True, verbose_name="ONT target")
     # hifi_target = models.BigIntegerField(null=True, blank=True, verbose_name="HiFi target")
@@ -777,7 +777,7 @@ class Reads(models.Model):
 class Curation(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     #team = models.ForeignKey(CurationTeam, on_delete=models.SET_NULL, null=True, verbose_name="curation team")
-    status = models.CharField(max_length=12, help_text='Status', choices=CURATION_STATUS_CHOICES, default=CURATION_STATUS_CHOICES[0][0])
+    status = models.CharField(max_length=20, help_text='Status', choices=CURATION_STATUS_CHOICES, default=CURATION_STATUS_CHOICES[0][0])
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
 
     class Meta:
@@ -789,7 +789,7 @@ class Curation(models.Model):
 class CommunityAnnotation(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     #team = models.ForeignKey(AnnotationTeam, on_delete=models.SET_NULL, null=True, verbose_name="annotation team")
-    status = models.CharField(max_length=12, help_text='Status', choices=ANNOTATION_STATUS_CHOICES, default=ANNOTATION_STATUS_CHOICES[0][0])
+    status = models.CharField(max_length=20, help_text='Status', choices=ANNOTATION_STATUS_CHOICES, default=ANNOTATION_STATUS_CHOICES[0][0])
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
 
     __original_status = None
@@ -819,7 +819,7 @@ class CommunityAnnotation(models.Model):
 class Annotation(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     #team = models.ForeignKey(AnnotationTeam, on_delete=models.SET_NULL, null=True, verbose_name="annotation team")
-    status = models.CharField(max_length=12, help_text='Status', choices=ANNOTATION_STATUS_CHOICES, default=ANNOTATION_STATUS_CHOICES[0][0])
+    status = models.CharField(max_length=20, help_text='Status', choices=ANNOTATION_STATUS_CHOICES, default=ANNOTATION_STATUS_CHOICES[0][0])
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
 
     __original_status = None

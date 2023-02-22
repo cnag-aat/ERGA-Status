@@ -1,184 +1,229 @@
-
+.status {
+  width:100%;
+  height:100%;
+  text-align:center;
+  display:block;
+  padding: 3px;
+  border-radius: 10px;
+}
+.None {
+  background-color: #C0C0C0;
+  color: White;
+  /* border-radius: 12px; */
+  /* padding: 2px;
+  padding-right: 31px;
+  padding-left: 32px;
+  border-radius: 12px;
+  width: 80; */
+}
 .Waiting {
   background-color: #C0C0C0;
   color: White;
-  padding: 3px;
-  padding-right: 21px;
-  padding-left: 21px;
-  border-radius: 12px;
+  /* border-radius: 12px; */
+  /* padding: 2px;
+  padding-right: 22px;
+  padding-left: 22px;
+  border-radius: 12px; */
 }
 .Long_Listed {
   background-color: #C0C0C0;
   color: White;
-  padding: 3px;
-  padding-right: 5px;
-  padding-left: 5px;
-  border-radius: 12px;
+  /* border-radius: 12px; */
+  /* padding: 2px;
+  padding-right: 4px;
+  padding-left: 4px;
+  border-radius: 12px; */
 }
 .Received {
   background-color: #99987d;
   color: White;
-  padding: 3px;
-  padding-right: 13px;
-  padding-left: 13px;
+  /* border-radius: 12px; */
+  /* padding: 2px;
+  padding-right: 15px;
+  padding-left: 15px;
   border-radius: 12px;
-  width: 80;
+  width: 80; */
 }
 .Processing {
   background-color: #009f83;
   color: White;
-  padding: 3px;
+  /* border-radius: 12px; */
+  /* padding: 2px;
   padding-right: 7px;
   padding-left: 7px;
   border-radius: 12px;
-  width: 80;
+  width: 80; */
 }
 .Assembling {
   background-color: #009f83;
   color: White;
-  padding: 3px;
+  /* border-radius: 12px; */
+  /* padding: 2px;
   padding-right: 7px;
   padding-left: 7px;
   border-radius: 12px;
-  width: 80;
+  width: 80; */
 }
 .Scaffolding {
   background-color: #009f83;
   color: White;
-  padding: 3px;
+  /* border-radius: 12px; */
+  /* padding: 2px;
   padding-right: 9px;
   padding-left: 9px;
   border-radius: 12px;
-  width: 80;
+  width: 80; */
 }
 .Sequencing {
   background-color: #009f83;
   color: White;
-  padding: 3px;
+  /* border-radius: 12px; */
+  /* padding: 2px;
   padding-right: 6px;
   padding-left: 6px;
   border-radius: 12px;
-  width: 80;
+  width: 80; */
 }
 .TopUp {
   background-color: #009f83;
   color: White;
-  padding: 3px;
+  /* border-radius: 12px; */
+  /* padding: 2px;
   padding-right: 25px;
   padding-left: 25px;
   border-radius: 12px;
-  width: 80;
+  width: 80; */
 }
 .External {
   background-color: #0087a3;
   color: White;
-  padding: 3px;
-  padding-right: 18px;
-  padding-left: 19px;
-  border-radius: 12px;
-  width: 80;
 }
 .Sampling {
   background-color: #009f83;
   color: White;
-  padding: 3px;
+  /* border-radius: 12px; */
+  /* padding: 2px;
   padding-right: 15px;
   padding-left: 15px;
   border-radius: 12px;
-  width: 80;
+  width: 80; */
 }
 .Collecting {
   background-color: #009f83;
   color: White;
-  padding: 3px;
-  padding-right: 6px;
-  padding-left: 6px;
+  /* border-radius: 12px; */
+  /* padding: 2px;
+  padding-right: 12px;
+  padding-left: 12px;
   border-radius: 12px;
-  width: 80;
+  width: 80; */
 }
 .Resampling {
   background-color: #009f83;
   color: White;
-  padding: 3px;
-  padding-right: 6px;
+  /* border-radius: 12px; */
+  /* padding: 2px;
+  padding-right: 5px;
   padding-left: 6px;
   border-radius: 12px;
-  width: 80;
+  width: 80; */
 }
 .Curating {
   background-color: #009f83;
   color: White;
-  padding: 3px;
+  /* border-radius: 12px; */
+  /* padding: 2px;
   padding-right: 17px;
   padding-left: 17px;
   border-radius: 12px;
-  width: 80;
+  width: 80; */
 }
 .Annotating {
   background-color: #009f83;
   color: White;
-  padding: 3px;
+  /* border-radius: 12px; */
+  /* padding: 2px;
   padding-right: 9px;
   padding-left: 9px;
   border-radius: 12px;
-  width: 80;
+  width: 80; */
 }
 .Done {
   background-color: #009fc4;
   color: White;
-  padding: 3px;
-  padding-right: 28px;
-  padding-left: 28px;
+  /* border-radius: 12px; */
+  /* border-radius: 12px;
+  padding: 2px;
+  padding-right: 29px;
+  padding-left: 29px;
   border-radius: 12px;
-  width: 80;
+  width: 80; */
 }
 .Contigs {
   background-color: #009fc4;
   color: White;
-  padding: 3px;
+  /* border-radius: 12px; */
+  /* padding: 2px;
   padding-right: 21px;
   padding-left: 21px;
   border-radius: 12px;
-  width: 80;
+  width: 80; */
 }
 .Sent {
   background-color: #0087a3;
   color: White;
-  padding: 3px;
+  /* border-radius: 12px; */
+  /* padding: 2px;
   padding-right: 31px;
   padding-left: 32px;
   border-radius: 12px;
-  width: 80;
+  width: 80; */
 }
 .COPO {
   background-color: #0087a3;
   color: White;
-  padding: 3px;
-  padding-right: 25px;
-  padding-left: 25px;
+  /* border-radius: 12px; */
+  /* padding: 2px;
+  padding-right: 24px;
+  padding-left: 24px;
   border-radius: 12px;
-  width: 80;
+  width: 80; */
 }
 .Submitted {
   background-color: #0087a3;
   color: White;
-  padding: 3px;
+  /* border-radius: 12px; */
+  /* padding: 2px;
   padding-right: 12px;
   padding-left: 12px;
   border-radius: 12px;
-  width: 80;
+  width: 80; */
 }
 .Issue {
   background-color: #D2042D;
   color: White;
-  padding: 3px;
+  /* border-radius: 12px; */
+  /* padding: 2px;
   padding-right: 28px;
   padding-left: 28px;
   border-radius: 12px;
-  width: 80;
+  width: 80; */
+}
+.NotCollected {
+  background-color: #C0C0C0;
+  color: White;
+  /* border-radius: 12px; */
+  /* padding: 2px;
+  padding-right: 28px;
+  padding-left: 28px;
+  border-radius: 12px;
+  width: 80; */
 }
 .table td{
-  padding: 0.4rem;
+  /* padding: 0.1rem; */
+  padding: 0.1rem;
+  padding-right: 5px;
+  padding-left: 5px;
 }
 .yield_na {
   background-color: #C0C0C0;
