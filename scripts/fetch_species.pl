@@ -22,7 +22,11 @@ usage: $0 <species_list.tsv>
 
 END_HELP
 open SPECIES, "<$ARGV[0]";
-print join("\t",qw(taxon_id kingdom phylum class order family genus scientific_name tolid_prefix chromosome_number haploid_number ploidy c_value genome_size common_name synonym)),"\n";
+my $tags = "erga_long";
+if (exists $ARGV[1]){
+  $tags = $ARGV[1] or "erga_long";
+}
+print join("\t",qw(tags taxon_id kingdom phylum class order family genus scientific_name tolid_prefix chromosome_number haploid_number ploidy c_value genome_size common_name synonym)),"\n";
 while (my $line = <SPECIES>){
   chomp $line;
   my @species_data = split "\t",$line;
@@ -74,7 +78,8 @@ sub getSpecies {
     }
     print join(
       "\t",
-        ($out{'taxon_id'},
+        ($tags,
+        $out{'taxon_id'},
         $out{'kingdom'},
         $out{'phylum'},
         $out{'class'},
