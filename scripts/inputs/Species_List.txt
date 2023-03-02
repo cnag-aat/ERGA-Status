@@ -1,0 +1,47 @@
+species	tags	sequencing_team						
+Dendarus foraminosus	greece_hsp bge erga_long_list phase_1A	GENOSCOPE						
+Dailognatha quadricollis	greece_hsp bge erga_long_list phase_1A	GENOSCOPE						
+Carabus baronii	greece_hsp bge erga_long_list phase_1A	GENOSCOPE						
+Scolopendra cretica	greece_hsp bge erga_long_list phase_1A	GENOSCOPE						
+Zelkova abelicea	greece_hsp bge erga_long_list phase_1A	GENOSCOPE						
+Acomys cahirinus_minous	greece_hsp bge erga_long_list phase_1A	GENOSCOPE						
+Rupicapra rupicapra	slovenia_hsp bge erga_long_list phase_1A	CNAG						
+Apodemus agrarius	slovenia_hsp bge erga_long_list phase_1A	CNAG						
+Umbra krameri	slovenia_hsp bge erga_long_list phase_1A	CNAG						
+Astagobius angustatus	slovenia_hsp bge erga_long_list phase_1A	SCILIFE						
+Cladocora caespitosa	slovenia_hsp bge erga_long_list phase_1A	SCILIFE						
+Ophryotrocha puerilis	spain_hsp bge erga_long_list phase_1A	SCILIFE						
+Pinna rudis	spain_hsp bge erga_long_list phase_1A	SCILIFE						
+Siphonaria pectinata	spain_hsp bge erga_long_list phase_1A	SCILIFE						
+Tetrastemma melanocephalum	spain_hsp bge erga_long_list phase_1A	SCILIFE						
+Obama nungara	spain_hsp bge erga_long_list phase_1A	SCILIFE						
+Austropotamobius torrentium	slovenia_hsp bge erga_long_list phase_1A	SCILIFE						
+Coronilla viminalis	spain_hsp bge erga_long_list phase_1A	SCILIFE						
+Lepus castroviejoi	wp11 bge erga_long_list phase_1A	ITALIA						
+Culex perexiguus	wp11 bge erga_long_list phase_1A	ToL						
+Culex laticinctus	wp11 bge erga_long_list phase_1A	ToL						
+Culex theileri	wp11 bge erga_long_list phase_1A	ToL						
+Culex modestus	wp11 bge erga_long_list phase_1A	ToL						
+Culex pipiens pipiens	wp11 bge erga_long_list phase_1A	ToL						
+Culex pipiens molestus	wp11 bge erga_long_list phase_1A	ToL						
+Ophryotocha puerilis	spain_hsp bge erga_long_list phase_1B	ToL						
+Tarphius canariensis	spain_hsp bge erga_long_list phase_1B	ToL						
+Gyrocaryum oppositifolium	spain_hsp bge erga_long_list phase_1B	ToL						
+Varioconus guanche	spain_hsp bge erga_long_list phase_1B	ToL						
+Valencia hispanica	spain_hsp bge erga_long_list phase_1B	CNAG						
+Munidopsis polymorpha	spain_hsp bge erga_long_list phase_1B	ToL						
+Allolobophora molleri	spain_hsp bge erga_long_list phase_1B	ToL						
+Primula carniolica	slovenia_hsp bge erga_long_list phase_1B	ITALIA						
+Sempervivum wulfenii subsp. juvanii	slovenia_hsp bge erga_long_list phase_1B	ITALIA						
+Astropotamobius torrentium	slovenia_hsp bge erga_long_list phase_1B	SCILIFE						
+Adelopsella bosnica	slovenia_hsp bge erga_long_list phase_1B	ITALIA						
+Graciliella metohijensis	slovenia_hsp bge erga_long_list phase_1B	ITALIA						
+Anthroherpon ganglbaueri	slovenia_hsp bge erga_long_list phase_1B	ITALIA						
+Leonhardella angulicollis	slovenia_hsp bge erga_long_list phase_1B	ITALIA						
+Bathyscidius tristiculus	slovenia_hsp bge erga_long_list phase_1B	ITALIA						
+Sarcotragus spinosulus	greece_hsp bge erga_long_list phase_1B	GENOSCOPE						
+Hermodice carunculata	greece_hsp bge erga_long_list phase_1B	GENOSCOPE						
+Protula tubularia	greece_hsp bge erga_long_list phase_1B	GENOSCOPE						
+Arca noae	greece_hsp bge erga_long_list phase_1B	GENOSCOPE						
+Pinctada radiata	greece_hsp bge erga_long_list phase_1B	GENOSCOPE						
+Diadema setosum	greece_hsp bge erga_long_list phase_1B	GENOSCOPE						

@@ -43,6 +43,7 @@ router.register(r'sequencing', api.SequencingViewSet)
 router.register(r'sequencing_team', api.SequencingTeamViewSet)
 router.register(r'reads', api.ReadsViewSet)
 router.register(r'collection_team', api.CollectionTeamViewSet)
+router.register(r'tag', api.TagViewSet)
 
 
 urlpatterns = [

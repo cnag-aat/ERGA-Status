@@ -10,8 +10,10 @@
     <div class="card mb-12">
       <div class="card-body">
         <h5 class="card-title">{{ team.name }}</h5>
+        {% if team.lead %}
         Lead: <a href="{% url 'user_profile' team.lead.pk %}">{{ team.lead.first_name }} {{ team.lead.last_name }}</a></br>
         email: {{ team.lead.user.email }}</br>
+        {% endif %}
       </div>
     </div>
     <div class="card mb-12">

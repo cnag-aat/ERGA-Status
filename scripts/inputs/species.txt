@@ -1,0 +1,47 @@
+species
+Dendarus foraminosus
+Dailognatha quadricollis
+Carabus baronii
+Scolopendra cretica
+Zelkova abelicea
+Acomys cahirinus_minous
+Rupicapra rupicapra
+Apodemus agrarius
+Umbra krameri
+Astagobius angustatus
+Cladocora caespitosa
+Ophryotrocha puerilis
+Pinna rudis
+Siphonaria pectinata
+Tetrastemma melanocephalum
+Obama nungara
+Austropotamobius torrentium
+Coronilla viminalis
+Lepus castroviejoi
+Culex perexiguus
+Culex laticinctus
+Culex theileri
+Culex modestus
+Culex pipiens pipiens
+Culex pipiens molestus
+Ophryotocha puerilis
+Tarphius canariensis
+Gyrocaryum oppositifolium
+Varioconus guanche
+Valencia hispanica
+Munidopsis polymorpha
+Allolobophora molleri
+Primula carniolica
+Sempervivum wulfenii subsp. juvanii
+Astropotamobius torrentium
+Adelopsella bosnica
+Graciliella metohijensis
+Anthroherpon ganglbaueri
+Leonhardella angulicollis
+Bathyscidius tristiculus
+Sarcotragus spinosulus
+Hermodice carunculata
+Protula tubularia
+Arca noae
+Pinctada radiata
+Diadema setosum

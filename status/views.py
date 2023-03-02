@@ -20,6 +20,7 @@ from math import log
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count
 from django.db.models import Q
 from django.conf import settings
@@ -42,7 +43,6 @@ from django.shortcuts import get_object_or_404
 #from status.forms import (EditProfileForm, ProfileForm)
 from status.forms import ProfileUpdateForm
 from django.urls import reverse_lazy
-
 
 
 # Get an instance of a logger
@@ -359,7 +359,8 @@ def user_profile(request, pk=None):
     response = render(request, "user_profile.html", context)
     return response
 
-class AuthorsView(ExportMixin, SingleTableMixin, FilterView):
+class AuthorsView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
+    login_url = 'access_denied'
     model = Author
     table_class = AuthorsTable
     template_name = 'authors.html'
@@ -444,3 +445,9 @@ class SpeciesLogView(ExportMixin, SingleTableMixin, FilterView):
         return queryset
 
 
+def recipe_detail(request, pk=None):
+    recipe = Recipe.objects.get(pk=pk)
+    context = {"recipe": recipe
+               }
+    response = render(request, "recipe_detail.html", context)
+    return response

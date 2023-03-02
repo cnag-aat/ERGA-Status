@@ -4,7 +4,7 @@ use MIME::Base64;
 use JSON::PP;
 use Data::Dumper;
 use Getopt::Long;
-
+$ENV{PERL_LWP_SSL_VERIFY_HOSTNAME}=0;
 my $client = REST::Client->new();
 $client->addHeader('Content-Type', 'application/json');
 $client->addHeader('charset', 'UTF-8');
@@ -24,28 +24,45 @@ END_HELP
 open SPECIES, "<$ARGV[0]";
 my $tags = "erga_long";
 if (exists $ARGV[1]){
-  $tags = $ARGV[1] or "erga_long";
+  $tags = $ARGV[1] or "erga_long_list";
 }
-print join("\t",qw(tags taxon_id kingdom phylum class order family genus scientific_name tolid_prefix chromosome_number haploid_number ploidy c_value genome_size common_name synonym)),"\n";
+print join("\t",qw(original_species tags sequencing_team taxon_id kingdom phylum class order family genus scientific_name tolid_prefix chromosome_number haploid_number ploidy c_value genome_size common_name synonym)),"\n";
+my $header = <SPECIES>;
+chomp $header;
+my @h = split "\t",$header;
 while (my $line = <SPECIES>){
   chomp $line;
-  my @species_data = split "\t",$line;
-  print STDERR "Looking up $species_data[0] in GoaT... \n";
-  print STDERR "$species_data[0] not found! Skipping...\n" unless getSpecies(\@species_data);
+  my @fields = split "\t",$line;
+  my %species_data = ();
+  for (my $i=0;$i<@fields; $i++){
+    $species_data{$h[$i]}=$fields[$i];
+  }   
+  print STDERR "Looking up $species_data{'species_goat'} in GoaT... \n";
+  getSpecies(\%species_data);
 }
 
 sub getSpecies {
-  my $arrayref = shift;
-  my @species_data = @$arrayref;
-  my $speciesquery = $species_data[0];
+  my $hashref = shift;
+  my %species_data = %$hashref;
+  my $speciesquery = $species_data{'species_goat'};
+  my $species_original = $species_data{'species'};
+  my $tags = $species_data{'tags'};
+  my $sequencing_team = $species_data{'sequencing_team'};
   my $space = '%20';
   $speciesquery=~s/ /$space/g;
   my $query = "$goat_url"."lookup?searchTerm=$speciesquery&result=taxon&size=10&taxonomy=ncbi&suggestSize=3&gramSize=3&maxErrors=3&confidence=1&indent=4";
-  $goatclient->GET("$goat_url"."lookup?searchTerm=$speciesquery&result=taxon&size=10&taxonomy=ncbi&suggestSize=3&gramSize=3&maxErrors=3&confidence=1&indent=4");
+  #print STDERR "QUERY:\n$query\n\n";
+  #$goatclient->GET("$goat_url"."lookup?searchTerm=$speciesquery&result=taxon&size=10&taxonomy=ncbi&suggestSize=3&gramSize=3&maxErrors=3&confidence=1&indent=4");
+  $goatclient->GET($query);
+  #print STDERR $goatclient->responseContent();
   my $goatresponse1 = decode_json $goatclient->responseContent();
   my $species_array = $goatresponse1->{results};
   my $num_hits = $goatresponse1->{status}->{hits};
-  if (!$num_hits){print STDERR $species_data[0]," not found. Skipping...\n"; return 0;}
+  if (!$num_hits){
+    print STDERR $species_original," not found. \n";
+    print "$species_original\t$tags\n";
+    return 0;
+  }
   my $taxid = $species_array->[0]->{result}->{taxon_id};
   print STDERR "Fetching taxid:$taxid from GoaT\n";# and exit;
   if ($taxid=~/^[\d]*$/){
@@ -78,7 +95,9 @@ sub getSpecies {
     }
     print join(
       "\t",
-        ($tags,
+        ($species_original,
+        $tags,
+        $sequencing_team,
         $out{'taxon_id'},
         $out{'kingdom'},
         $out{'phylum'},

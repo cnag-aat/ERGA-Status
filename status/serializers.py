@@ -103,3 +103,8 @@ class UserSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer
     class Meta:
         model = User
         fields = '__all__'
+
+class TagSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Tag
+        fields = '__all__'

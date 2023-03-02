@@ -119,7 +119,7 @@ class SampleViewSet(BulkModelViewSet):
 
 class SampleCollectionViewSet(BulkModelViewSet):
     """
-    API endpoint that allows Samples to be viewed or edited.
+    API endpoint that allows Sample Collection to be viewed or edited.
     """
     team = CollectionTeamSerializer()
     queryset = SampleCollection.objects.all()
@@ -128,7 +128,7 @@ class SampleCollectionViewSet(BulkModelViewSet):
 
 class CollectionTeamViewSet(BulkModelViewSet):
     """
-    API endpoint that allows Samples to be viewed or edited.
+    API endpoint that allows Collection Team to be viewed or edited.
     """
     queryset = CollectionTeam.objects.all()
     serializer_class = CollectionTeamSerializer
@@ -144,7 +144,7 @@ class SequencingViewSet(BulkModelViewSet):
 
 class SequencingTeamViewSet(BulkModelViewSet):
     """
-    API endpoint that allows Sequencing projects to be viewed or edited.
+    API endpoint that allows Sequencing Team to be viewed or edited.
     """
     queryset = SequencingTeam.objects.all()
     serializer_class = SequencingTeamSerializer
@@ -160,8 +160,16 @@ class ReadsViewSet(BulkModelViewSet):
 
 class UserViewSet(BulkModelViewSet):
     """
-    API endpoint that allows Samples to be viewed or edited.
+    API endpoint that allows Users to be viewed or edited.
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    filter_fields = '__all__'
+
+class TagViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows Users to be viewed or edited.
+    """
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
     filter_fields = '__all__'

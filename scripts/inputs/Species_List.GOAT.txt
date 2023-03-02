@@ -1,0 +1,47 @@
+original_species	tags	sequencing_team	taxon_id	kingdom	phylum	class	order	family	genus	scientific_name	tolid_prefix	chromosome_number	haploid_number	ploidy	c_value	genome_size	common_name	synonym
+Dendarus foraminosus	greece_hsp bge erga_long_list phase_1A	GENOSCOPE	2712997	Metazoa	Arthropoda	Insecta	Coleoptera	Tenebrionidae	Dendarus	Dendarus foraminosus	icDenFora	22	11	2	0.48	415650000		
+Dailognatha quadricollis	greece_hsp bge erga_long_list phase_1A	GENOSCOPE	575809	Metazoa	Arthropoda	Insecta	Coleoptera	Tenebrionidae	Dailognatha	Dailognatha quadricollis	icDaiQuad	20	10	2	0.285	283620000		
+Carabus banoni	greece_hsp bge erga_long_list phase_1A	GENOSCOPE	220156	Metazoa	Arthropoda	Insecta	Coleoptera	Carabidae	Carabus	Carabus baronii	icCarBaro	28	14	2	0.28	273840000		
+Scolopendra cretica	greece_hsp bge erga_long_list phase_1A	GENOSCOPE	1146903	Metazoa	Arthropoda	Chilopoda	Scolopendromorpha	Scolopendridae	Scolopendra	Scolopendra cretica	qcScoCret	30	15	2	0.3	293400000		
+Zelkova abelicea	greece_hsp bge erga_long_list phase_1A	GENOSCOPE	160988	Viridiplantae	Streptophyta	Magnoliopsida	Rosales	Ulmaceae	Zelkova	Zelkova abelicea	drZelAbel	28	14	2	1.4165	1320300000		
+Acomys cahirinus minous	greece_hsp bge erga_long_list phase_1A	GENOSCOPE	10068	Metazoa	Chordata	Mammalia	Rodentia	Muridae	Acomys	Acomys cahirinus	mAcoCah	38	19	2	2.64	2581920000		
+Rupicapra rupicapra	slovenia_hsp bge erga_long_list phase_1A	CNAG	34869	Metazoa	Chordata	Mammalia	Artiodactyla	Bovidae	Rupicapra	Rupicapra rupicapra	mRupRup	58	29	2	3.2675	3195615000		
+Apodemus agrarius	slovenia_hsp bge erga_long_list phase_1A	CNAG	39030	Metazoa	Chordata	Mammalia	Rodentia	Muridae	Apodemus	Apodemus agrarius	mApoAgr	48	25	2	3.11	3041580000		
+Umbra krameri	slovenia_hsp bge erga_long_list phase_1A	CNAG	75933	Metazoa	Chordata	Actinopteri	Esociformes	Umbridae	Umbra	Umbra krameri	fUmbKra	22	11	4	2.485	2430330000		
+Astagobius angustatus	slovenia_hsp bge erga_long_list phase_1A	SCILIFE	1457099	Metazoa	Arthropoda	Insecta	Coleoptera	Leiodidae	Astagobius	Astagobius angustatus	icAstAngu	22	11	2	0.82	801960000		
+Cladocora caespitosa	slovenia_hsp bge erga_long_list phase_1A	SCILIFE	130055	Metazoa	Cnidaria	Anthozoa	Scleractinia		Cladocora	Cladocora caespitosa	jaClaCaes	34	13	4	0.885	865530000		
+Ophryotrocha puerilis	spain_hsp bge erga_long_list phase_1A	SCILIFE	169124	Metazoa	Annelida	Polychaeta	Eunicida	Dorvilleidae	Ophryotrocha	Ophryotrocha puerilis	wjOphPuer	8	4	2	0.355	347190000		
+Pinna rudis	spain_hsp bge erga_long_list phase_1A	SCILIFE	1380992	Metazoa	Mollusca	Bivalvia	Pterioida	Pinnidae	Pinna	Pinna rudis	xbPinRudi	28	14	2	1.1	1075800000		
+Siphonaria pectinata	spain_hsp bge erga_long_list phase_1A	SCILIFE	57642	Metazoa	Mollusca	Gastropoda	Siphonariida	Siphonariidae	Siphonaria	Siphonaria pectinata	xgSipPect	48	18	2	1.91354166666667	2073360000		
+Tetrastemma melanocephalum	spain_hsp bge erga_long_list phase_1A	SCILIFE	307678	Metazoa	Nemertea	Enopla	Monostilifera	Tetrastemmatidae	Tetrastemma	Tetrastemma melanocephalum	tnTetMela	32	4	2	1.4	1369200000		
+Obama nungara	spain_hsp bge erga_long_list phase_1A	SCILIFE	1826298	Metazoa	Platyhelminthes	Rhabditophora	Tricladida	Geoplanidae	Obama	Obama nungara	hrObaNung	16	8	2	1.33666666666667	1603920000		
+Austropotamobius torrentium	slovenia_hsp bge erga_long_list phase_1A	SCILIFE	94942	Metazoa	Arthropoda	Malacostraca	Decapoda	Astacidae	Austropotamobius	Austropotamobius torrentium	qmAusTorr	200	58	2	4.74	4361880000		
+Coronilla viminalis	spain_hsp bge erga_long_list phase_1A	SCILIFE	347984	Viridiplantae	Streptophyta	Magnoliopsida	Fabales	Fabaceae	Coronilla	Coronilla viminalis	drCorVimi	12	6	2	1.64	1603920000		
+Lepus castroviejoi	wp11 bge erga_long_list phase_1A	ITALIA	187398	Metazoa	Chordata	Mammalia	Lagomorpha	Leporidae	Lepus	Lepus castroviejoi	mLepCas	48	24	2	3.315	3242070000		
+Culex perexiguus	wp11 bge erga_long_list phase_1A	ToL	943103	Metazoa	Arthropoda	Insecta	Diptera	Culicidae	Culex	Culex perexiguus	idCulPerx	6	3	2	0.78	762840000		
+Culex laticinctus	wp11 bge erga_long_list phase_1A	ToL	1464561	Metazoa	Arthropoda	Insecta	Diptera	Culicidae	Culex	Culex laticinctus	idCulLati	6	3	2	0.78	762840000		
+Culex theileri	wp11 bge erga_long_list phase_1A	ToL	561267	Metazoa	Arthropoda	Insecta	Diptera	Culicidae	Culex	Culex theileri	idCulThei	6	3	2	0.78	762840000		
+Culex modestus	wp11 bge erga_long_list phase_1A	ToL	545656	Metazoa	Arthropoda	Insecta	Diptera	Culicidae	Culex	Culex modestus	idCulMode	6	3	2	0.78	762840000		
+Culex pipiens pipiens	wp11 bge erga_long_list phase_1A	ToL	38569	Metazoa	Arthropoda	Insecta	Diptera	Culicidae	Culex	Culex pipiens pipiens		12	6	2	0.54	528120000		
+Culex pipiens molestus	wp11 bge erga_long_list phase_1A	ToL	233155	Metazoa	Arthropoda	Insecta	Diptera	Culicidae	Culex	Culex pipiens molestus		12	6	2	0.54	528120000		
+Ophryotocha puerilis	spain_hsp bge erga_long_list phase_1B	ToL	169124	Metazoa	Annelida	Polychaeta	Eunicida	Dorvilleidae	Ophryotrocha	Ophryotrocha puerilis	wjOphPuer	8	4	2	0.355	347190000		
+Tarphius canariensis	spain_hsp bge erga_long_list phase_1B	ToL	124803	Metazoa	Arthropoda	Insecta	Coleoptera	Zopheridae	Tarphius	Tarphius canariensis	icTarCana	20	10	2	0.46	449880000		
+Gyrocaryum oppositifolium	spain_hsp bge erga_long_list phase_1B	ToL	1929230	Viridiplantae	Streptophyta	Magnoliopsida	Boraginales	Boraginaceae	Gyrocaryum	Gyrocaryum oppositifolium	daGyrOppo	48	24	4	0.645630952380952	565131187.5		
+Varioconus guanche	spain_hsp bge erga_long_list phase_1B	ToL	308503	Metazoa	Mollusca	Gastropoda	Neogastropoda	Conidae	Conus	Conus guanche	xgConGuan	36	15	2	3.75	3667500000		
+Valencia hispanica	spain_hsp bge erga_long_list phase_1B	CNAG	195855	Metazoa	Chordata	Actinopteri	Cyprinodontiformes	Valenciidae	Valencia	Valencia hispanica	fValHis	48	24	4	1.53625	1501230000		
+Munidopsis polymorpha	spain_hsp bge erga_long_list phase_1B	ToL	395596	Metazoa	Arthropoda	Malacostraca	Decapoda	Munidopsidae	Munidopsis	Munidopsis polymorpha	qmMunPoly	208	104	2	15.56	15217680000		
+Allolobophora molleri	spain_hsp bge erga_long_list phase_1B	ToL	647718	Metazoa	Annelida	Clitellata	Crassiclitellata	Lumbricidae	Aporrectodea	Aporrectodea molleri	whApoMoll	36	18	2	0.67	655260000		
+Primula carniolica	slovenia_hsp bge erga_long_list phase_1B	ITALIA	184180	Viridiplantae	Streptophyta	Magnoliopsida	Ericales	Primulaceae	Primula	Primula carniolica	ddPriCarn	22	34	2	1.62	1584360000		
+Sempervivum wulfenii subsp. juvanii	slovenia_hsp bge erga_long_list phase_1B	ITALIA	1538746	Viridiplantae	Streptophyta	Magnoliopsida	Saxifragales	Crassulaceae	Sempervivum	Sempervivum wulfenii subsp. juvanii		34	18	2	1.02583333333333	687045000		
+Astropotamobius torrentium	slovenia_hsp bge erga_long_list phase_1B	SCILIFE	94942	Metazoa	Arthropoda	Malacostraca	Decapoda	Astacidae	Austropotamobius	Austropotamobius torrentium	qmAusTorr	200	58	2	4.74	4361880000		
+Adelopsella bosnica	slovenia_hsp bge erga_long_list phase_1B
+Graciliella metohijensis	slovenia_hsp bge erga_long_list phase_1B	ITALIA	1849259	Metazoa	Arthropoda	Insecta	Coleoptera	Leiodidae	Graciliella	Graciliella metohijensis	icGraMeto	22	11	2	0.82	801960000		
+Anthroherpon ganglbaueri	slovenia_hsp bge erga_long_list phase_1B	ITALIA	1849190	Metazoa	Arthropoda	Insecta	Coleoptera	Leiodidae	Anthroherpon	Anthroherpon ganglbaueri	icAntGang	22	11	2	0.82	801960000		
+Leonhardella angulicollis	slovenia_hsp bge erga_long_list phase_1B
+Bathyscidius tristiculus	slovenia_hsp bge erga_long_list phase_1B
+Sarcotragus spinosulus	greece_hsp bge erga_long_list phase_1B	GENOSCOPE	1088795	Metazoa	Porifera	Demospongiae	Dictyoceratida	Irciniidae	Sarcotragus	Sarcotragus spinosulus	odSarSpin	46	23	4	0.605	591690000		
+Hermodice carunculata	greece_hsp bge erga_long_list phase_1B	GENOSCOPE	259844	Metazoa	Annelida	Polychaeta	Eunicida	Amphinomidae	Hermodice	Hermodice carunculata	waHerCaru	8	4	2	1.2	1173600000		
+Protula tubularia	greece_hsp bge erga_long_list phase_1B	GENOSCOPE	363316	Metazoa	Annelida	Polychaeta	Sabellida	Serpulidae	Protula	Protula tubularia	wsProTubu	8	14	2	1.0575	1034235000		
+Arca noae	greece_hsp bge erga_long_list phase_1B	GENOSCOPE	44597	Metazoa	Mollusca	Bivalvia	Arcoida	Arcidae	Arca	Arca noae	xbArcNoae	38	19	2	1.66	1623480000		
+Pinctada radiata	greece_hsp bge erga_long_list phase_1B	GENOSCOPE	112209	Metazoa	Mollusca	Bivalvia	Pterioida	Pteriidae	Pinctada	Pinctada radiata	xbPinRadi	28	14	2	1.18	1154040000		
+Diadema setosum	greece_hsp bge erga_long_list phase_1B	GENOSCOPE	31175	Metazoa	Echinodermata	Echinoidea	Diadematoida	Diadematidae	Diadema	Diadema setosum	eeDiaSeto	46	23	4	1.2	1173600000		

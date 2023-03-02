@@ -1,0 +1,47 @@
+species	species_goat	tags	sequencing_team
+Dendarus foraminosus	Dendarus foraminosus	greece_hsp bge erga_long_list phase_1A	GENOSCOPE	
+Dailognatha quadricollis	Dailognatha quadricollis	greece_hsp bge erga_long_list phase_1A	GENOSCOPE
+Carabus banoni	Carabus baronii	greece_hsp bge erga_long_list phase_1A	GENOSCOPE				
+Scolopendra cretica	Scolopendra cretica	greece_hsp bge erga_long_list phase_1A	GENOSCOPE
+Zelkova abelicea	Zelkova abelicea	greece_hsp bge erga_long_list phase_1A	GENOSCOPE
+Acomys cahirinus minous	Acomys cahirinus	greece_hsp bge erga_long_list phase_1A	GENOSCOPE
+Rupicapra rupicapra	Rupicapra rupicapra	slovenia_hsp bge erga_long_list phase_1A	CNAG
+Apodemus agrarius	Apodemus agrarius	slovenia_hsp bge erga_long_list phase_1A	CNAG
+Umbra krameri	Umbra krameri	slovenia_hsp bge erga_long_list phase_1A	CNAG
+Astagobius angustatus	Astagobius angustatus	slovenia_hsp bge erga_long_list phase_1A	SCILIFE
+Cladocora caespitosa	Cladocora caespitosa	slovenia_hsp bge erga_long_list phase_1A	SCILIFE
+Ophryotrocha puerilis	Ophryotrocha puerilis	spain_hsp bge erga_long_list phase_1A	SCILIFE
+Pinna rudis	Pinna rudis	spain_hsp bge erga_long_list phase_1A	SCILIFE
+Siphonaria pectinata	Siphonaria pectinata	spain_hsp bge erga_long_list phase_1A	SCILIFE
+Tetrastemma melanocephalum	Tetrastemma melanocephalum	spain_hsp bge erga_long_list phase_1A	SCILIFE
+Obama nungara	Obama nungara	spain_hsp bge erga_long_list phase_1A	SCILIFE
+Austropotamobius torrentium	Austropotamobius torrentium	slovenia_hsp bge erga_long_list phase_1A	SCILIFE
+Coronilla viminalis	Coronilla viminalis	spain_hsp bge erga_long_list phase_1A	SCILIFE
+Lepus castroviejoi	Lepus castroviejoi	wp11 bge erga_long_list phase_1A	ITALIA
+Culex perexiguus	Culex perexiguus	wp11 bge erga_long_list phase_1A	ToL
+Culex laticinctus	Culex laticinctus	wp11 bge erga_long_list phase_1A	ToL
+Culex theileri	Culex theileri	wp11 bge erga_long_list phase_1A	ToL
+Culex modestus	Culex modestus	wp11 bge erga_long_list phase_1A	ToL
+Culex pipiens pipiens	Culex pipiens pipiens	wp11 bge erga_long_list phase_1A	ToL
+Culex pipiens molestus	Culex pipiens molestus	wp11 bge erga_long_list phase_1A	ToL
+Ophryotocha puerilis	Ophryotrocha puerilis	spain_hsp bge erga_long_list phase_1B	ToL
+Tarphius canariensis	Tarphius canariensis	spain_hsp bge erga_long_list phase_1B	ToL
+Gyrocaryum oppositifolium	Gyrocaryum oppositifolium	spain_hsp bge erga_long_list phase_1B	ToL
+Varioconus guanche	Conus guanche	spain_hsp bge erga_long_list phase_1B	ToL
+Valencia hispanica	Valencia hispanica	spain_hsp bge erga_long_list phase_1B	CNAG
+Munidopsis polymorpha	Munidopsis polymorpha	spain_hsp bge erga_long_list phase_1B	ToL
+Allolobophora molleri	Allolobophora molleri	spain_hsp bge erga_long_list phase_1B	ToL
+Primula carniolica	Primula carniolica	slovenia_hsp bge erga_long_list phase_1B	ITALIA
+Sempervivum wulfenii subsp. juvanii	Sempervivum wulfenii subsp. juvanii	slovenia_hsp bge erga_long_list phase_1B	ITALIA
+Astropotamobius torrentium	Austropotamobius torrentium	slovenia_hsp bge erga_long_list phase_1B	SCILIFE
+Adelopsella bosnica	Adelopsella bosnica	slovenia_hsp bge erga_long_list phase_1B	ITALIA
+Graciliella metohijensis	Graciliella metohijensis	slovenia_hsp bge erga_long_list phase_1B	ITALIA
+Anthroherpon ganglbaueri	Anthroherpon ganglbaueri	slovenia_hsp bge erga_long_list phase_1B	ITALIA
+Leonhardella angulicollis	Leonhardella angulicollis	slovenia_hsp bge erga_long_list phase_1B	ITALIA
+Bathyscidius tristiculus	Bathyscidius tristiculus	slovenia_hsp bge erga_long_list phase_1B	ITALIA
+Sarcotragus spinosulus	Sarcotragus spinosulus	greece_hsp bge erga_long_list phase_1B	GENOSCOPE
+Hermodice carunculata	Hermodice carunculata	greece_hsp bge erga_long_list phase_1B	GENOSCOPE
+Protula tubularia	Protula tubularia	greece_hsp bge erga_long_list phase_1B	GENOSCOPE
+Arca noae	Arca noae	greece_hsp bge erga_long_list phase_1B	GENOSCOPE
+Pinctada radiata	Pinctada radiata	greece_hsp bge erga_long_list phase_1B	GENOSCOPE
+Diadema setosum	Diadema setosum	greece_hsp bge erga_long_list phase_1B	GENOSCOPE

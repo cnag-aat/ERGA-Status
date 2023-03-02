@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static %}
+{% load render_table from django_tables2 %}
+{% load bootstrap4 %}
+{% block page_content %}
+
+<p>
+<div class="row m-1">
+  <div class="col-md-3">
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5 class="card-title">{{ recipe.name }} Recipe</h5>
+        <table class="table">
+        <tr><td>ont_target:</td><td align="right"> {{ recipe.ont_target }} x</br></td></tr>
+        <tr><td>hifi_target:</td><td align="right"> {{ recipe.hifi_target }} x</br></td></tr>
+        <tr><td>hic_target:</td><td align="right"> {{ recipe.hic_target }} x</br></td></tr>
+        <tr><td>short_target:</td><td align="right"> {{ recipe.short_target }} x</br></td></tr>
+      </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

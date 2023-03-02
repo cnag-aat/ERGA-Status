@@ -6,6 +6,14 @@ from status.models import *
 import csv
 import argparse
 
+ASSEMBLY_TEAMS = {
+    'ToL':'ToL',
+    'SCILIFE':'UU',
+    'CNAG':'CNAG',
+    'GENOSCOPE':'GENOSCOPE',
+    'ITALIA':'GALAXY'
+}
+
 parser = argparse.ArgumentParser(
     description='Add records to ERGA target species table.')
 parser.add_argument('csv_file', metavar='csv',
@@ -14,10 +22,10 @@ args = parser.parse_args()
 with open(args.csv_file) as csvfile:
     csvreader = csv.DictReader(csvfile, delimiter='\t')
 
-    for row in csvreader:
-        if row['taxon_id'] or None:
+    for row in csvreader:  
+        if row['taxon_id']:
             print(row)
-            print(row['taxon_id'] or None)
+            #print(row['taxon_id'] or None)
 
             #if row['with_data'] != '1':
             #    print('with_data:' + row['with_data'])
@@ -95,14 +103,14 @@ with open(args.csv_file) as csvfile:
                     taxon_id=row['taxon_id'])
 
 
-
+            targetspecies.listed_species = row['original_species'] or None
             targetspecies.scientific_name = row['scientific_name'] or None
             targetspecies.tolid_prefix = row['tolid_prefix'] or None
             targetspecies.chromosome_number = row['chromosome_number'] or None
             targetspecies.haploid_number = row['haploid_number'] or None
             targetspecies.ploidy = row['ploidy'] or None
             targetspecies.c_value = row['c_value'] or None
-            targetspecies.genome_size = row['genome_size'] or None
+            targetspecies.genome_size = round(float(row['genome_size'])) or None
             targetspecies.taxon_kingdom = t_kingdom or None
             targetspecies.taxon_phylum = t_phylum or None
             targetspecies.taxon_class = t_class or None
@@ -123,7 +131,14 @@ with open(args.csv_file) as csvfile:
                         name=cname,
                         species=targetspecies
                     )
-            
+
+            if row['tags'] or None:
+                for t in row['tags'].split(' '):
+                    species_tag, created = Tag.objects.get_or_create(
+                        tag=t
+                    )
+                    targetspecies.tags.add(species_tag)
+
             collection_record, created = SampleCollection.objects.get_or_create(
                         species=targetspecies
                     )
@@ -157,4 +172,78 @@ with open(args.csv_file) as csvfile:
             cannotation_record.status="Waiting"
             cannotation_record.save()
 
-print("Finished OK")
+            if row['sequencing_team']:
+                try:
+                    gteam = GenomeTeam.objects.get(species=targetspecies)
+                except GenomeTeam.DoesNotExist:
+                    gteam, _ = GenomeTeam.objects.get_or_create(
+                        species=targetspecies
+                    )
+                gteam.sequencing_team, _ = SequencingTeam.objects.get_or_create(name = row['sequencing_team'])
+                gteam.extraction_team, _ = ExtractionTeam.objects.get_or_create(name = row['sequencing_team'])
+                gteam.assembly_team, _ = AssemblyTeam.objects.get_or_create(name = ASSEMBLY_TEAMS[row['sequencing_team']])
+                gteam.save()
+
+        else:
+            print(row)
+            try:
+                targetspecies = TargetSpecies.objects.get(listed_species=row['original_species'])
+            except TargetSpecies.DoesNotExist:
+                targetspecies, _ = TargetSpecies.objects.get_or_create(
+                    listed_species=row['original_species'])
+
+            if row['tags'] or None:
+                for t in row['tags'].split(' '):
+                    species_tag, created = Tag.objects.get_or_create(
+                        tag=t
+                    )
+                    targetspecies.tags.add(species_tag)
+                    targetspecies.save()
+
+            collection_record, created = SampleCollection.objects.get_or_create(
+                        species=targetspecies
+                    )
+            collection_record.note="No taxon_id; not found in GoaT."
+            collection_record.genomic_sample_status="Issue"
+            collection_record.rna_sample_status="Not collected"
+            collection_record.save()
+
+            sequencing_record, created = Sequencing.objects.get_or_create(
+                        species=targetspecies
+                    )
+            sequencing_record.genomic_seq_status="Waiting"
+            sequencing_record.hic_seq_status="Waiting"
+            sequencing_record.rna_seq_status="Waiting"
+            sequencing_record.save()
+
+            assemblyproject_record, created = AssemblyProject.objects.get_or_create(
+                        species=targetspecies
+                    )
+            assemblyproject_record.status="Waiting"
+            assemblyproject_record.save()
+
+            annotation_record, created = Annotation.objects.get_or_create(
+                        species=targetspecies
+                    )
+            annotation_record.status="Waiting"
+            annotation_record.save()
+
+            cannotation_record, created = CommunityAnnotation.objects.get_or_create(
+                        species=targetspecies
+                    )
+            cannotation_record.status="Waiting"
+            cannotation_record.save()
+            
+            if row['sequencing_team']:
+                try:
+                    gteam = GenomeTeam.objects.get(species=targetspecies)
+                except GenomeTeam.DoesNotExist:
+                    gteam, _ = GenomeTeam.objects.get_or_create(
+                        species=targetspecies
+                    )
+                gteam.sequencing_team, _ = SequencingTeam.objects.get_or_create(name = row['sequencing_team'])
+                gteam.extraction_team, _ = ExtractionTeam.objects.get_or_create(name = row['sequencing_team'])
+                gteam.assembly_team, _ = AssemblyTeam.objects.get_or_create(name = ASSEMBLY_TEAMS[row['sequencing_team']])
+                gteam.save()
+
+print("Finished")

@@ -67,6 +67,7 @@ urlpatterns = [
     path("reads/", ReadsListView.as_view(), name="reads_list"),
     path("curation/", CurationListView.as_view(), name="curation_list"),
     path("annotation/", AnnotationListView.as_view(), name="annotation_list"),
+    path("community_annotation/", CommunityAnnotationListView.as_view(), name="community_annotation_list"),
     # path("submission/", SubmissionListView.as_view(), name="submission_list"),
     path('access_denied/', AccessDeniedView.as_view(), name="access_denied"),
     path('teams/', GenomeTeamsView.as_view(), name="genome_teams"),
@@ -76,6 +77,6 @@ urlpatterns = [
     path('authors/', AuthorsView.as_view(), name="author_list"),
     path('edit_profile/', EditProfileView.as_view(), name="edit_profile"),
     path('success/', SuccessView.as_view(), name="success"),
-    
+    path("recipe/<int:pk>/", views.recipe_detail, name="recipe_detail"),
 
 ]

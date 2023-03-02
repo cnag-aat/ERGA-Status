@@ -25,10 +25,10 @@ STATUS_CHOICES = (
 
 COLLECTION_STATUS_CHOICES = (
     ('Not collected', 'Not collected'),
-    ('Long List', 'Long List'),
+    #('Long List', 'Long List'),
     ('Collecting', 'Collecting'),
     ('Resampling', 'Resampling'),
-    ('COPO', 'COPO'),
+    #('COPO', 'COPO'),
     ('Submitted', 'Submitted'),
     ('Issue', 'Issue')
 )
@@ -120,20 +120,20 @@ class Role(models.Model):
     def __str__(self):
         return self.description or str(self.id)
 
-TAG_CHOICES = (
-    ('erga_long_list', 'ERGA Long List'),
-    ('bge', 'BGE short list'),
-    ('cbp', 'CBP'),
-    ('erga_pilot', 'ERGA_Pilot'),
-    ('wp11', 'WP11'),
-    ('dtol', 'DTOL'),
-    ('greece_hsp', 'GreeceHSp'),
-    ('slovenia_hsp', 'SloveniaHSp'),
-    ('spain_hsp', 'SpainHsp')
-)
+# TAG_CHOICES = (
+#     ('erga_long_list', 'ERGA Long List'),
+#     ('bge', 'BGE short list'),
+#     ('cbp', 'CBP'),
+#     ('erga_pilot', 'ERGA_Pilot'),
+#     ('wp11', 'WP11'),
+#     ('dtol', 'DTOL'),
+#     ('greece_hsp', 'GreeceHSp'),
+#     ('slovenia_hsp', 'SloveniaHSp'),
+#     ('spain_hsp', 'SpainHsp')
+# )
 
 class Tag(models.Model):
-    tag = models.CharField(max_length=50, choices=TAG_CHOICES, default='erga_long_list')
+    tag = models.CharField(max_length=50, default='erga_long_list')
     class Meta:
         verbose_name_plural = 'tags'
 
@@ -218,8 +218,9 @@ class TaxonGenus(models.Model):
 #         return self.name
 
 class TargetSpecies(models.Model):
+    listed_species = models.CharField(max_length=201, blank=True, null=True)
     scientific_name = models.CharField(max_length=201, blank=True, null=True, db_index=True)
-    tags = models.ManyToManyField(Tag,default='ERGA_Long_List')
+    tags = models.ManyToManyField(Tag,default='erga_long_list')
     tolid_prefix = models.CharField(max_length=12, blank=True, null=True, db_index=True)
     taxon_kingdom = models.ForeignKey(TaxonKingdom, blank=True, null=True, on_delete=models.SET_NULL, verbose_name="Kingdom")
     taxon_phylum = models.ForeignKey(TaxonPhylum, blank=True, null=True, on_delete=models.SET_NULL, verbose_name="Phylum")
@@ -238,12 +239,16 @@ class TargetSpecies(models.Model):
     class Meta:
         verbose_name_plural = 'species'
         ordering = ['taxon_kingdom', 'taxon_phylum', 'taxon_class', 'taxon_order','taxon_family','taxon_genus','scientific_name']
+        
+    def get_tags(self):
+        return "; ".join([t.name for t in self.tags.all()])
+    get_tags.short_description = "Tags"
 
     def get_absolute_url(self):
-        return reverse('species_detail', args=[str(self.scientific_name)])
+        return reverse('species_detail', args=[self.pk])
 
     def __str__(self):
-        return self.scientific_name or str(self.id)
+        return self.scientific_name or str(self.listed_species)
         #return self.scientific_name +" (" + self.tolid_prefix + ")"
 
 
@@ -289,6 +294,16 @@ class UserProfile(models.Model):
     lead = models.BooleanField(default=False)
     affiliation = models.ManyToManyField(Affiliation)
     orcid = models.CharField(null=True, blank=True, max_length=60, verbose_name="ORCID")
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+    
+    def get_roles(self):
+        return "; ".join([r.description for r in self.roles.all()])
+    get_roles.short_description = "Roles"
+
+    def get_affiliations(self):
+        return "; ".join([a.affiliation for a in self.affiliation.all()])
+    get_affiliations.short_description = "Affiliations"
     
     def get_absolute_url(self):
         return reverse('user_profile', args=[str(self.pk)])
@@ -296,6 +311,15 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.first_name + " " + self.last_name or str(self.id)
 
+    def save(self, *args, **kwargs):
+        super(UserProfile, self).save(*args, **kwargs)
+        send_mail(
+            '[ERGA] New user, '+ self.first_name + " " + self.last_name +', has registered in ERGA-Stream',
+            'name: '+ self.first_name +" "+self.last_name +"\nemail: "+self.user.email+"\naffiliations: "+self.get_affiliations()+"\nroles: "+self.get_roles()+"\nlead: "+str(self.lead)+"\n",
+            'denovo@cnag.crg.eu',
+            ['denovo@cnag.crg.eu'],
+            fail_silently=True,
+        )
 
 class Person(models.Model):
     first_name = models.CharField(max_length=100, null=True, blank=True)
@@ -351,6 +375,7 @@ class CommunityAnnotationTeam(models.Model):
 
 class BiobankingTeam(models.Model):
     name = models.CharField(max_length=100,unique=True)
+    institution = models.ManyToManyField(Affiliation)
     lead = models.ForeignKey(
         #UserProfile,
         UserProfile,null=True, blank=True,
@@ -619,6 +644,7 @@ class Specimen(models.Model):
     voucher_link = models.CharField(max_length=200, null=True, blank=True)
     proxy_voucher_link = models.CharField(max_length=200, null=True, blank=True)
     voucher_institution = models.CharField(max_length=200, null=True, blank=True)
+    biobanking_team = models.ForeignKey(BiobankingTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="biobanking team")
     
     def get_absolute_url(self):
         return reverse('specimen_list', args=[str(self.pk)])
@@ -626,7 +652,12 @@ class Specimen(models.Model):
     def __str__(self):
         return self.tolid or str(self.id)
 
-    
+LEFTOVER_CHOICES = (
+    ('None', 'None'),
+    ('DNA', 'DNA'),
+    ('Tissue', 'Tissue'),
+    ('Both', 'Both')
+) 
 class Sample(models.Model):
     copo_id = models.CharField(max_length=30, help_text='COPO ID', null=True, blank=True, verbose_name="CopoID")
     biosampleAccession = models.CharField(max_length=20, help_text='BioSample Accession', null=True, blank=True, verbose_name="BioSample")
@@ -638,6 +669,12 @@ class Sample(models.Model):
     copo_date = models.CharField(max_length=30, help_text='COPO Time Updated', null=True, blank=True, verbose_name="date")
     specimen = models.ForeignKey(Specimen, on_delete=models.CASCADE, verbose_name="Specimen",null=True, blank=True)
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species",null=True, blank=True)
+    leftover = models.CharField(max_length=20, help_text='Leftover sample', choices=LEFTOVER_CHOICES, default=LEFTOVER_CHOICES[0][0])
+    leftover_biobanking_team = models.ForeignKey(BiobankingTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="biobanking team")
+    
+    def __str__(self):
+        return self.biosampleAccession or self.collector_sample_id or str(self.id)
+
     
 class Recipe(models.Model):
     name = models.CharField(max_length=50, unique=True, verbose_name="Recipe name")
@@ -648,6 +685,9 @@ class Recipe(models.Model):
         
     class Meta:
         verbose_name_plural = 'recipes'
+
+    def get_absolute_url(self):
+        return reverse('recipe_detail', args=[str(self.pk)])
 
     def __str__(self):
         return self.name or str(self.id)
@@ -677,6 +717,24 @@ class Sequencing(models.Model):
         self.__original_rna_seq_status = self.rna_seq_status
 
     def save(self, *args, **kwargs):
+        if (self.__original_genomic_seq_status != self.genomic_seq_status):
+            stat_g_records, created = StatusUpdate.objects.get_or_create(
+                species=self.species,
+                process='genomic_seq',
+                status=self.genomic_seq_status
+            )
+        if (self.__original_hic_seq_status != self.hic_seq_status):
+            stat_h_records, created = StatusUpdate.objects.get_or_create(
+                species=self.species,
+                process='hic_seq',
+                status=self.hic_seq_status
+            )
+        if (self.__original_rna_seq_status != self.rna_seq_status):
+            stat_r_records, created = StatusUpdate.objects.get_or_create(
+                species=self.species,
+                process='rna_seq',
+                status=self.rna_seq_status
+            )
         if settings.NOTIFICATIONS == True:
 
             if ((self.__original_genomic_seq_status != 'Done' and self.__original_genomic_seq_status != 'Submitted') and (self.genomic_seq_status == 'Done' or self.genomic_seq_status == 'Submitted')):

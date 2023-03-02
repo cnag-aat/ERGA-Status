@@ -4,6 +4,9 @@ from status.models import *
 from django.http import HttpResponse
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
+from django.contrib.admin.helpers import ActionForm
+from django import forms
+from django.contrib import messages
 
 def export_csv(modeladmin, request, queryset):
     import csv
@@ -30,6 +33,7 @@ class TargetSpeciesAdmin(admin.ModelAdmin):
     list_display = (
         'scientific_name',
         'tolid_prefix',
+        'get_tags',
         'taxon_kingdom',
         'taxon_phylum',
         'taxon_class',
@@ -45,6 +49,19 @@ class TargetSpeciesAdmin(admin.ModelAdmin):
         'genome_size'
     )
 
+@register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    ordering = ('-modified', )
+    list_display = (
+        'user',
+        'created',
+        'modified',
+        'first_name',
+        'last_name',
+        'lead',
+        'get_roles',
+        'get_affiliations'
+    )
 # Register your models here.
 # @register(CommonNames)
 # class CommonNamesAdmin(admin.ModelAdmin):
@@ -62,8 +79,10 @@ class MyUserAdmin(UserAdmin):
             groups.append(group.name)
         return ' '.join(groups)
     group.short_description = 'Groups'
+    # override the default sort column
+    ordering = ('-date_joined', )
     list_filter = UserAdmin.list_filter + ('groups__name',)
-    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'group')
+    list_display = ('username', 'email', 'date_joined', 'first_name', 'last_name', 'is_staff', 'group')
 
 @register(Author)
 class AuthorAdmin(admin.ModelAdmin):
@@ -72,9 +91,104 @@ class AuthorAdmin(admin.ModelAdmin):
         'species',
         'role'
     )
+
+class UpdateActionForm(ActionForm):
+    sample_handling_team = forms.ModelMultipleChoiceField(
+        queryset=SampleHandlingTeam.objects.all().order_by('name'),
+        required=False
+    )
+    sample_coordinator = forms.ModelMultipleChoiceField(
+        queryset=UserProfile.objects.all().order_by('last_name'),
+        required=False
+    )
+    collection_team = forms.ModelMultipleChoiceField(
+        queryset=CollectionTeam.objects.all().order_by('name'),
+        required=False
+    )
+    taxonomy_team = forms.ModelMultipleChoiceField(
+        queryset=TaxonomyTeam.objects.all().order_by('name'),
+        required=False
+    )
+    vouchering_team = forms.ModelMultipleChoiceField(
+        queryset=VoucheringTeam.objects.all().order_by('name'),
+        required=False
+    )
+    barcoding_team = forms.ModelMultipleChoiceField(
+        queryset=BarcodingTeam.objects.all().order_by('name'),
+        required=False
+    )
+    biobanking_team = forms.ModelMultipleChoiceField(
+        queryset=BiobankingTeam.objects.all().order_by('name'),
+        required=False
+    )
+    extraction_team = forms.ModelMultipleChoiceField(
+        queryset=ExtractionTeam.objects.all().order_by('name'),
+        required=False
+    )
+    sequencing_team = forms.ModelMultipleChoiceField(
+        queryset=SequencingTeam.objects.all().order_by('name'),
+        required=False
+    )
+    assembly_team = forms.ModelMultipleChoiceField(
+        queryset=AssemblyTeam.objects.all().order_by('name'),
+        required=False
+    )
+    community_annotation_team = forms.ModelMultipleChoiceField(
+        queryset=CommunityAnnotationTeam.objects.all().order_by('name'),
+        required=False
+    )
+    annotation_team = forms.ModelMultipleChoiceField(
+        queryset=AnnotationTeam.objects.all().order_by('name'),
+        required=False
+    )
+
+def update_teams(modeladmin, request, queryset):
+    if 'sample_handling_team' in request.POST:
+        sample_handling_team = request.POST['sample_handling_team']
+        queryset.update(sample_handling_team=sample_handling_team)
+    if 'sample_coordinator' in request.POST:
+        sample_coordinator = request.POST['sample_coordinator']
+        queryset.update(sample_coordinator=sample_coordinator)
+    if 'collection_team' in request.POST:
+        collection_team = request.POST['collection_team']
+        queryset.update(collection_team=collection_team)
+    if 'taxonomy_team' in request.POST:
+        taxonomy_team = request.POST['taxonomy_team']
+        queryset.update(taxonomy_team=taxonomy_team)
+    if 'vouchering_team' in request.POST:
+        vouchering_team = request.POST['vouchering_team']
+        queryset.update(vouchering_team=vouchering_team)
+    if 'barcoding_team' in request.POST:
+        barcoding_team = request.POST['barcoding_team']
+        queryset.update(barcoding_team=barcoding_team)
+    if 'biobanking_team' in request.POST:
+        biobanking_team = request.POST['biobanking_team']
+        queryset.update(biobanking_team=biobanking_team)
+    if 'extraction_team' in request.POST:
+        extraction_team = request.POST['extraction_team']
+        queryset.update(extraction_team=extraction_team)
+    if 'sequencing_team' in request.POST:
+        sequencing_team = request.POST['sequencing_team']
+        queryset.update(sequencing_team=sequencing_team)
+    if 'assembly_team' in request.POST:
+        assembly_team = request.POST['assembly_team']
+        queryset.update(assembly_team=assembly_team)
+    if 'community_annotation_team' in request.POST:
+        community_annotation_team = request.POST['community_annotation_team']
+        queryset.update(community_annotation_team=community_annotation_team)
+    if 'annotation_team' in request.POST:
+        annotation_team = request.POST['annotation_team']
+        queryset.update(annotation_team=annotation_team)
+    messages.add_message(request, messages.INFO, 'Successfully updated teams.')
+
 @register(GenomeTeam)
 class GenomeTeamAdmin(admin.ModelAdmin):
     save_as = True
+    list_filter = admin.ModelAdmin.list_filter + ('species__tags',)
+    action_form = UpdateActionForm
+    actions = [update_teams]
+
+
 
 admin.site.register(CommonNames)
 admin.site.register(Synonyms)
@@ -104,9 +218,17 @@ admin.site.register(Annotation)
 admin.site.register(BUSCOdb)
 admin.site.register(BUSCOversion)
 admin.site.register(Specimen)
-admin.site.register(Sample)
+@register(Sample)
+class SampleAdmin(admin.ModelAdmin):
+    list_display = (
+        'biosampleAccession',
+        'collector_sample_id',
+        'specimen',
+        'species',
+        'leftover'
+    )
 admin.site.register(AssemblyPipeline)
-admin.site.register(UserProfile)
+#admin.site.register(UserProfile)
 #admin.site.register(GenomeTeam)
 admin.site.register(Person)
 #admin.site.register(Author)
@@ -123,5 +245,5 @@ class StatusUpdateAdmin(admin.ModelAdmin):
         'note',
         'timestamp'
     )
-# admin.site.unregister(User)
-# admin.site.register(User, MyUserAdmin)
+admin.site.unregister(User)
+admin.site.register(User, MyUserAdmin)
