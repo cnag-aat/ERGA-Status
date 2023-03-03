@@ -4,12 +4,47 @@ use MIME::Base64;
 use JSON::PP;
 use Data::Dumper;
 use Getopt::Long;
+my $conf = ".ergastream.cnf";
+my $erga_status_url="https://genomes.cnag.cat/erga-stream/api";
+my $printhelp = 0;
+GetOptions(
+	   'c|config:s' => \$conf,
+     'h|help' => \$printhelp
+	  );
+my $useage = <<'END_HELP';
+usage: $0 -c <ergastream.cnf>
+ 
+The ergastream.cnf file has the format:
+URL:https://genomes.cnag.cat/erga-stream/api
+username:<username>
+password:<password>
+
+If using the development server or the URL changes at any time you can replace the url
+The username and passwords are the ones assigned to your team. If you'd like to use one attached to an email, 
+let Tyler know and he will grant your registered user the same priveleges.
+
+END_HELP
+
+if ($printhelp){
+  print $usage;
+}
+OPEN(CONF,"<$conf") or die "Configuration file $conf does not exist. Please create it in the current working directory or specify the path to it using the -c option."
+my %config = ();
+while(my $l = <CONF>){
+  chomp $l;
+  my ($k,$v)=split(":",$l)
+  $config{$k}=$v;
+}
+if(exists $config{'URL'}){
+  $erga_status_url=$config{'URL'}
+}
+die "please provide username in conf file" if (!exists $config{'username'});
+die "please provide password in conf file" if (!exists $config{'password'});
 my $client = REST::Client->new();
 $client->addHeader('Content-Type', 'application/json');
 $client->addHeader('charset', 'UTF-8');
 $client->addHeader('Accept', 'application/json');
-$client->addHeader('Authorization' => 'Basic '.encode_base64('erga-test1:Rd08N1Sg'));
-my $url="https://genomes.cnag.cat/erga-status/api";
+$client->addHeader('Authorization' => 'Basic '.encode_base64($config{'username'}.":".$config{'password'}));
 
 #### EXAMPLE TABLES ####
 

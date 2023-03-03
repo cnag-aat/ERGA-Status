@@ -5,11 +5,12 @@ use JSON::PP;
 use Data::Dumper;
 use Getopt::Long;
 
+my $credentials = "";
 my $client = REST::Client->new();
 $client->addHeader('Content-Type', 'application/json');
 $client->addHeader('charset', 'UTF-8');
 $client->addHeader('Accept', 'application/json');
-$client->addHeader('Authorization' => 'Basic '.encode_base64('user1:Rd08N1Sg'));
+$client->addHeader('Authorization' => 'Basic '.encode_base64($credentials));
 my $erga_status_url="https://genomes.cnag.cat/erga-status/api";
 
 my $copoclient = REST::Client->new();
