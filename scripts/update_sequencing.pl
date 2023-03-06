@@ -4,13 +4,12 @@ use MIME::Base64;
 use JSON::PP;
 use Data::Dumper;
 use Getopt::Long;
+
 my $conf = ".ergastream.cnf";
 my $erga_status_url="https://genomes.cnag.cat/erga-stream/api";
 my $printhelp = 0;
 my $seq_data;
 my $sequencing_tsv_file = 0;
-
-# get status label from the db
 my %SEQUENCING_STATUS_CHOICES = (
   'Waiting'=>1,
   'Received'=>1,
@@ -49,19 +48,19 @@ my %SEQUENCING_STATUS_CHOICES = (
 ########################
 
 GetOptions(
-	   'c|config:s' => \$conf,
-     'f|file:s' => \$sequencing_tsv_file,
-     'h|help' => \$printhelp
-	  );
+  'c|config:s' => \$conf,
+  'f|file:s' => \$sequencing_tsv_file,
+  'h|help' => \$printhelp
+);
 my $usage = <<'END_HELP';
 usage: update_sequencing.pl [-c <ergastream.cnf>] [-h] -f <sequencing_update.tsv>
  
-  The ergastream.cnf file has the format:
-    URL:https://genomes.cnag.cat/erga-stream/api
-    username:<username>
-    password:<password>
+  The ergastream configuration file (default name: ".ergastream.cnf") has the format:
+    URL https://genomes.cnag.cat/erga-stream/api
+    username  <username>
+    password  <password>
 
-  If using the development server or the URL changes at any time you can replace the url
+  If using the development server or the URL changes at any time, you can replace the URL.
   The username and passwords are the ones assigned to your team. If you'd like to use one attached to an email, 
   let Tyler know and he will grant your registered user the same priveleges.
 
