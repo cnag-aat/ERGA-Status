@@ -64,6 +64,7 @@ urlpatterns = [
     # path("submission/?species=<scientific_name>", SubmissionListView.as_view(), name="submission_list"),
     path("collection/", SampleCollectionListView.as_view(), name="collection_list"),
     path("sequencing/", SequencingListView.as_view(), name="sequencing_list"),
+    path("sequencing/?species=<scientific_name>", SequencingListView.as_view(), name="sequencing_list"),
     path("reads/", ReadsListView.as_view(), name="reads_list"),
     path("curation/", CurationListView.as_view(), name="curation_list"),
     path("annotation/", AnnotationListView.as_view(), name="annotation_list"),

@@ -135,7 +135,7 @@ class OverviewTable(tables.Table):
 
 class TargetSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']
-    scientific_name = tables.Column(linkify=True)
+    scientific_name = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("pk")}, empty_values=())
     listed_species = tables.Column()
     #tolid_prefix = tables.Column(linkify=True)
     class Meta:

@@ -108,3 +108,8 @@ class TagSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer)
     class Meta:
         model = Tag
         fields = '__all__'
+
+class RecipeSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = '__all__'

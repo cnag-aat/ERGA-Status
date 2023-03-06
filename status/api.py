@@ -173,3 +173,11 @@ class TagViewSet(BulkModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     filter_fields = '__all__'
+
+class RecipeViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows Users to be viewed or edited.
+    """
+    queryset = Recipe.objects.all()
+    serializer_class = RecipeSerializer
+    filter_fields = '__all__'
