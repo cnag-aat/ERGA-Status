@@ -135,7 +135,7 @@ class OverviewTable(tables.Table):
 
 class TargetSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']
-    scientific_name = tables.Column(linkify=True)
+    scientific_name = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("pk")}, empty_values=())
     listed_species = tables.Column()
     #tolid_prefix = tables.Column(linkify=True)
     class Meta:
@@ -143,7 +143,7 @@ class TargetSpeciesTable(tables.Table):
         template_name = "django_tables2/bootstrap4.html"
         #order_by = 'taxon_kingdom,taxon_phylum,taxon_class,taxon_order,taxon_family,taxon_genus,scientific_name' # use dash for descending order
         paginate = {"per_page": 100}
-        fields = ('listed_species','scientific_name','tags','taxon_id', 'genome_size', 'c_value','ploidy','chromosome_number','haploid_number','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus')
+        fields = ('listed_species','scientific_name','tags','taxon_id', 'genome_size', 'c_value','ploidy','haploid_number','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus')
 
 class AssemblyTable(tables.Table):
     export_formats = ['csv', 'tsv']
