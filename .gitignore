@@ -1,3 +1,6 @@
 erga/.env
 erga/__pycache__/
 status/migrations/
+erga_stream_dev-20230302-152834.sql
+.gitignore
+erga_stream_dev.sql

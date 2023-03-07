@@ -291,7 +291,7 @@ class ReadsTable(tables.Table):
                 css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
 
         cov = int(value)/rs.species.genome_size
-        if (value == 0 and rs.hifi_target == 0):
+        if (value == 0 and rs.recipe.hifi_target == 0):
             return ''
         else:
             return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + " Gb (" + "{:.1f}".format(cov) + "x)</span>")
@@ -316,7 +316,7 @@ class ReadsTable(tables.Table):
                 css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
 
         cov = int(value)/rs.species.genome_size
-        if (value == 0 and rs.hic_target == 0):
+        if (value == 0 and rs.recipe.hic_target == 0):
             return ''
         else:
             return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
@@ -341,7 +341,7 @@ class ReadsTable(tables.Table):
                 css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
 
         cov = int(value)/rs.species.genome_size
-        if (value == 0 and rs.short_target == 0):
+        if (value == 0 and rs.recipe.short_target == 0):
             return ''
         else:
             return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
@@ -390,7 +390,7 @@ class ReadsTable(tables.Table):
                 css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
 
         cov = int(value)/rs.species.genome_size
-        if (value == 0 and rs.ont_target == 0):
+        if (value == 0 and rs.recipe.ont_target == 0):
             return ''
         else:
             return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")

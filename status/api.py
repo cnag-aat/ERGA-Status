@@ -150,6 +150,14 @@ class SequencingTeamViewSet(BulkModelViewSet):
     serializer_class = SequencingTeamSerializer
     filter_fields = '__all__'
 
+class BiobankingTeamViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows BiobankingTeam Team to be viewed or edited.
+    """
+    queryset = BiobankingTeam.objects.all()
+    serializer_class = BiobankingTeamSerializer
+    filter_fields = '__all__'
+
 class ReadsViewSet(BulkModelViewSet):
     """
     API endpoint that allows Reads to be viewed or edited.
@@ -180,4 +188,20 @@ class RecipeViewSet(BulkModelViewSet):
     """
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
+    filter_fields = '__all__'
+
+class AffiliationViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows Users to be viewed or edited.
+    """
+    queryset = Affiliation.objects.all()
+    serializer_class = AffiliationSerializer
+    filter_fields = '__all__'
+
+class UserProfileViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows Users to be viewed or edited.
+    """
+    queryset = UserProfile.objects.all()
+    serializer_class = UserProfileSerializer
     filter_fields = '__all__'

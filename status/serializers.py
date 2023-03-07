@@ -94,6 +94,11 @@ class SequencingTeamSerializer(BulkSerializerMixin, serializers.HyperlinkedModel
         model = SequencingTeam
         fields = '__all__'
 
+class BiobankingTeamSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = BiobankingTeam
+        fields = '__all__'
+
 class ReadsSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Reads
@@ -112,4 +117,14 @@ class TagSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer)
 class RecipeSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Recipe
+        fields = '__all__'
+
+class AffiliationSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Affiliation
+        fields = '__all__'
+
+class UserProfileSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = UserProfile
         fields = '__all__'

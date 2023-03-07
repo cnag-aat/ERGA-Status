@@ -107,7 +107,7 @@ ROLE_CHOICES = (
     ('barcoding_team', 'Barcoding Team'),
     ('sequencing_team', 'Sequencing Team'),
     ('assembly_team', 'Assembly Team'),
-    ('community_annotation_team_', 'Community Annotation Team'),
+    ('community_annotation_team', 'Community Annotation Team'),
     ('annotation_team', 'Annotation Team'),
     ('other', 'Other'),
 )

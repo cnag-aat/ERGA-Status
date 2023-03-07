@@ -41,10 +41,13 @@ router.register(r'specimen', api.SpecimenViewSet)
 router.register(r'sample_collection', api.SampleCollectionViewSet)
 router.register(r'sequencing', api.SequencingViewSet)
 router.register(r'sequencing_team', api.SequencingTeamViewSet)
+router.register(r'biobanking_team', api.BiobankingTeamViewSet)
 router.register(r'reads', api.ReadsViewSet)
 router.register(r'collection_team', api.CollectionTeamViewSet)
 router.register(r'tag', api.TagViewSet)
 router.register(r'recipe', api.RecipeViewSet)
+router.register(r'affiliation', api.AffiliationViewSet)
+router.register(r'user_profile', api.UserProfileViewSet)
 
 
 urlpatterns = [
