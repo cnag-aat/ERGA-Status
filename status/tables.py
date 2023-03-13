@@ -35,7 +35,7 @@ class OverviewTable(tables.Table):
     tolid_prefix = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("pk")}, empty_values=())
     scientific_name = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("pk")}, empty_values=())
     # scientific_name = tables.Column(linkify=True)
-    listed_species = tables.Column()
+    #listed_species = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("pk")}, empty_values=())
     #log = tables.Column(accessor='updatestatus',verbose_name='Log')
     log = tables.TemplateColumn('<a href="/erga-stream-dev/log/?species={{record.id}}"><i class="fas fa-history"></i></a>',empty_values=(), verbose_name='log')
     attrs={"td": {"class": "overview-table"}}
@@ -50,6 +50,14 @@ class OverviewTable(tables.Table):
     #         return mark_safe(html) 
     #     else:
     #         return ''
+    def render_scientific_name(self, value, record):
+        url = reverse('species_detail',kwargs={'pk': record.pk})
+        if (str(value) == str(record.listed_species)):
+            return format_html('<a href="{}">{}</a>',url, str(value))
+        else:
+            return format_html('<a href="{}">{}</a>',url, str(value) + " (" + str(record.listed_species) + ")") #'<a href="{}/{}">{}</a>', 
+    def value_scientific_name(self, value):
+        return value
       
     def render_genomic_sample_status(self, value, record):
         html = '<a href="/erga-stream-dev/collection/?species='+str(record.pk)+'"><span class="status '+escape(value.replace(" ",''))+'">'+escape(value)+'</span></a>'
@@ -131,19 +139,25 @@ class OverviewTable(tables.Table):
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
         # fields = ('tolid_prefix', 'scientific_name','genomic_sample_status','hic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','curation_status','annotation_status','submission_status')
-        fields = ('listed_species', 'scientific_name','tolid_prefix','log','genomic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','annotation_status','community_annotation_status')
+        fields = ('scientific_name','tolid_prefix','log','genomic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','annotation_status','community_annotation_status')
 
 class TargetSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']
     scientific_name = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("pk")}, empty_values=())
-    listed_species = tables.Column()
+    #listed_species = tables.Column()
+    def render_scientific_name(self, value, record):
+        url = reverse('species_detail',kwargs={'pk': record.pk})
+        if (str(value) == str(record.listed_species)):
+            return format_html('<a href="{}">{}</a>',url, str(value))
+        else:
+            return format_html('<a href="{}">{}</a>',url, str(value) + " (" + str(record.listed_species) + ")")
     #tolid_prefix = tables.Column(linkify=True)
     class Meta:
         model = TargetSpecies
         template_name = "django_tables2/bootstrap4.html"
         #order_by = 'taxon_kingdom,taxon_phylum,taxon_class,taxon_order,taxon_family,taxon_genus,scientific_name' # use dash for descending order
         paginate = {"per_page": 100}
-        fields = ('listed_species','scientific_name','tags','taxon_id', 'genome_size', 'c_value','ploidy','haploid_number','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus')
+        fields = ('scientific_name','tags','taxon_id', 'genome_size', 'c_value','ploidy','haploid_number','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus')
 
 class AssemblyTable(tables.Table):
     export_formats = ['csv', 'tsv']

@@ -241,7 +241,7 @@ class TargetSpecies(models.Model):
         ordering = ['taxon_kingdom', 'taxon_phylum', 'taxon_class', 'taxon_order','taxon_family','taxon_genus','scientific_name']
         
     def get_tags(self):
-        return "; ".join([t.name for t in self.tags.all()])
+        return "; ".join([t.tag for t in self.tags.all()])
     get_tags.short_description = "Tags"
 
     def get_absolute_url(self):
@@ -1009,6 +1009,7 @@ class Assembly(models.Model):
     busco_db = models.ForeignKey(BUSCOdb, on_delete=models.SET_NULL, null=True, verbose_name="BUSCO db", blank=True)
     busco_version = models.ForeignKey(BUSCOversion, on_delete=models.SET_NULL, null=True, verbose_name="BUSCO version", blank=True)
     qv = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True, verbose_name="QV")
+    report = models.URLField(max_length = 400, null=True, blank=True)
 
     class Meta:
         verbose_name_plural = 'assemblies'

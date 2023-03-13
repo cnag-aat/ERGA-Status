@@ -52,7 +52,33 @@ body {
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
+        {% if user.is_authenticated %}
         <li class="nav-item">
+          <a class="nav-link" id="overviewlink" href="{% url 'overview' %}">Status</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="specieslink" href="{% url 'species_list' %}">Species</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="specimenslink" href="{% url 'specimen_list' %}">Specimens</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="sampleslink" href="{% url 'sample_list' %}">Samples</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="readslink" href="{% url 'reads_list' %}">Reads</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="assemblylink" href="{% url 'assembly_list' %}">Assemblies</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="teamslink" href="{% url 'genome_teams' %}">Teams</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="authorslink" href="{% url 'author_list' %}">Authors</a>
+        </li>
+
+<!--         <li class="nav-item">
           <a class="nav-link" id="overviewlink" href="{% url 'overview' %}"><i id=overviewspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Status</a>
         </li>
         <li class="nav-item">
@@ -75,22 +101,22 @@ body {
         </li>
         <li class="nav-item">
           <a class="nav-link" id="authorslink" href="{% url 'author_list' %}"><i id=authorsspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Authors</a>
-        </li>
+        </li> -->
+
+
         <li class="nav-item">
           <a class="nav-link" href="{% url 'api-root' %}">API</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
+        </li>
+        {% endif %}
       </ul>
       <ul class="navbar-nav ml-auto">
-
-        
-
         {% if user.is_authenticated %}
-        <li class="nav-item">
-          <p class="navbar-text">Logged in as <strong>{{ user.username }}</strong>.</p>
-          </li>     
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'admin:index' %}">Edit Tables</a>
-          </li>
+          <a class="navbar-text">Hello, <strong>{{ user.username }}</strong>.</a>
+          </li> 
           <li class="nav-item">
             <a class="nav-link" href="{% url 'edit_profile' %}">Update Profile</a>
           </li>
@@ -98,11 +124,11 @@ body {
             <a class="nav-link" href="{% url 'account_email' %}">Change E-mail</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'account_logout' %}"><i class="fas fa-sign-out-alt fa-lg"></i></a>
+            <a class="nav-link" href="{% url 'account_logout' %}">Logout <i class="fas fa-sign-out-alt fa-lg"></i></a>
           </li>
           {% else %}
           <li class="nav-item">
-          <a class="nav-link" href="{% url 'account_login' %}"><i class="fas fa-sign-in-alt fa-lg"></i></a>
+          <a class="nav-link" href="{% url 'account_login' %}">Login/Register <i class="fas fa-sign-in-alt fa-lg"></i></a>
           </li>
           {% endif %}
       </ul>
