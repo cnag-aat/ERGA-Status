@@ -30,6 +30,7 @@ COLLECTION_STATUS_CHOICES = (
     ('Resampling', 'Resampling'),
     #('COPO', 'COPO'),
     ('Submitted', 'Submitted'),
+    ('Pending', 'Pending'),
     ('Issue', 'Issue')
 )
 
@@ -113,7 +114,7 @@ ROLE_CHOICES = (
 )
 
 class Role(models.Model):
-    description = models.CharField(max_length=100, choices=ROLE_CHOICES, default='other')
+    description = models.CharField(max_length=100)
     class Meta:
         verbose_name_plural = 'roles'
 
@@ -645,7 +646,9 @@ class Specimen(models.Model):
     proxy_voucher_link = models.CharField(max_length=200, null=True, blank=True)
     voucher_institution = models.CharField(max_length=200, null=True, blank=True)
     biobanking_team = models.ForeignKey(BiobankingTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="biobanking team")
-    
+    nagoya_statement = models.TextField(max_length=2000, null=True, blank=True)
+    ircc = models.URLField(max_length = 400, null=True, blank=True)
+
     def get_absolute_url(self):
         return reverse('specimen_list', args=[str(self.pk)])
     
@@ -741,38 +744,41 @@ class Sequencing(models.Model):
                 myurl = settings.DEFAULT_DOMAIN + 'sequencing/?species='+str(self.species.pk)
                 gteam = GenomeTeam.objects.get(species=self.species)
                 assembly_team = AssemblyTeam.objects.get(genometeam=gteam)
-                send_mail(
-                    '[ERGA] Genomic sequencing for '+ self.species.scientific_name +'is done',
-                    'Dear '+ assembly_team.lead.first_name+",\n\nGenomic sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
-                    'denovo@cnag.crg.eu',
-                    [assembly_team.lead.email],
-                    fail_silently=True,
-                )
+                if assembly_team.lead:
+                    send_mail(
+                        '[ERGA] Genomic sequencing for '+ self.species.scientific_name +'is done',
+                        'Dear '+ assembly_team.lead.first_name+",\n\nGenomic sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
+                        'denovo@cnag.crg.eu',
+                        [assembly_team.lead.email],
+                        fail_silently=True,
+                    )
 
             if ((self.__original_hic_seq_status != 'Done' and self.__original_hic_seq_status != 'Submitted') and (self.hic_seq_status == 'Done' or self.hic_seq_status == 'Submitted')):
                 myurl = settings.DEFAULT_DOMAIN + 'sequencing/?species='+str(self.species.pk)
                 gteam = GenomeTeam.objects.get(species=self.species)
                 assembly_team = AssemblyTeam.objects.get(genometeam=gteam)
-                send_mail(
-                    '[ERGA] Hi-C sequencing for '+ self.species.scientific_name +'is done',
-                    'Dear '+ assembly_team.lead.first_name+",\n\nHi-C sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
-                    'denovo@cnag.crg.eu',
-                    [assembly_team.lead.email],
-                    fail_silently=True,
-                )
+                if assembly_team.lead:
+                    send_mail(
+                        '[ERGA] Hi-C sequencing for '+ self.species.scientific_name +'is done',
+                        'Dear '+ assembly_team.lead.first_name+",\n\nHi-C sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
+                        'denovo@cnag.crg.eu',
+                        [assembly_team.lead.email],
+                        fail_silently=True,
+                    )
 
             if ((self.__original_rna_seq_status != 'Done' and self.__original_rna_seq_status != 'Submitted') and (self.rna_seq_status == 'Done' or self.rna_seq_status == 'Submitted')):
                 myurl = settings.DEFAULT_DOMAIN + 'sequencing/?species='+str(self.species.pk)
                 gteam = GenomeTeam.objects.get(species=self.species)
                 if CommunityAnnotationTeam.objects.filter(genometeam=gteam).exists():
                     community_annotation_team = CommunityAnnotationTeam.objects.get(genometeam=gteam)
-                    send_mail(
-                        '[ERGA] RNA sequencing for '+ self.species.scientific_name +'is done',
-                        'Dear '+ community_annotation_team.lead.first_name+",\n\nRNA sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
-                        'denovo@cnag.crg.eu',
-                        [community_annotation_team.lead.email],
-                        fail_silently=True,
-                    )
+                    if community_annotation_team.lead:
+                        send_mail(
+                            '[ERGA] RNA sequencing for '+ self.species.scientific_name +'is done',
+                            'Dear '+ community_annotation_team.lead.first_name+",\n\nRNA sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
+                            'denovo@cnag.crg.eu',
+                            [community_annotation_team.lead.email],
+                            fail_silently=True,
+                        )
 
         if self.__original_genomic_seq_status == 'Waiting' and self.genomic_seq_status != 'Waiting':
             gteam = GenomeTeam.objects.get(species=self.species)

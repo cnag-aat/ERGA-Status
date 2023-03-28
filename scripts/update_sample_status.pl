@@ -60,7 +60,7 @@ usage: $0
 END_HELP
 my $all_species_query = "$erga_status_url/species/";
 $client->GET($all_species_query);
-#print $client->responseContent() and exit;
+print $client->responseContent() and exit;
 my $response = decode_json $client->responseContent();
 my %taxids = ();
 if ($response->{count} > 0){

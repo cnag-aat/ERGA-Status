@@ -187,6 +187,20 @@ class GenomeTeamAdmin(admin.ModelAdmin):
     list_filter = admin.ModelAdmin.list_filter + ('species__tags',)
     action_form = UpdateActionForm
     actions = [update_teams]
+    def get_actions(self, request):
+      actions = super(GenomeTeamAdmin, self).get_actions(request)
+      try:
+          del actions['delete_selected']
+      except KeyError:
+        pass
+      return actions
+    def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
+        context.update({
+            'show_delete': False, # Here
+            # 'show_save': False,
+            # 'show_save_and_continue': False,
+        })
+        return super().render_change_form(request, context, add, change, form_url, obj)
 
 
 

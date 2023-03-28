@@ -5,6 +5,7 @@ use JSON::PP;
 use Data::Dumper;
 use Getopt::Long;
 
+#use lib '/home/groups/assembly/talioto/erga_scripts';
 my $conf = ".ergastream.cnf";
 my $erga_status_url="https://genomes.cnag.cat/erga-stream/api";
 my $printhelp = 0;
@@ -143,7 +144,7 @@ sub update{
       my $hic_yield = $sequpdate->[$i]->{hic_yield};
       my $short_yield = $sequpdate->[$i]->{short_yield};
       my $rnaseq_numlibs_target=$sequpdate->[$i]->{rnaseq_numlibs_target};
-      my $rnaseq_numlibs = $sequpdate->[$i]->{rnaseq_numlibs_done};
+      my $rnaseq_numlibs = $sequpdate->[$i]->{rnaseq_numlibs};
       $client->GET("$erga_status_url/recipe/?name=". $recipe);
       my $recipe_response = decode_json $client->responseContent();
       my $recipe_url = $recipe_response->{results}->[0]->{url};
@@ -170,7 +171,8 @@ sub update{
       $client->PATCH($project_url, $seqinsert);
       print STDERR $client->responseContent(),"\n";
     
-      $client->GET("$erga_status_url/reads/?project=". $project_url);
+      $client->GET("$erga_status_url/reads/?project=". $project_id);
+      #print STDERR $client->responseContent(),"\n";
       my $response_reads = decode_json $client->responseContent();
       if ($response_reads->{count} > 0) {
         #PATCH
