@@ -43,7 +43,7 @@ from django.shortcuts import get_object_or_404
 #from status.forms import (EditProfileForm, ProfileForm)
 from status.forms import ProfileUpdateForm
 from django.urls import reverse_lazy
-
+from status.filters import GenomeTeamFilter
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -350,6 +350,7 @@ class GenomeTeamsView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterV
     login_url = "access_denied"
     table_class = GenomeTeamsTable
     template_name = 'genometeams.html'
+    filterset_class = GenomeTeamFilter
     export_formats = ['csv', 'tsv','xlsx','json']
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}

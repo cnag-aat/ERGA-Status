@@ -121,6 +121,15 @@ class Role(models.Model):
     def __str__(self):
         return self.description or str(self.id)
 
+class Statement(models.Model):
+    name = models.CharField(max_length=100)
+    statement = models.TextField(max_length=2000)
+    class Meta:
+        verbose_name_plural = 'statements'
+
+    def __str__(self):
+        return self.statement or str(self.id)
+
 # TAG_CHOICES = (
 #     ('erga_long_list', 'ERGA Long List'),
 #     ('bge', 'BGE short list'),
@@ -486,7 +495,7 @@ class CollectionTeam(models.Model):
         return reverse('collection_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.name or str(self.id)
+        return str(self.lead) or self.name or str(self.id)
 
 class TaxonomyTeam(models.Model):
     name = models.CharField(max_length=100,unique=True)
@@ -503,7 +512,7 @@ class TaxonomyTeam(models.Model):
         return reverse('taxonomy_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.name or str(self.id)
+        return str(self.lead) or self.name or str(self.id)
 
 class SampleHandlingTeam(models.Model):
     name = models.CharField(max_length=100,unique=True)
@@ -519,7 +528,7 @@ class SampleHandlingTeam(models.Model):
         return reverse('sample_handling_team_detail', args=[str(self.pk)])
 
     def __str__(self):
-        return self.name or str(self.id)
+        return str(self.lead) or self.name or str(self.id)
 
 class VoucheringTeam(models.Model):
     name = models.CharField(max_length=100,unique=True)
@@ -646,8 +655,8 @@ class Specimen(models.Model):
     proxy_voucher_link = models.CharField(max_length=200, null=True, blank=True)
     voucher_institution = models.CharField(max_length=200, null=True, blank=True)
     biobanking_team = models.ForeignKey(BiobankingTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="biobanking team")
-    nagoya_statement = models.TextField(max_length=2000, null=True, blank=True)
-    ircc = models.URLField(max_length = 400, null=True, blank=True)
+    nagoya_statement = models.ForeignKey(Statement, on_delete=models.SET_NULL, verbose_name="legal statement",null=True, blank=True)
+    ircc = models.URLField(max_length = 400, null=True, blank=True, verbose_name="IRCC")
 
     def get_absolute_url(self):
         return reverse('specimen_list', args=[str(self.pk)])
@@ -669,6 +678,7 @@ class Sample(models.Model):
     purpose_of_specimen = models.CharField(max_length=30, help_text='Purpose', null=True, blank=True)
     gal = models.CharField(max_length=120, help_text='GAL', null=True, blank=True, verbose_name="GAL")
     collector_sample_id = models.CharField(max_length=40, help_text='Collector Sample ID', null=True, blank=True)
+    tube_or_well_id = models.CharField(max_length=40, help_text='Tube or Well ID', null=True, blank=True)
     copo_date = models.CharField(max_length=30, help_text='COPO Time Updated', null=True, blank=True, verbose_name="date")
     specimen = models.ForeignKey(Specimen, on_delete=models.CASCADE, verbose_name="Specimen",null=True, blank=True)
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species",null=True, blank=True)
@@ -685,6 +695,7 @@ class Recipe(models.Model):
     hifi_target = models.BigIntegerField(null=True, blank=True, verbose_name="HiFi target")
     hic_target = models.BigIntegerField(null=True, blank=True, verbose_name="Hi-C target")
     short_target = models.BigIntegerField(null=True, blank=True, verbose_name="Short read target")
+    rna_target = models.BigIntegerField(null=True, blank=True, verbose_name="RNA-seq PE target")
         
     class Meta:
         verbose_name_plural = 'recipes'
@@ -706,7 +717,7 @@ class Sequencing(models.Model):
     # hifi_target = models.BigIntegerField(null=True, blank=True, verbose_name="HiFi target")
     # hic_target = models.BigIntegerField(null=True, blank=True, verbose_name="Hi-C target")
     # short_target = models.BigIntegerField(null=True, blank=True, verbose_name="Short read target")
-    rnaseq_numlibs_target = models.IntegerField(null=True, blank=True, default=3, verbose_name="RNAseq libs target")
+    # rnaseq_numlibs_target = models.IntegerField(null=True, blank=True, default=3, verbose_name="RNAseq libs target")
     recipe = models.ForeignKey(Recipe, on_delete=models.SET_NULL, to_field='name', default='HiFi25', verbose_name="Recipe", null=True)
     
     __original_genomic_seq_status = None
@@ -762,7 +773,7 @@ class Sequencing(models.Model):
                         '[ERGA] Hi-C sequencing for '+ self.species.scientific_name +'is done',
                         'Dear '+ assembly_team.lead.first_name+",\n\nHi-C sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
                         'denovo@cnag.crg.eu',
-                        [assembly_team.lead.email],
+                        [assembly_team.lead.user.email],
                         fail_silently=True,
                     )
 
@@ -776,7 +787,7 @@ class Sequencing(models.Model):
                             '[ERGA] RNA sequencing for '+ self.species.scientific_name +'is done',
                             'Dear '+ community_annotation_team.lead.first_name+",\n\nRNA sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
                             'denovo@cnag.crg.eu',
-                            [community_annotation_team.lead.email],
+                            [community_annotation_team.lead.user.email],
                             fail_silently=True,
                         )
 
@@ -824,7 +835,7 @@ class Reads(models.Model):
     hifi_yield = models.BigIntegerField(null=True, blank=True, verbose_name="HiFi yield")
     hic_yield = models.BigIntegerField(null=True, blank=True, verbose_name="Hi-C yield")
     short_yield = models.BigIntegerField(null=True, blank=True, verbose_name="Short read yield")
-    rnaseq_numlibs = models.IntegerField(null=True, blank=True, verbose_name="RNAseq libs")
+    rnaseq_pe = models.BigIntegerField(null=True, blank=True, verbose_name="RNA-seq yield (PE)")
     ont_ena = models.CharField(max_length=12, null=True, blank=True, verbose_name="ONT Accession")
     hifi_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="HiFi Accession")
     hic_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="Hi-C Accession")

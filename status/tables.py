@@ -251,16 +251,16 @@ class SequencingTable(tables.Table):
 
 class ReadsTable(tables.Table):
     project = tables.LinkColumn('sequencing_list')
-    ont_yield = tables.Column(verbose_name="ONT yield")
+    ont_yield = tables.Column(verbose_name="ONT yield",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
+    ont_ena = tables.Column(verbose_name="ENA",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     hifi_yield = tables.Column(verbose_name="HiFi yield")
-    hic_yield = tables.Column(verbose_name="Hi-C yield")
-    short_yield = tables.Column(verbose_name="Short read yield")
-    rnaseq_numlibs = tables.Column(verbose_name="RNAseq libs")
-    ont_ena = tables.Column(verbose_name="ENA")
     hifi_ena = tables.Column(verbose_name="ENA")
+    short_yield = tables.Column(verbose_name="Short read yield",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
+    short_ena = tables.Column(verbose_name="ENA",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
+    hic_yield = tables.Column(verbose_name="Hi-C yield")
     hic_ena = tables.Column(verbose_name="ENA")
-    short_ena = tables.Column(verbose_name="ENA")
-    rnaseq_ena = tables.Column(verbose_name="ENA")
+    rnaseq_pe = tables.Column(verbose_name="RNA-seq yield",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
+    rnaseq_ena = tables.Column(verbose_name="ENA",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     def render_ont_ena(self, value, record):
         html = '<a target="blank" href="https://www.ebi.ac.uk/ena/browser/view/'+value+'">'+escape(value)+'</a>'
         return mark_safe(html)
@@ -333,7 +333,7 @@ class ReadsTable(tables.Table):
         if (value == 0 and rs.recipe.hic_target == 0):
             return ''
         else:
-            return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
+            return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + " Gb (" + "{:.1f}".format(cov) + "x)</span>")
 
     def value_hic_yield(self, value):
         return value
@@ -358,17 +358,17 @@ class ReadsTable(tables.Table):
         if (value == 0 and rs.recipe.short_target == 0):
             return ''
         else:
-            return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
+            return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + " Gb (" + "{:.1f}".format(cov) + "x)</span>")
 
     def value_short_yield(self, value):
         return value
 
-    def render_rnaseq_numlibs(self, value, record):
+    def render_rnaseq_pe(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
         css_class = '<i class="fas fa-ban fa-lg"></i>'
-        if (rs.rnaseq_numlibs_target >  0):
-            threshmet = int(value)/(rs.rnaseq_numlibs_target)
+        if (rs.recipe.rna_target >  0):
+            threshmet = int(value)/(rs.recipe.rna_target)
             css_class = '<i class="fas fa-battery-empty fa-lg empty-color"></i>'
             if(threshmet > 0.25):
                 css_class = '<i class="fas fa-battery-quarter fa-lg quarter-color"></i>'
@@ -379,12 +379,12 @@ class ReadsTable(tables.Table):
             if(threshmet >= 1.0):
                 css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
 
-        if (value == 0 and rs.rnaseq_numlibs_target == 0):
+        if (value == 0 and rs.recipe.rna_target == 0):
             return ''
         else:
-            return mark_safe(css_class + "<span>&nbsp;" + str(value) + "</span>")
+            return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000) + " MPE</span>")
 
-    def value_rnaseq_numlibs(self, value):
+    def value_rnaseq_pe(self, value):
         return value
 
     def render_ont_yield(self, value, record):
@@ -407,7 +407,7 @@ class ReadsTable(tables.Table):
         if (value == 0 and rs.recipe.ont_target == 0):
             return ''
         else:
-            return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "Gb (" + "{:.1f}".format(cov) + "x)</span>")
+            return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + " Gb (" + "{:.1f}".format(cov) + "x)</span>")
 
     def value_ont_yield(self, value):
         return value
@@ -416,7 +416,7 @@ class ReadsTable(tables.Table):
         model = Reads
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        fields = ('project', 'ont_yield', 'ont_ena','hifi_yield', 'hifi_ena','short_yield','short_ena','hic_yield','hic_ena','rnaseq_numlibs','rnaseq_ena')
+        fields = ('project', 'ont_yield', 'ont_ena','hifi_yield', 'hifi_ena','short_yield','short_ena','hic_yield','hic_ena','rnaseq_pe','rnaseq_ena')
 
 class CurationTable(tables.Table):
     status = tables.TemplateColumn('<span class="status {{record.status}}">{{record.status}}</span>',empty_values=(), verbose_name='Status')
@@ -477,11 +477,15 @@ class CommunityAnnotationTable(tables.Table):
 class SpecimenTable(tables.Table):
     species = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("species.pk")}, empty_values=())
     samples = tables.TemplateColumn('<a href="{% url \'sample_list\' %}?specimen={{record.pk}}">samples</a>',empty_values=(), verbose_name='Samples')
-    
+    #nagoya_statement = tables.URLColumn()
     #collection = tables.Column(linkify=True)
+    # def __init__(self, *args, **kwargs):
+    #     self.columns['nagoya_statement'].column.attrs = {"td":{"style" : "width:200;" }}
     def render_collection(self, value, record):
         html = '<a href="/erga-stream-dev/collection/?species='+str(record.species.pk)+'">'+escape(value)+'</a>'
         return mark_safe(html)
+    def render_nagoya_statement(self, value, record):
+        return mark_safe("<div style='width:300'>"+value.statement+"</div>")
     class Meta:
         model = Specimen
         template_name = "django_tables2/bootstrap4.html"
@@ -522,13 +526,13 @@ class GenomeTeamsTable(tables.Table):
     assembly_team = tables.Column(verbose_name='Assembly',linkify=True)
     community_annotation_team = tables.Column(verbose_name='Community Annotation',linkify=True)
     annotation_team = tables.Column(verbose_name='Annotation',linkify=True)
-    extraction_team = tables.Column(verbose_name='Extraction',linkify=True)
+    #extraction_team = tables.Column(verbose_name='Extraction',linkify=True)
 
     class Meta:
         model = GenomeTeam
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        exclude = ['id']
+        exclude = ['id','extraction_team']
 
 class AuthorsTable(tables.Table):
     export_formats = ['csv', 'tsv', 'json']

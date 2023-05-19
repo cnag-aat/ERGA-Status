@@ -1,11 +1,21 @@
 #!/usr/bin/env perl
+use lib "/home/groups/assembly/talioto/myperlmods/"; #change this to point to your PERL5LIB module directory or set the $PERL5LIB environment variable
+#use lib '/home/groups/assembly/talioto/erga_scripts';
 use REST::Client;
 use MIME::Base64;
 use JSON::PP;
 use Data::Dumper;
 use Getopt::Long;
 
-#use lib '/home/groups/assembly/talioto/erga_scripts';
+# https://metacpan.org/pod/REST::Client
+# https://metacpan.org/pod/JSON::PP
+# https://metacpan.org/pod/MIME::Base64
+
+# https://anaconda.org/bioconda/perl-rest-client
+# https://anaconda.org/bioconda/perl-json-pp
+# https://anaconda.org/bioconda/perl-mime-base64
+
+
 my $conf = ".ergastream.cnf";
 my $erga_status_url="https://genomes.cnag.cat/erga-stream/api";
 my $printhelp = 0;
@@ -54,7 +64,7 @@ GetOptions(
   'h|help' => \$printhelp
 );
 my $usage = <<'END_HELP';
-usage: update_sequencing.pl [-c <ergastream.cnf>] [-h] -f <sequencing_update.tsv>
+usage: update_sequencing.pl [-h] [-c <ergastream.cnf>] -f <sequencing_update.tsv>
  
   The ergastream configuration file (default name: ".ergastream.cnf") has the format:
     URL https://genomes.cnag.cat/erga-stream/api
@@ -65,6 +75,11 @@ usage: update_sequencing.pl [-c <ergastream.cnf>] [-h] -f <sequencing_update.tsv
   The username and passwords are the ones assigned to your team. If you'd like to use one attached to an email, 
   let Tyler know and he will grant your registered user the same priveleges.
 
+  sequencing_update.tsv has the following columns:
+  tolid_prefix  scientific_name genomic_seq_status  hic_seq_status  rna_seq_status  note  recipe  ont_yield hifi_yield  hic_yield short_yield rnaseq_pe
+
+  recipe should be either ONT60 or HIFI25
+  status choices:   'Waiting','Received','Extracted','Sequencing','TopUp','External','Done','Submitted','Issue'
 END_HELP
 
 if ($printhelp or !$sequencing_tsv_file){
@@ -78,7 +93,7 @@ while(my $l = <CONF>){
   $config{$k}=$v;
 }
 if(exists $config{'URL'}){
-  $erga_status_url=$config{'URL'}
+  $erga_status_url=$config{'URL'};
 }
 die "please provide username in conf file" if (! exists($config{'username'}));
 die "please provide password in conf file" if (!exists($config{'password'}));
@@ -93,6 +108,7 @@ update($seq_data,$erga_status_url);
 
 sub update{
   my $sequpdate= shift;
+  print STDERR Data::Dumper->Dump([$sequpdate]);
   my $erga_status_url = shift;
   for (my $i = 0;$i<@$sequpdate; $i++){
     my $tolid_prefix=$sequpdate->[$i]->{'tolid_prefix'};
@@ -109,6 +125,7 @@ sub update{
     }elsif($scientific_name =~m/\w/){
       #Retrieve species from target species table
       $client->GET("$erga_status_url/species/?scientific_name=". $scientific_name);
+      print STDERR $client->responseContent(),"\n";
       my $response1 = decode_json $client->responseContent();
       $species_url = $response1->{results}->[0]->{url};
       $species_url =~/(\d+)\/$/;
@@ -143,28 +160,27 @@ sub update{
       my $hifi_yield = $sequpdate->[$i]->{hifi_yield};
       my $hic_yield = $sequpdate->[$i]->{hic_yield};
       my $short_yield = $sequpdate->[$i]->{short_yield};
-      my $rnaseq_numlibs_target=$sequpdate->[$i]->{rnaseq_numlibs_target};
-      my $rnaseq_numlibs = $sequpdate->[$i]->{rnaseq_numlibs};
+      my $rnaseq_pe = $sequpdate->[$i]->{rnaseq_pe};
       $client->GET("$erga_status_url/recipe/?name=". $recipe);
       my $recipe_response = decode_json $client->responseContent();
       my $recipe_url = $recipe_response->{results}->[0]->{url};
 
       my %seq_insert_data = ();
       $seq_insert_data{species}=$species_url;
-      $seq_insert_data{genomic_seq_status}=$genomic_seq_status;
-      $seq_insert_data{hic_seq_status}=$hic_seq_status;
-      $seq_insert_data{rna_seq_status}=$rna_seq_status;
-      $seq_insert_data{note}=$note;
-      $seq_insert_data{recipe}=$recipe;
+      $seq_insert_data{genomic_seq_status}=$genomic_seq_status if $genomic_seq_status =~/\S/;
+      $seq_insert_data{hic_seq_status}=$hic_seq_status if $hic_seq_status =~/\S/;
+      $seq_insert_data{rna_seq_status}=$rna_seq_status if $rna_seq_status =~/\S/;
+      $seq_insert_data{note}=$note if $note =~/\S/;
+      $seq_insert_data{recipe}=$recipe if $recipe =~/\S/;;;
       my $seqinsert = encode_json \%seq_insert_data;
       
       my %read_insert_data = ();
       $read_insert_data{project}=$project_url;
-      $read_insert_data{ont_yield}=$ont_yield;
-      $read_insert_data{hifi_yield}=$hifi_yield;
-      $read_insert_data{hic_yield}=$hic_yield;
-      $read_insert_data{short_yield}=$short_yield;
-      $read_insert_data{rnaseq_numlibs}=$rnaseq_numlibs;
+      $read_insert_data{ont_yield}=$ont_yield if $ont_yield > 0;
+      $read_insert_data{hifi_yield}=$hifi_yield if $hifi_yield > 0;
+      $read_insert_data{hic_yield}=$hic_yield if $hic_yield > 0;
+      $read_insert_data{short_yield}=$short_yield if $short_yield > 0;
+      $read_insert_data{rnaseq_pe}=$rnaseq_pe if $rnaseq_pe > 0;
       my $readinsert = encode_json \%read_insert_data;
       
       print STDERR "Inserting sequencing update... \n";

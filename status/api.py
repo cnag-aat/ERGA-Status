@@ -101,6 +101,14 @@ class BUSCOdbViewSet(BulkModelViewSet):
     serializer_class = BUSCOdbSerializer
     filter_fields = '__all__'
 
+class StatementViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows Statements to be viewed or edited.
+    """
+    queryset = Statement.objects.all()
+    serializer_class = StatementSerializer
+    filter_fields = '__all__'
+
 class SpecimenViewSet(BulkModelViewSet):
     """
     API endpoint that allows Specimen to be viewed or edited.

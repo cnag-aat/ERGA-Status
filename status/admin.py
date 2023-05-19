@@ -92,6 +92,16 @@ class AuthorAdmin(admin.ModelAdmin):
         'role'
     )
 
+class StatementMultipleModelChoiceField(forms.ModelMultipleChoiceField):
+    def label_from_instance(self, obj):
+        return "%s" % (obj.name)
+    
+class SpecimenUpdateActionForm(ActionForm):
+    nagoya_statement = StatementMultipleModelChoiceField(
+        queryset=Statement.objects.all().order_by('name'),
+        required=False
+    )
+
 class UpdateActionForm(ActionForm):
     sample_handling_team = forms.ModelMultipleChoiceField(
         queryset=SampleHandlingTeam.objects.all().order_by('name'),
@@ -202,12 +212,39 @@ class GenomeTeamAdmin(admin.ModelAdmin):
         })
         return super().render_change_form(request, context, add, change, form_url, obj)
 
+def update_specimens(modeladmin, request, queryset):
+    if 'nagoya_statement' in request.POST:
+        nagoya_statement = request.POST['nagoya_statement']
+        queryset.update(nagoya_statement=nagoya_statement)
+    messages.add_message(request, messages.INFO, 'Successfully updated specimen(s).')
+
+@register(Specimen)
+class SpecimenAdmin(admin.ModelAdmin):
+    save_as = True
+    list_filter = admin.ModelAdmin.list_filter + ('species__tags',)
+    action_form = SpecimenUpdateActionForm
+    actions = [update_specimens]
+    def get_actions(self, request):
+      actions = super(SpecimenAdmin, self).get_actions(request)
+      try:
+          del actions['delete_selected']
+      except KeyError:
+        pass
+      return actions
+    def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
+        context.update({
+            'show_delete': False, # Here
+            # 'show_save': False,
+            # 'show_save_and_continue': False,
+        })
+        return super().render_change_form(request, context, add, change, form_url, obj)
+
 
 
 admin.site.register(CommonNames)
 admin.site.register(Synonyms)
 admin.site.register(AssemblyTeam)
-
+admin.site.register(Statement)
 admin.site.register(AssemblyProject)
 admin.site.register(Assembly)
 admin.site.register(CollectionTeam)
@@ -231,7 +268,7 @@ admin.site.register(CommunityAnnotation)
 admin.site.register(Annotation)
 admin.site.register(BUSCOdb)
 admin.site.register(BUSCOversion)
-admin.site.register(Specimen)
+# admin.site.register(Specimen)
 @register(Sample)
 class SampleAdmin(admin.ModelAdmin):
     list_display = (
