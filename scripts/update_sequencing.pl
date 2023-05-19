@@ -78,8 +78,9 @@ usage: update_sequencing.pl [-h] [-c <ergastream.cnf>] -f <sequencing_update.tsv
   sequencing_update.tsv has the following columns:
   tolid_prefix  scientific_name genomic_seq_status  hic_seq_status  rna_seq_status  note  recipe  ont_yield hifi_yield  hic_yield short_yield rnaseq_pe
 
-  recipe should be either ONT60 or HIFI25
-  status choices:   'Waiting','Received','Extracted','Sequencing','TopUp','External','Done','Submitted','Issue'
+  either tolid_prefix OR scientific_name can be given
+  recipe choices: 'ONT60','HIFI25'
+  status choices: 'Waiting','Received','Extracted','Sequencing','TopUp','External','Done','Submitted','Issue'
 END_HELP
 
 if ($printhelp or !$sequencing_tsv_file){
