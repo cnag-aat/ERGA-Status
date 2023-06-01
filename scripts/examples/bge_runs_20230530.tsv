@@ -1,0 +1,23 @@
+center	scientific_name	tolid_prefix	recipe	read_type	status	notes	sample_tube_or_well_id	instrument_model	yield	forward_file_name	forward_file_md5	reverse_file_name	reverse_file_md5	experiment_attributes	run_attributes	nominal_length	nominal_sdev	library_construction_protocol
+CNAG	Rupicapra rupicapra		ONT60	HiC			FS42595155	Illumina NovaSeq 6000	12000000	HFMNYDSX5_1_119UDI-idt-UMI_1.fastq.gz		HFMNYDSX5_1_119UDI-idt-UMI_2.fastq.gz							
+CNAG	Rupicapra rupicapra		ONT60	HiC			FS42595155	Illumina NovaSeq 6000	12000000	HFMNYDSX5_2_119UDI-idt-UMI_1.fastq.gz		HFMNYDSX5_2_119UDI-idt-UMI_2.fastq.gz							
+CNAG	Rupicapra rupicapra		ONT60	HiC			FS42595155	Illumina NovaSeq 6000	12000000	HFMNYDSX5_3_119UDI-idt-UMI_1.fastq.gz		HFMNYDSX5_3_119UDI-idt-UMI_2.fastq.gz							
+CNAG	Rupicapra rupicapra		ONT60	HiC			FS42595155	Illumina NovaSeq 6000	12000000	HFMNYDSX5_4_119UDI-idt-UMI_1.fastq.gz		HFMNYDSX5_4_119UDI-idt-UMI_2.fastq.gz							
+CNAG	Rupicapra rupicapra		ONT60	HiC			FS42595155	Illumina NovaSeq 6000	249000000	HFMWKDSX5_1_119UDI-idt-UMI_1.fastq.gz		HFMWKDSX5_1_119UDI-idt-UMI_2.fastq.gz							
+CNAG	Rupicapra rupicapra		ONT60	HiC			FS42595155	Illumina NovaSeq 6000	254000000	HFMWKDSX5_2_119UDI-idt-UMI_1.fastq.gz		HFMWKDSX5_2_119UDI-idt-UMI_2.fastq.gz							
+CNAG	Rupicapra rupicapra		ONT60	HiC			FS42595155	Illumina NovaSeq 6000	251000000	HFMWKDSX5_3_119UDI-idt-UMI_1.fastq.gz		HFMWKDSX5_3_119UDI-idt-UMI_2.fastq.gz							
+CNAG	Rupicapra rupicapra		ONT60	HiC			FS42595155	Illumina NovaSeq 6000	246000000	HFMWKDSX5_4_119UDI-idt-UMI_1.fastq.gz		HFMWKDSX5_4_119UDI-idt-UMI_2.fastq.gz							
+CNAG	Rupicapra rupicapra		ONT60	HiC			FS42595155	Illumina NovaSeq 6000	59158000000	HFNH3DSX5_1_119UDI-idt-UMI_1.fastq.gz		HFNH3DSX5_1_119UDI-idt-UMI_2.fastq.gz							
+CNAG	Rupicapra rupicapra		ONT60	HiC			FS42595155	Illumina NovaSeq 6000	58975000000	HFNH3DSX5_2_119UDI-idt-UMI_1.fastq.gz		HFNH3DSX5_2_119UDI-idt-UMI_2.fastq.gz							
+CNAG	Rupicapra rupicapra		ONT60	HiC			FS42595155	Illumina NovaSeq 6000	57920000000	HFNH3DSX5_3_119UDI-idt-UMI_1.fastq.gz		HFNH3DSX5_3_119UDI-idt-UMI_2.fastq.gz							
+CNAG	Rupicapra rupicapra		ONT60	HiC			FS42595155	Illumina NovaSeq 6000	57791000000	HFNH3DSX5_4_119UDI-idt-UMI_1.fastq.gz		HFNH3DSX5_4_119UDI-idt-UMI_2.fastq.gz							
+CNAG	Apodemus agrarius		ONT60	HiC			FS42595134	Illumina NovaSeq 6000	484000000	HFMWKDSX5_1_186UDI-idt-UMI_1.fastq.gz		HFMWKDSX5_1_186UDI-idt-UMI_2.fastq.gz							
+CNAG	Apodemus agrarius		ONT60	HiC			FS42595134	Illumina NovaSeq 6000	464000000	HFMWKDSX5_2_186UDI-idt-UMI_1.fastq.gz		HFMWKDSX5_2_186UDI-idt-UMI_2.fastq.gz							
+CNAG	Apodemus agrarius		ONT60	HiC			FS42595134	Illumina NovaSeq 6000	479000000	HFMWKDSX5_3_186UDI-idt-UMI_1.fastq.gz		HFMWKDSX5_3_186UDI-idt-UMI_2.fastq.gz							
+CNAG	Apodemus agrarius		ONT60	HiC			FS42595134	Illumina NovaSeq 6000	462000000	HFMWKDSX5_4_186UDI-idt-UMI_1.fastq.gz		HFMWKDSX5_4_186UDI-idt-UMI_2.fastq.gz							
+CNAG	Apodemus agrarius		ONT60	HiC			FS42595134	Illumina NovaSeq 6000	40462000000	HFNH3DSX5_1_186UDI-idt-UMI_1.fastq.gz		HFNH3DSX5_1_186UDI-idt-UMI_2.fastq.gz							
+CNAG	Apodemus agrarius		ONT60	HiC			FS42595134	Illumina NovaSeq 6000	41264000000	HFNH3DSX5_2_186UDI-idt-UMI_1.fastq.gz		HFNH3DSX5_2_186UDI-idt-UMI_2.fastq.gz							
+CNAG	Apodemus agrarius		ONT60	HiC			FS42595134	Illumina NovaSeq 6000	41749000000	HFNH3DSX5_3_186UDI-idt-UMI_1.fastq.gz		HFNH3DSX5_3_186UDI-idt-UMI_2.fastq.gz							
+CNAG	Apodemus agrarius		ONT60	HiC			FS42595134	Illumina NovaSeq 6000	41493000000	HFNH3DSX5_4_186UDI-idt-UMI_1.fastq.gz		HFNH3DSX5_4_186UDI-idt-UMI_2.fastq.gz							
+CNAG	Rupicapra rupicapra		ONT60	HiC	Done	Samples from Slovenia; Rupicapra rupicapra (3.2Gb - genome size); WGS_ONT_60x_kit 14; HiC_50x; RNAseq Illumina 50MR - mixed tissue (from 3-4 organs), 1 library,; EV, 02.03.23
+CNAG	Apodemus agrarius		ONT60	HiC	Done	Samples from Slovenia; Apodemus agrarius (Genome size: 3.1Gb); WGS_ONT_60x_kit 14; HiC_50x; RNAseq Illumina 50MR - we should sequence mixed tissue (from 3-4 organs), 1 library,; EV, 02.03.23
