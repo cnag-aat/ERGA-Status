@@ -34,36 +34,6 @@ my %SEQUENCING_STATUS_CHOICES = (
   'Issue'=>1
 );
 
-##### Sequencing Table Model
-    # species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
-    # genomic_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
-    # hic_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
-    # rna_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
-    # note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
-    # rnaseq_numlibs_target = models.IntegerField(null=True, blank=True, default=3, verbose_name="RNAseq libs target")
-    # recipe = models.ForeignKey(Recipe, on_delete=models.SET_NULL, to_field='name', default='HiFi25', verbose_name="Recipe", null=True)
-
-##### Reads Table Model
-    # project = models.ForeignKey(Sequencing, on_delete=models.CASCADE, verbose_name="Sequencing project")
-    # ont_yield = models.BigIntegerField(null=True, blank=True, verbose_name="ONT yield")
-    # hifi_yield = models.BigIntegerField(null=True, blank=True, verbose_name="HiFi yield")
-    # hic_yield = models.BigIntegerField(null=True, blank=True, verbose_name="Hi-C yield")
-    # short_yield = models.BigIntegerField(null=True, blank=True, verbose_name="Short read yield")
-    # rnaseq_numlibs = models.IntegerField(null=True, blank=True, verbose_name="RNAseq libs")
-    # ont_ena = models.CharField(max_length=12, null=True, blank=True, verbose_name="ONT Accession")
-    # hifi_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="HiFi Accession")
-    # hic_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="Hi-C Accession")
-    # short_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="Short read Accession")
-    # rnaseq_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="RNAseq Accession")
-##### Run Table Model
-    # project = models.ForeignKey(Sequencing, on_delete=models.CASCADE, verbose_name="Sequencing project")
-    # read_type = models.CharField(max_length=15, help_text='Read type', choices=READ_TYPES, default=READ_TYPES[0][0])
-    # seq_yield = models.BigIntegerField(null=True, blank=True, verbose_name="yield")
-    # md5sum = models.CharField(max_length=32, help_text='Read 1 md5sum')
-
-#### EXAMPLE TABLES ####
-
-########################
 
 GetOptions(
   'c|config:s' => \$conf,
