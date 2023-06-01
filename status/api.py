@@ -174,6 +174,14 @@ class ReadsViewSet(BulkModelViewSet):
     serializer_class = ReadsSerializer
     filter_fields = '__all__'
 
+class RunViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows Reads to be viewed or edited.
+    """
+    queryset = Run.objects.all()
+    serializer_class = RunSerializer
+    filter_fields = '__all__'
+
 class UserViewSet(BulkModelViewSet):
     """
     API endpoint that allows Users to be viewed or edited.

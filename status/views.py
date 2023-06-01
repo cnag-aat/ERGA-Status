@@ -11,6 +11,7 @@ from django_tables2 import RequestConfig
 from django_addanother.views import CreatePopupMixin
 
 from status.tables import *
+from django.db.models import Sum
 from django_tables2.export.views import ExportMixin
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
@@ -23,6 +24,7 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count
 from django.db.models import Q
+from django.db.models import F, Value
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 import subprocess
@@ -310,6 +312,16 @@ class ReadsListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterVie
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
+    def get_queryset(self):
+        queryset = super(ReadsListView, self).get_queryset()
+        queryset = queryset.annotate(ont_yield=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='ONT')),
+                                     hifi_yield=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='HiFi')),
+                                     short_yield=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='Illumina')),
+                                     hic_yield=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='HiC')),
+                                     rnaseq_pe=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='RNA')),
+                                     )
+        return queryset
+    
 
 class CurationListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"

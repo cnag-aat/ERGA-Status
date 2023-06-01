@@ -268,6 +268,7 @@ admin.site.register(CommunityAnnotation)
 admin.site.register(Annotation)
 admin.site.register(BUSCOdb)
 admin.site.register(BUSCOversion)
+admin.site.register(Run)
 # admin.site.register(Specimen)
 @register(Sample)
 class SampleAdmin(admin.ModelAdmin):

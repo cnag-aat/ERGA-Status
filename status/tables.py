@@ -20,11 +20,12 @@ class OverviewTable(tables.Table):
     #         }
     #     }
     # )
-    genomic_sample_status = tables.Column(accessor='samplecollection.genomic_sample_status',verbose_name='Genomic Sample',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
+    genomic_sample_status = tables.Column(accessor='samplecollection.genomic_sample_status',verbose_name='Samples',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     # hic_sample_status = tables.Column(accessor='samplecollection.hic_sample_status',verbose_name='HiC Sample',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
-    rna_sample_status = tables.Column(accessor='samplecollection.rna_sample_status',verbose_name='RNA Sample',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
-    genomic_seq_status = tables.Column(accessor='sequencing.genomic_seq_status',verbose_name='gDNA-Seq',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
-    hic_seq_status = tables.Column(accessor='sequencing.hic_seq_status',verbose_name='HiC-Seq',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
+    # rna_sample_status = tables.Column(accessor='samplecollection.rna_sample_status',verbose_name='RNA Sample',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
+    long_seq_status = tables.Column(accessor='sequencing.long_seq_status',verbose_name='Long',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
+    short_seq_status = tables.Column(accessor='sequencing.short_seq_status',verbose_name='Short',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
+    hic_seq_status = tables.Column(accessor='sequencing.hic_seq_status',verbose_name='HiC',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
     rna_seq_status = tables.Column(accessor='sequencing.rna_seq_status',verbose_name='RNA-Seq',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
     assembly_status = tables.Column(accessor='assemblyproject.status',verbose_name='Assembly',attrs={"td": {"class": "analysis_col"},"th": {"class": "analysis_col"}})
     # curation_status = tables.Column(accessor='curation.status',verbose_name='Curation',attrs={"td": {"class": "analysis_col"},"th": {"class": "analysis_col"}})
@@ -73,20 +74,27 @@ class OverviewTable(tables.Table):
     def value_hic_sample_status(self, value):
         return value
 
-    def render_rna_sample_status(self, value, record):
-        html = '<a href="/erga-stream-dev/collection/?species='+str(record.pk)+'"><span class="status '+escape(value.replace(" ",''))+'">'+escape(value)+'</span></a>'
-        return mark_safe(html)
+    # def render_rna_sample_status(self, value, record):
+    #     html = '<a href="/erga-stream-dev/collection/?species='+str(record.pk)+'"><span class="status '+escape(value.replace(" ",''))+'">'+escape(value)+'</span></a>'
+    #     return mark_safe(html)
 
-    def value_rna_sample_status(self, value):
-        return value
+    # def value_rna_sample_status(self, value):
+    #     return value
 
-    def render_genomic_seq_status(self, value, record):
+    def render_long_seq_status(self, value, record):
         html = '<a href="/erga-stream-dev/sequencing/?species='+str(record.pk)+'"><span class="status '+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
-    def value_genomic_seq_status(self, value):
+    def value_long_seq_status(self, value):
         return value
 
+    def render_short_seq_status(self, value, record):
+        html = '<a href="/erga-stream-dev/sequencing/?species='+str(record.pk)+'"><span class="status '+escape(value)+'">'+escape(value)+'</span></a>'
+        return mark_safe(html)
+
+    def value_short_seq_status(self, value):
+        return value
+    
     def render_hic_seq_status(self, value, record):
         html = '<a href="/erga-stream-dev/sequencing/?species='+str(record.pk)+'"><span class="status '+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
@@ -139,7 +147,7 @@ class OverviewTable(tables.Table):
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
         # fields = ('tolid_prefix', 'scientific_name','genomic_sample_status','hic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','curation_status','annotation_status','submission_status')
-        fields = ('scientific_name','tolid_prefix','log','genomic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','annotation_status','community_annotation_status')
+        fields = ('scientific_name','tolid_prefix','log','genomic_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','annotation_status','community_annotation_status')
 
 class TargetSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']
@@ -258,6 +266,7 @@ class ReadsTable(tables.Table):
     short_yield = tables.Column(verbose_name="Short read yield",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     short_ena = tables.Column(verbose_name="ENA",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     hic_yield = tables.Column(verbose_name="Hi-C yield")
+    #sum_hic = tables.Column(verbose_name="HiC Sum")
     hic_ena = tables.Column(verbose_name="ENA")
     rnaseq_pe = tables.Column(verbose_name="RNA-seq yield",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     rnaseq_ena = tables.Column(verbose_name="ENA",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
@@ -312,6 +321,31 @@ class ReadsTable(tables.Table):
 
     def value_hifi_yield(self, value):
         return value
+    
+    # def render_sum_hic(self, value, record):
+    #     rs = Sequencing.objects.get(pk=record.project.pk)
+    #     threshmet = 1.0
+    #     css_class = '<i class="fas fa-ban fa-lg"></i>'
+    #     if (rs.recipe.hic_target >  0):
+    #         threshmet = int(value)/(rs.recipe.hic_target * rs.species.genome_size)
+    #         css_class = '<i class="fas fa-battery-empty fa-lg empty-color"></i>'
+    #         if(threshmet > 0.25):
+    #             css_class = '<i class="fas fa-battery-quarter fa-lg quarter-color"></i>'
+    #         if(threshmet > 0.5):
+    #             css_class = '<i class="fas fa-battery-half fa-lg half-color"></i>'
+    #         if(threshmet > 0.75):
+    #             css_class = '<i class="fas fa-battery-three-quarters fa-lg threequarters-color"></i>'
+    #         if(threshmet >= 1.0):
+    #             css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
+
+    #     cov = int(value)/rs.species.genome_size
+    #     if (value == 0 and rs.recipe.hic_target == 0):
+    #         return ''
+    #     else:
+    #         return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + " Gb (" + "{:.1f}".format(cov) + "x)</span>")
+
+    # def value_hsum_hic(self, value):
+    #     return value
 
     def render_hic_yield(self, value, record):
         rs = Sequencing.objects.get(pk=record.project.pk)
@@ -490,6 +524,7 @@ class SpecimenTable(tables.Table):
         model = Specimen
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
+        exclude = ['id']
 
 class SampleTable(tables.Table):
     # biosampleAccession = tables.TemplateColumn( '<a href="https://www.ebi.ac.uk/biosamples/samples/{{record.biosampleAccession}}"{{record.biosampleAccession}}</a>',empty_values=(), verbose_name='BioSample')
@@ -511,6 +546,7 @@ class SampleTable(tables.Table):
         model = Sample
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
+        exclude = ['id','barcode']
 
 class GenomeTeamsTable(tables.Table):
     export_formats = ['csv', 'tsv','xls']

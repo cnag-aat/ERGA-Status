@@ -1,4 +1,5 @@
 #!/usr/bin/env perl
+use lib "/home/groups/assembly/talioto/myperlmods/";
 use REST::Client;
 use MIME::Base64;
 use JSON::PP;
@@ -60,7 +61,7 @@ usage: $0
 END_HELP
 my $all_species_query = "$erga_status_url/species/";
 $client->GET($all_species_query);
-print $client->responseContent() and exit;
+#print $client->responseContent() and exit;
 my $response = decode_json $client->responseContent();
 my %taxids = ();
 if ($response->{count} > 0){
@@ -86,7 +87,7 @@ sub getSamples {
   my $sample_array = $response1->{data};
   foreach my $record (@$sample_array){
     my $copo_id = $record->{copo_id};
-    #print STDERR "COPO ID: $copo_id\n";
+    print STDERR "COPO ID: $copo_id\n";
     $copoclient->GET("$copo_url/sample/copo_id/$copo_id/");
     my $response2 = decode_json $copoclient->responseContent();
     #print STDERR "$response2\n";
@@ -99,14 +100,17 @@ sub getSamples {
         # need to get species using tolid_prefix or TAXON_ID
         # try to match up with collection or collection_team and set status
         #print STDERR "$s->{status}\n";
-        next if $s->{status} ne 'accepted';
-        next if $s->{PURPOSE_OF_SPECIMEN} =~/BARCODING/;
         my $tolid = $s->{public_name};
         my $taxid = $s->{TAXON_ID};
+        print Data::Dumper->Dump([$response2]) if exists $taxids{$taxid};
+        #exit if $taxid == 1457099;
+        next if !($s->{status} eq 'accepted' || $s->{status} eq 'pending');
+        next if $s->{PURPOSE_OF_SPECIMEN} =~/BARCODING/;
         next if !exists $taxids{$taxid};
         my $tolid_prefix = $tolid;
         $tolid_prefix =~ s/\d+$//;
         my $sample_accession = $s->{biosampleAccession};
+        my $copo_id = $s->{copo_id};
         my $species_pk = 0;
         # CHECK for species in tracker. Skip if species not there?
         my $species_query = "$erga_status_url/species/?taxon_id=$taxid";
@@ -179,6 +183,7 @@ sub getSamples {
           my $specimen_query = "$erga_status_url/specimen/?tolid=$tid";
           #print "$query\n";
           $client->GET($specimen_query);
+          print $client->responseContent(),"\n";
           my $specimen_response = decode_json $client->responseContent();
           if ($specimen_response->{count} > 0) {
             #PATCH
@@ -208,15 +213,18 @@ sub getSamples {
           $record->{collector_sample_id} = $s->{COLLECTOR_SAMPLE_ID};
           $record->{copo_date} = $s->{time_updated};
           $record->{purpose_of_specimen} = $s->{PURPOSE_OF_SPECIMEN};
+          $record->{tube_or_well_id} = $s->{TUBE_OR_WELL_ID};
           $record->{specimen} = $specimen_url;
 
 
           #wrap it all up in JSON string
           my $insert = encode_json $record;
           # CHECK if sample exists in tracker. If so, we will PATCH. If not, POST.
-          my $query = "$erga_status_url/sample/?biosampleAccession=$sample_accession ";
-          #print "$query\n";
+          #my $query = "$erga_status_url/sample/?biosampleAccession=$sample_accession ";
+          my $query = "$erga_status_url/sample/?copo_id=$copo_id ";
+          print "$query\n";
           $client->GET($query);
+          print STDERR $client->responseContent(),"\n";
           my $response3 = decode_json $client->responseContent();
           if ($response3->{count} > 0) {
             #PATCH
@@ -233,10 +241,18 @@ sub getSamples {
           my $sample_collection_record = {};
           $sample_collection_record->{species} = $species_id;
           if ($s->{PURPOSE_OF_SPECIMEN} =~/REFERENCE_GENOME/){
-            $sample_collection_record->{genomic_sample_status} = 'Submitted';
+            if ($s->{status} eq 'pending'){
+              $sample_collection_record->{genomic_sample_status} = 'Pending';
+            }else{
+              $sample_collection_record->{genomic_sample_status} = 'Submitted';
+            }
           }
           if ($s->{PURPOSE_OF_SPECIMEN} =~/RNA_SEQUENCING/){
-            $sample_collection_record->{rna_sample_status} = 'Submitted';
+            if ($s->{status} eq 'pending'){
+              $sample_collection_record->{rna_sample_status} = 'Pending';
+            }else{
+              $sample_collection_record->{rna_sample_status} = 'Submitted';
+            }
           }
           my $status_insert = encode_json $sample_collection_record;
           my $sample_collection_query = "$erga_status_url/sample_collection/?species=".$species_pk;

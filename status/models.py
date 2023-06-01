@@ -113,6 +113,14 @@ ROLE_CHOICES = (
     ('other', 'Other'),
 )
 
+READ_TYPES = (
+    ('ONT', 'ONT'),
+    ('HiFi', 'HiFi'),
+    ('Illumina', 'Illumina'),
+    ('HiC', 'HiC'),
+    ('RNA', 'RNA')
+)
+
 class Role(models.Model):
     description = models.CharField(max_length=100)
     class Meta:
@@ -260,7 +268,6 @@ class TargetSpecies(models.Model):
     def __str__(self):
         return self.scientific_name or str(self.listed_species)
         #return self.scientific_name +" (" + self.tolid_prefix + ")"
-
 
 class CommonNames(models.Model):
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="Genus/species")
@@ -591,9 +598,6 @@ class GenomeTeam(models.Model):
     def __str__(self):
         return self.species.scientific_name or str(self.id)
 
-
-
-
 class SampleCollection(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species",unique=True)
     #team = models.ForeignKey(CollectionTeam, on_delete=models.SET_NULL, null=True, verbose_name="collection team", blank=True)
@@ -687,8 +691,7 @@ class Sample(models.Model):
     
     def __str__(self):
         return self.biosampleAccession or self.collector_sample_id or str(self.id)
-
-    
+ 
 class Recipe(models.Model):
     name = models.CharField(max_length=50, unique=True, verbose_name="Recipe name")
     ont_target = models.BigIntegerField(null=True, blank=True, verbose_name="ONT target")
@@ -709,7 +712,8 @@ class Recipe(models.Model):
 class Sequencing(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     #team = models.ForeignKey(SequencingTeam, on_delete=models.SET_NULL, null=True, verbose_name="sequencing team")
-    genomic_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
+    long_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
+    short_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
     hic_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
     rna_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
@@ -720,22 +724,30 @@ class Sequencing(models.Model):
     # rnaseq_numlibs_target = models.IntegerField(null=True, blank=True, default=3, verbose_name="RNAseq libs target")
     recipe = models.ForeignKey(Recipe, on_delete=models.SET_NULL, to_field='name', default='HiFi25', verbose_name="Recipe", null=True)
     
-    __original_genomic_seq_status = None
+    __original_long_seq_status = None
+    __original_short_seq_status = None
     __original_hic_seq_status = None
     __original_rna_seq_status = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.__original_genomic_seq_status = self.genomic_seq_status
+        self.__original_long_seq_status = self.long_seq_status
+        self.__original_short_seq_status = self.short_seq_status
         self.__original_hic_seq_status = self.hic_seq_status
         self.__original_rna_seq_status = self.rna_seq_status
 
     def save(self, *args, **kwargs):
-        if (self.__original_genomic_seq_status != self.genomic_seq_status):
+        if (self.__original_long_seq_status != self.long_seq_status):
             stat_g_records, created = StatusUpdate.objects.get_or_create(
                 species=self.species,
-                process='genomic_seq',
-                status=self.genomic_seq_status
+                process='long_seq',
+                status=self.long_seq_status
+            )
+        if (self.__original_short_seq_status != self.short_seq_status):
+            stat_g_records, created = StatusUpdate.objects.get_or_create(
+                species=self.species,
+                process='short_seq',
+                status=self.short_seq_status
             )
         if (self.__original_hic_seq_status != self.hic_seq_status):
             stat_h_records, created = StatusUpdate.objects.get_or_create(
@@ -751,14 +763,27 @@ class Sequencing(models.Model):
             )
         if settings.NOTIFICATIONS == True:
 
-            if ((self.__original_genomic_seq_status != 'Done' and self.__original_genomic_seq_status != 'Submitted') and (self.genomic_seq_status == 'Done' or self.genomic_seq_status == 'Submitted')):
+            if ((self.__original_long_seq_status != 'Done' and self.__original_long_seq_status != 'Submitted') and (self.long_seq_status == 'Done' or self.long_seq_status == 'Submitted')):
+                myurl = settings.DEFAULT_DOMAIN + 'sequencing/?species='+str(self.species.pk)
+                gteam = GenomeTeam.objects.get(species=self.species)
+                assembly_team = AssemblyTeam.objects.get(genometeam=gteam)
+                if assembly_team.lead:
+                    send_mail(
+                        '[ERGA] Long read genomic sequencing for '+ self.species.scientific_name +'is done',
+                        'Dear '+ assembly_team.lead.first_name+",\n\nLong-read genomic sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
+                        'denovo@cnag.crg.eu',
+                        [assembly_team.lead.email],
+                        fail_silently=True,
+                    )
+
+            if ((self.__original_short_seq_status != 'Done' and self.__original_short_seq_status != 'Submitted') and (self.short_seq_status == 'Done' or self.short_seq_status == 'Submitted')):
                 myurl = settings.DEFAULT_DOMAIN + 'sequencing/?species='+str(self.species.pk)
                 gteam = GenomeTeam.objects.get(species=self.species)
                 assembly_team = AssemblyTeam.objects.get(genometeam=gteam)
                 if assembly_team.lead:
                     send_mail(
                         '[ERGA] Genomic sequencing for '+ self.species.scientific_name +'is done',
-                        'Dear '+ assembly_team.lead.first_name+",\n\nGenomic sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
+                        'Dear '+ assembly_team.lead.first_name+",\n\nShort-read genomic sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
                         'denovo@cnag.crg.eu',
                         [assembly_team.lead.email],
                         fail_silently=True,
@@ -791,7 +816,7 @@ class Sequencing(models.Model):
                             fail_silently=True,
                         )
 
-        if self.__original_genomic_seq_status == 'Waiting' and self.genomic_seq_status != 'Waiting':
+        if self.__original_long_seq_status == 'Waiting' and self.long_seq_status != 'Waiting':
             gteam = GenomeTeam.objects.get(species=self.species)
             team = SequencingTeam.objects.get(genometeam=gteam)
             for m in team.members.all():
@@ -800,11 +825,27 @@ class Sequencing(models.Model):
                     author=m,
                     role='sequencing'
                 )
-        if (self.__original_genomic_seq_status != self.genomic_seq_status):
+        if (self.__original_long_seq_status != self.long_seq_status):
             stat_gseq_records, created = StatusUpdate.objects.get_or_create(
                 species=self.species,
-                process='genomic_seq',
-                status=self.genomic_seq_status
+                process='long_seq',
+                status=self.long_seq_status
+            )
+
+        if self.__original_short_seq_status == 'Waiting' and self.short_seq_status != 'Waiting':
+            gteam = GenomeTeam.objects.get(species=self.species)
+            team = SequencingTeam.objects.get(genometeam=gteam)
+            for m in team.members.all():
+                species_authors, created = Author.objects.get_or_create(
+                    species=self.species,
+                    author=m,
+                    role='sequencing'
+                )
+        if (self.__original_short_seq_status != self.short_seq_status):
+            stat_gseq_records, created = StatusUpdate.objects.get_or_create(
+                species=self.species,
+                process='short_seq',
+                status=self.short_seq_status
             )
         if (self.__original_rna_seq_status != self.rna_seq_status):
             stat_rseq_records, created = StatusUpdate.objects.get_or_create(
@@ -831,11 +872,11 @@ class Sequencing(models.Model):
 
 class Reads(models.Model):
     project = models.ForeignKey(Sequencing, on_delete=models.CASCADE, verbose_name="Sequencing project")
-    ont_yield = models.BigIntegerField(null=True, blank=True, verbose_name="ONT yield")
-    hifi_yield = models.BigIntegerField(null=True, blank=True, verbose_name="HiFi yield")
-    hic_yield = models.BigIntegerField(null=True, blank=True, verbose_name="Hi-C yield")
-    short_yield = models.BigIntegerField(null=True, blank=True, verbose_name="Short read yield")
-    rnaseq_pe = models.BigIntegerField(null=True, blank=True, verbose_name="RNA-seq yield (PE)")
+    #ont_yield = models.BigIntegerField(null=True, blank=True, verbose_name="ONT yield")
+    #hifi_yield = models.BigIntegerField(null=True, blank=True, verbose_name="HiFi yield")
+    #hic_yield = models.BigIntegerField(null=True, blank=True, verbose_name="Hi-C yield")
+    #short_yield = models.BigIntegerField(null=True, blank=True, verbose_name="Short read yield")
+    #rnaseq_pe = models.BigIntegerField(null=True, blank=True, verbose_name="RNA-seq yield (PE)")
     ont_ena = models.CharField(max_length=12, null=True, blank=True, verbose_name="ONT Accession")
     hifi_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="HiFi Accession")
     hic_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="Hi-C Accession")
@@ -848,6 +889,25 @@ class Reads(models.Model):
     def __str__(self):
         return self.project.species.scientific_name or str(self.id)
 
+#center scientific_name tolid_prefix recipe read_type  status notes sample_tube_or_well_id instrument_model yield forward_file_name forward_file_md5 reverse_file_name reverse_file_md5 native native_md5sum experiment_attributes run_attributes nominal_length nominal_sdev library_construction_protocol	      
+class Run(models.Model):
+    project = models.ForeignKey(Sequencing, on_delete=models.CASCADE, verbose_name="Sequencing project")
+    read_type = models.CharField(max_length=15, help_text='Read type', choices=READ_TYPES, default=READ_TYPES[0][0])
+    seq_yield = models.BigIntegerField(null=True, blank=True, verbose_name="yield")
+    forward_filename = models.CharField(max_length=200, default='', help_text='Forward read filename')
+    forward_md5sum = models.CharField(max_length=32, null=True, blank=True, help_text='Forward read md5sum')
+    reverse_filename = models.CharField(max_length=200, null=True, blank=True, help_text='Forward read filename')
+    reverse_md5sum = models.CharField(max_length=32, null=True, blank=True, help_text='Forward read md5sum')
+    native_filename = models.CharField(max_length=200, null=True, blank=True, help_text='Forward read filename')
+    native_md5sum = models.CharField(max_length=32, null=True, blank=True, help_text='Forward read md5sum')
+    tube_or_well_id = models.CharField(max_length=32, null=True, blank=True, help_text='Tube or Well ID')
+    reads = models.ForeignKey(Reads, related_name="run_set", related_query_name="run_set", on_delete=models.CASCADE, verbose_name="Reads aggregate view")
+
+    class Meta:
+        verbose_name_plural = 'runs'
+
+    def __str__(self):
+        return self.project.species.scientific_name + " " + self.read_type + " " + self.forward_filename or str(self.id)
 
 class Curation(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")

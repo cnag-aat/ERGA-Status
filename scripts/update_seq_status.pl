@@ -62,7 +62,7 @@ END_HELP
 my $sample_accession = shift @ARGV;
 
 #### Query the ENA for the experiment
-my $ena_query = "$ena_url/?result=read_experiment&query=sample_accession%3D%22$sample_accession%22&fields=instrument_platform%2Caccession%2Ccenter_name%2Ctax_id%2Ctissue_type%2Cstudy_title%2Cstudy_accession%2Csequencing_method%2Csample_title%2Cscientific_name%2Cproject_name%2Clibrary_strategy&format=json";
+my $ena_query = "$ena_url/?result=read_experiment&query=sample_accession%3D%22$sample_accession%22&fields=study_accession%2Cexperiment_accession%2Caccession%2Cinstrument_platform%2Ccenter_name%2Ctax_id%2Ctissue_type%2Cstudy_title%2Csequencing_method%2Csample_title%2Cscientific_name%2Clibrary_strategy&format=json";
 # curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'result=read_experiment&query=sample_accession%3D%22SAMEA12832259%22&fields=accession%2Ccenter_name%2Ctax_id%2Ctissue_type%2Cstudy_title%2Cstudy_accession%2Csequencing_method%2Csample_title%2Cscientific_name%2Cproject_name%2Clibrary_strategy&format=json "https://www.ebi.ac.uk/ena/portal/api/search"
 $enaclient->GET($ena_query);
 #print STDERR "ENA Response:", $enaclient->responseContent(),"\n";
