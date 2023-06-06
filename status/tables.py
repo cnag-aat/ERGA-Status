@@ -23,9 +23,9 @@ class OverviewTable(tables.Table):
     genomic_sample_status = tables.Column(accessor='samplecollection.genomic_sample_status',verbose_name='Samples',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     # hic_sample_status = tables.Column(accessor='samplecollection.hic_sample_status',verbose_name='HiC Sample',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     # rna_sample_status = tables.Column(accessor='samplecollection.rna_sample_status',verbose_name='RNA Sample',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
-    long_seq_status = tables.Column(accessor='sequencing.long_seq_status',verbose_name='Long',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
-    short_seq_status = tables.Column(accessor='sequencing.short_seq_status',verbose_name='Short',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
-    hic_seq_status = tables.Column(accessor='sequencing.hic_seq_status',verbose_name='HiC',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
+    long_seq_status = tables.Column(accessor='sequencing.long_seq_status',verbose_name='Long-read',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
+    short_seq_status = tables.Column(accessor='sequencing.short_seq_status',verbose_name='Short-read',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
+    hic_seq_status = tables.Column(accessor='sequencing.hic_seq_status',verbose_name='Hi-C',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
     rna_seq_status = tables.Column(accessor='sequencing.rna_seq_status',verbose_name='RNA-Seq',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
     assembly_status = tables.Column(accessor='assemblyproject.status',verbose_name='Assembly',attrs={"td": {"class": "analysis_col"},"th": {"class": "analysis_col"}})
     # curation_status = tables.Column(accessor='curation.status',verbose_name='Curation',attrs={"td": {"class": "analysis_col"},"th": {"class": "analysis_col"}})
@@ -108,6 +108,7 @@ class OverviewTable(tables.Table):
 
     def value_rna_seq_status(self, value):
         return value
+    
     def render_assembly_status(self, value, record):
         html = '<a href="/erga-stream-dev/projects/?species='+str(record.pk)+'"><span class="status '+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
@@ -147,7 +148,7 @@ class OverviewTable(tables.Table):
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
         # fields = ('tolid_prefix', 'scientific_name','genomic_sample_status','hic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','curation_status','annotation_status','submission_status')
-        fields = ('scientific_name','tolid_prefix','log','genomic_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','annotation_status','community_annotation_status')
+        fields = ('scientific_name','tolid_prefix','genomic_sample_status','long_seq_status','short_seq_status','hic_seq_status','rna_seq_status','assembly_status','annotation_status','community_annotation_status','log')
 
 class TargetSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']
