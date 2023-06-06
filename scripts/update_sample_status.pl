@@ -73,14 +73,19 @@ if ($response->{count} > 0){
 print scalar %taxids," found\n";
 foreach my $k (sort keys %taxids){print STDERR "$k\n";} 
 my $sample_data;
-print STDERR "Ingesting data from COPO... \n";
-die "No sample data!\n" unless $sample_data=(getSamples($sample_data));
+print STDERR "Ingesting ERGA data from COPO... \n";
+die "No sample data!\n" unless $sample_data=(getSamples($sample_data, 'sample/erga/'));
+print STDERR "Done.\n";
+
+print STDERR "Ingesting ERGA-BGE data from COPO... \n";
+die "No sample data!\n" unless $sample_data=(getSamples($sample_data, 'sample/associated_tol_project/BGE-ERGA/'));
 print STDERR "Done.\n";
 
 sub getSamples {
   my $arrayref = shift;
+  my $project_sub_url = shift;
   #Retrieve copo_ids from COPO for ERGA project
-  $copoclient->GET("$copo_url/sample/erga/");
+  $copoclient->GET("$copo_url/$project_sub_url");
   my $response1 = decode_json $copoclient->responseContent();
   #print STDERR "$response1\n";
   #print STDERR $response1->{data},"\n";
