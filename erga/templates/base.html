@@ -66,6 +66,9 @@ body {
           <a class="nav-link" id="sampleslink" href="{% url 'sample_list' %}">Samples</a>
         </li>
         <li class="nav-item">
+          <a class="nav-link" id="runslink" href="{% url 'runs_list' %}">Runs</a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link" id="readslink" href="{% url 'reads_list' %}">Reads</a>
         </li>
         <li class="nav-item">
@@ -261,6 +264,10 @@ body {
       const assemblylink = document.getElementById('assemblylink');
     	assemblylink.addEventListener('click', () => {
         $("#assemblyspinner").show();
+      })
+      const runslink = document.getElementById('runslink');
+    	readslink.addEventListener('click', () => {
+        $("#runsspinner").show();
       })
       const readslink = document.getElementById('readslink');
     	readslink.addEventListener('click', () => {

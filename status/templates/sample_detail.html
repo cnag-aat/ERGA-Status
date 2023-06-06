@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}
+{% load render_table from django_tables2 %}
+{% load bootstrap4 %}
+{% block page_content %}
+
+<p>
+<div class="row m-1">
+  <div class="col-md-12">
+    <div class="card mb-12">
+      <div class="card-body">
+        <h5 class="card-title">{{ sample.id }} : {{ sample.biosampleAccession }} : {{ sample.copo_id }}</h5>
+        <table class="table">
+          <tr><td>Species:</td><td><i>{{ sample.species }}</i></br></td></tr>
+          <tr><td>Specimen:</td><td>{{ sample.specimen }}</br></td></tr>
+          <tr><td>BioSample Accession:</td><td><a target="blank" href="https://www.ebi.ac.uk/biosamples/samples/{{ sample.biosampleAccession }}">{{ sample.biosampleAccession }}</a></br></td></tr>
+          <tr><td>COPO ID:</td><td><a target="blank" <a href="{{ site_url }}copo/{{ sample.copo_id }}">{{ sample.copo_id }}</a></br></td></tr>
+          <tr><td>COPO Date:</td><td>{{ sample.copo_date }}</br></td></tr>
+          <tr><td>Sequencing Center:</td><td>{{ sample.gal }}</br></td></tr>
+          <tr><td>Collector Sample ID:</td><td>{{ sample.collector_sample_id }}</br></td></tr>
+          <tr><td>Tube or Well ID:</td><td>{{ sample.tube_or_well_id }}</br></td></tr>
+          <tr><td>Leftover:</td><td>{{ sample.leftover }}</br></td></tr>
+          <tr><td>Leftover Biobanking Team:</td><td>{{ sample.leftover_biobanking_team }}</br></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

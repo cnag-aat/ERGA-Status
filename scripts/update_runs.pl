@@ -34,6 +34,36 @@ my %SEQUENCING_STATUS_CHOICES = (
   'Issue'=>1
 );
 
+##### Sequencing Table Model
+    # species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
+    # genomic_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
+    # hic_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
+    # rna_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
+    # note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
+    # rnaseq_numlibs_target = models.IntegerField(null=True, blank=True, default=3, verbose_name="RNAseq libs target")
+    # recipe = models.ForeignKey(Recipe, on_delete=models.SET_NULL, to_field='name', default='HiFi25', verbose_name="Recipe", null=True)
+
+##### Reads Table Model
+    # project = models.ForeignKey(Sequencing, on_delete=models.CASCADE, verbose_name="Sequencing project")
+    # ont_yield = models.BigIntegerField(null=True, blank=True, verbose_name="ONT yield")
+    # hifi_yield = models.BigIntegerField(null=True, blank=True, verbose_name="HiFi yield")
+    # hic_yield = models.BigIntegerField(null=True, blank=True, verbose_name="Hi-C yield")
+    # short_yield = models.BigIntegerField(null=True, blank=True, verbose_name="Short read yield")
+    # rnaseq_numlibs = models.IntegerField(null=True, blank=True, verbose_name="RNAseq libs")
+    # ont_ena = models.CharField(max_length=12, null=True, blank=True, verbose_name="ONT Accession")
+    # hifi_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="HiFi Accession")
+    # hic_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="Hi-C Accession")
+    # short_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="Short read Accession")
+    # rnaseq_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="RNAseq Accession")
+##### Run Table Model
+    # project = models.ForeignKey(Sequencing, on_delete=models.CASCADE, verbose_name="Sequencing project")
+    # read_type = models.CharField(max_length=15, help_text='Read type', choices=READ_TYPES, default=READ_TYPES[0][0])
+    # seq_yield = models.BigIntegerField(null=True, blank=True, verbose_name="yield")
+    # md5sum = models.CharField(max_length=32, help_text='Read 1 md5sum')
+
+#### EXAMPLE TABLES ####
+
+########################
 
 GetOptions(
   'c|config:s' => \$conf,
@@ -166,6 +196,21 @@ sub update{
         $client->PATCH($project_url, $seqinsert);
       }
       if ($sequpdate->[$i]->{'yield'} =~/\S/){
+
+        my $squery = "$erga_status_url/sample/?tube_or_well_id=".$sequpdate->[$i]->{'sample_tube_or_well_id'};
+        print "$squery\n";
+        $client->GET($squery);
+        print STDERR $client->responseContent(),"\n";
+        my $sample_response = decode_json $client->responseContent();
+        my $biosample = '';
+        my $sample_url = '';
+        if ($sample_response->{count} > 0) {
+          $biosample = $sample_response ->{results}->[0]->{biosampleAccession};
+          $sample_url = $sample_response ->{results}->[0]->{url};
+          print STDERR "BioSample Accession: $biosample\n";
+        } else {die "Sample corresponding to ".$sequpdate->[$i]->{'sample_tube_or_well_id'}. " not found.\n";}
+        
+
         $client->GET("$erga_status_url/reads/?project=". $project_id);
         my $readsresp = decode_json $client->responseContent();
         my $reads_url = $readsresp->{results}->[0]->{url};
@@ -181,6 +226,7 @@ sub update{
         $read_insert_data{native_filename}=$sequpdate->[$i]->{'native_file_name'};
         $read_insert_data{native_md5sum}=$sequpdate->[$i]->{'native_file_md5'};
         $read_insert_data{reads}=$reads_url;
+        $read_insert_data{sample}=$sample_url;
         my $readinsert = encode_json \%read_insert_data;
         
         $client->GET("$erga_status_url/run/?sample_tube_or_well_id=". $sequpdate->[$i]->{'sample_tube_or_well_id'} ."&read_type=".$read_type ."&forward_filename=".$sequpdate->[$i]->{'forward_file_name'});

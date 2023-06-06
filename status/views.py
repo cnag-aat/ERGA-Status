@@ -303,6 +303,17 @@ class SequencingDetailView(LoginRequiredMixin, DetailView):
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
 
+class RunListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
+    # permission_required = "resistome.view_sample"
+    login_url = "access_denied"
+    model = Run
+    table_class = RunTable
+    template_name = 'runs.html'
+    #filterset_class = SpeciesFilter
+    table_pagination = {"per_page": 100}
+    export_formats = ['csv', 'tsv','xlsx','json']
+
+    
 class ReadsListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
     login_url = "access_denied"
@@ -447,4 +458,14 @@ def recipe_detail(request, pk=None):
     context = {"recipe": recipe
                }
     response = render(request, "recipe_detail.html", context)
+    return response
+
+@login_required
+def sample_detail(request, pk=None):
+    sample = Sample.objects.get(pk=pk)
+    site_url = settings.DEFAULT_DOMAIN
+    context = {"sample": sample,
+               "site_url": site_url
+               }
+    response = render(request, "sample_detail.html", context)
     return response

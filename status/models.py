@@ -689,6 +689,9 @@ class Sample(models.Model):
     leftover = models.CharField(max_length=20, help_text='Leftover sample', choices=LEFTOVER_CHOICES, default=LEFTOVER_CHOICES[0][0])
     leftover_biobanking_team = models.ForeignKey(BiobankingTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="biobanking team")
     
+    def get_absolute_url(self):
+        return reverse('sample_detail', args=[str(self.pk)])
+
     def __str__(self):
         return self.biosampleAccession or self.collector_sample_id or str(self.id)
  
@@ -882,6 +885,9 @@ class Reads(models.Model):
     hic_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="Hi-C Accession")
     short_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="Short read Accession")
     rnaseq_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="RNAseq Accession")
+    
+    def get_absolute_url(self):
+        return reverse('reads_list', args=[str(self.project)])
 
     class Meta:
         verbose_name_plural = 'reads'
@@ -900,6 +906,7 @@ class Run(models.Model):
     reverse_md5sum = models.CharField(max_length=32, null=True, blank=True, help_text='Forward read md5sum')
     native_filename = models.CharField(max_length=200, null=True, blank=True, help_text='Forward read filename')
     native_md5sum = models.CharField(max_length=32, null=True, blank=True, help_text='Forward read md5sum')
+    sample = models.ForeignKey(Sample, null=True, blank=True, on_delete=models.CASCADE, verbose_name="Sample")
     tube_or_well_id = models.CharField(max_length=32, null=True, blank=True, help_text='Tube or Well ID')
     reads = models.ForeignKey(Reads, related_name="run_set", related_query_name="run_set", on_delete=models.CASCADE, verbose_name="Reads aggregate view")
 

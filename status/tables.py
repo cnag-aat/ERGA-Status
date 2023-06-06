@@ -258,6 +258,26 @@ class SequencingTable(tables.Table):
         paginate = {"per_page": 100}
         fields = ('species', 'team', 'recipe', 'note', 'reads', 'genomic_seq_status','hic_seq_status','rna_seq_status')
 
+class RunTable(tables.Table):
+    export_formats = ['csv', 'tsv','xls']
+    # assemblies = tables.TemplateColumn('<a href="{% url \'assembly_list\' %}?project={{record.pk}}">assemblies</a>',empty_values=(), verbose_name='Assemblies')
+    # status = tables.TemplateColumn('<span class="status {{record.status}}">{{record.status}}</span>',empty_values=(), verbose_name='Status')
+    # species = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("species.pk")}, empty_values=())
+    # team = tables.Column(accessor='species__genometeam__assembly_team',linkify=True)
+    # biosample = tables.Column(accessor='tube_or_well_id__sample__biosampleAccession',verbose_name='BioSample accession')
+    #reads = tables.Column(linkify=True)
+    reads = tables.TemplateColumn('<a href="{% url \'reads_list\' %}?project={{record.project.pk}}">{{record.project}}</a>',empty_values=(), verbose_name='Data Summary')
+    sample = tables.Column(linkify=True)
+    def value_status(self, value):
+        return value
+
+    class Meta:
+        model = Run
+        template_name = "django_tables2/bootstrap4.html"
+        paginate = {"per_page": 100}
+        exclude = ['id']
+        #fields = ('species', 'team','assemblies', 'note', 'status')
+
 class ReadsTable(tables.Table):
     project = tables.LinkColumn('sequencing_list')
     ont_yield = tables.Column(verbose_name="ONT yield",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
@@ -510,6 +530,7 @@ class CommunityAnnotationTable(tables.Table):
         fields = ('species', 'team', 'note', 'status') """
 
 class SpecimenTable(tables.Table):
+    export_formats = ['csv', 'tsv','xls']
     species = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("species.pk")}, empty_values=())
     samples = tables.TemplateColumn('<a href="{% url \'sample_list\' %}?specimen={{record.pk}}">samples</a>',empty_values=(), verbose_name='Samples')
     #nagoya_statement = tables.URLColumn()
@@ -528,6 +549,7 @@ class SpecimenTable(tables.Table):
         exclude = ['id']
 
 class SampleTable(tables.Table):
+    export_formats = ['csv', 'tsv','xls']
     # biosampleAccession = tables.TemplateColumn( '<a href="https://www.ebi.ac.uk/biosamples/samples/{{record.biosampleAccession}}"{{record.biosampleAccession}}</a>',empty_values=(), verbose_name='BioSample')
     species = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("species.pk")}, empty_values=())
     def render_specimen(self, value, record):

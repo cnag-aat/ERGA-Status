@@ -7,6 +7,7 @@ from status.views import AssemblyListView
 from status.views import SampleCollectionListView
 from status.views import SequencingListView
 from status.views import SequencingDetailView
+from status.views import RunListView
 from status.views import ReadsListView
 from status.views import AssemblyProjectListView
 from status.views import CurationListView
@@ -26,6 +27,7 @@ from status.views import SuccessView
 from status.views import LogView
 from status.views import SpeciesLogView
 
+
 urlpatterns = [
     path("", HomeView.as_view(), name="home"),
     path("overview/", OverView.as_view(), name="overview"),
@@ -39,6 +41,7 @@ urlpatterns = [
     path("specimens/?collection=<collection>", SpecimenListView.as_view(), name="specimen_list"),
     path("specimens/<int:id>/", SpecimenListView.as_view(), name="specimen_list"),
     path("samples/", SampleListView.as_view(), name="sample_list"),
+    path("samples/<int:pk>/", views.sample_detail, name="sample_detail"),
     path("projects/", AssemblyProjectListView.as_view(), name="assembly_project_list"),
     path("projects/?species=<scientific_name>", AssemblyProjectListView.as_view(), name="assembly_project_list"),
     path("assembly_team/<int:pk>/", views.assembly_team_detail, name="assembly_team_detail"),
@@ -66,6 +69,8 @@ urlpatterns = [
     path("sequencing/", SequencingListView.as_view(), name="sequencing_list"),
     path("sequencing/?species=<scientific_name>", SequencingListView.as_view(), name="sequencing_list"),
     path("reads/", ReadsListView.as_view(), name="reads_list"),
+    path("reads/?project=<project>", ReadsListView.as_view(), name="reads_list"),
+    path("runs/", RunListView.as_view(), name="runs_list"),
     path("curation/", CurationListView.as_view(), name="curation_list"),
     path("annotation/", AnnotationListView.as_view(), name="annotation_list"),
     path("community_annotation/", CommunityAnnotationListView.as_view(), name="community_annotation_list"),
