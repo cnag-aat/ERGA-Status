@@ -4,3 +4,11 @@ status/migrations/
 erga_stream_dev-20230302-152834.sql
 .gitignore
 erga_stream_dev.sql
+status/__pycache__/admin.cpython-36.pyc
+status/__pycache__/api.cpython-36.pyc
+status/__pycache__/models.cpython-36.pyc
+status/__pycache__/serializers.cpython-36.pyc
+status/__pycache__/tables.cpython-36.pyc
+status/__pycache__/urls.cpython-36.pyc
+status/__pycache__/views.cpython-36.pyc
+erga/__pycache__/urls.cpython-36.pyc

@@ -7,6 +7,9 @@ from django.contrib.auth.models import User
 from django.contrib.admin.helpers import ActionForm
 from django import forms
 from django.contrib import messages
+from django.forms.widgets import DateInput
+from django.contrib.admin.widgets import AdminDateWidget
+from dateutil.parser import parse
 
 def export_csv(modeladmin, request, queryset):
     import csv
@@ -199,10 +202,10 @@ class GenomeTeamAdmin(admin.ModelAdmin):
     actions = [update_teams]
     def get_actions(self, request):
       actions = super(GenomeTeamAdmin, self).get_actions(request)
-      try:
-          del actions['delete_selected']
-      except KeyError:
-        pass
+    #   try:
+    #       del actions['delete_selected']
+    #   except KeyError:
+    #     pass
       return actions
     def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
         context.update({
@@ -270,14 +273,80 @@ admin.site.register(BUSCOdb)
 admin.site.register(BUSCOversion)
 admin.site.register(Run)
 # admin.site.register(Specimen)
+LEFTOVER_CHOICES = (
+    ('None', 'None'),
+    ('DNA', 'DNA'),
+    ('Tissue', 'Tissue'),
+    ('Both', 'Both')
+) 
+
+ADMIN_LEFTOVER_CHOICES = (
+    ('', '--------------'),
+    ('None', 'None'),
+    ('DNA', 'DNA'),
+    ('Tissue', 'Tissue'),
+    ('Both', 'Both')
+) 
+
+class UpdateSampleActionForm(ActionForm):
+    date_sent = forms.DateField(widget=AdminDateWidget(),
+        required=False)
+    date_received = forms.DateField(widget=AdminDateWidget(),
+        required=False)
+    leftover = forms.ChoiceField(choices=ADMIN_LEFTOVER_CHOICES, required=False)
+
+def update_samples(modeladmin, request, queryset):
+    if 'date_sent' in request.POST:
+        date_sent = request.POST['date_sent']
+        try:
+            parse(date_sent)
+            queryset.update(date_sent=date_sent)
+        except ValueError:
+            pass
+    if 'date_received' in request.POST:
+        date_received = request.POST['date_received']
+        try:
+            parse(date_received)
+            queryset.update(date_received=date_received)
+        except ValueError:
+            pass
+    if 'leftover' in request.POST:
+        leftover = request.POST['leftover']
+        if (len(leftover) > 0):
+            queryset.update(leftover=leftover)
+    messages.add_message(request, messages.INFO, 'Successfully updated samples.')
+
 @register(Sample)
 class SampleAdmin(admin.ModelAdmin):
+    save_as = True
+    list_filter = admin.ModelAdmin.list_filter + ('gal','specimen__sample_coordinator')
+    action_form = UpdateSampleActionForm
+    actions = [update_samples]
+    def get_actions(self, request):
+        actions = super(SampleAdmin, self).get_actions(request)
+        try:
+            del actions['delete_selected']
+        except KeyError:
+            pass
+        return actions
+    def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
+        context.update({
+            'show_delete': False, # Here
+            # 'show_save': False,
+            # 'show_save_and_continue': False,
+        })
+        return super().render_change_form(request, context, add, change, form_url, obj)
+
     list_display = (
+        'tube_or_well_id',
         'biosampleAccession',
         'collector_sample_id',
         'specimen',
         'species',
-        'leftover'
+        'gal',
+        'leftover',
+        'date_sent',
+        'date_received'
     )
 admin.site.register(AssemblyPipeline)
 #admin.site.register(UserProfile)

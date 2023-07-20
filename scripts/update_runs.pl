@@ -191,9 +191,10 @@ sub update{
         $seq_insert_data{note}=$note if $note =~/\S/;
         $seq_insert_data{recipe}=$recipe if $recipe =~/\S/;
         my $seqinsert = encode_json \%seq_insert_data;
-        
+        print STDERR "$seqinsert\n";
         print STDERR "Updating $project_url\n";
         $client->PATCH($project_url, $seqinsert);
+        print STDERR $client->responseContent(),"\n";
       }
       if ($sequpdate->[$i]->{'yield'} =~/\S/){
 

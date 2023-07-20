@@ -8,6 +8,8 @@ from django.utils.html import escape
 from django.utils.html import format_html
 from django.urls import reverse
 from status.models import *
+from django.conf import settings
+
 #import html
 class OverviewTable(tables.Table):
     export_formats = ['csv', 'tsv','xls']
@@ -20,6 +22,7 @@ class OverviewTable(tables.Table):
     #         }
     #     }
     # )
+    seq_center = tables.Column(accessor='genometeam__sequencing_team',linkify=True, verbose_name='Center')
     genomic_sample_status = tables.Column(accessor='samplecollection.genomic_sample_status',verbose_name='Samples',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     # hic_sample_status = tables.Column(accessor='samplecollection.hic_sample_status',verbose_name='HiC Sample',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     # rna_sample_status = tables.Column(accessor='samplecollection.rna_sample_status',verbose_name='RNA Sample',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
@@ -38,7 +41,7 @@ class OverviewTable(tables.Table):
     # scientific_name = tables.Column(linkify=True)
     #listed_species = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("pk")}, empty_values=())
     #log = tables.Column(accessor='updatestatus',verbose_name='Log')
-    log = tables.TemplateColumn('<a href="/erga-stream-dev/log/?species={{record.id}}"><i class="fas fa-history"></i></a>',empty_values=(), verbose_name='log')
+    log = tables.TemplateColumn('<a href="' + settings.DEFAULT_DOMAIN + 'log/?species={{record.id}}"><i class="fas fa-history"></i></a>',empty_values=(), verbose_name='log')
     attrs={"td": {"class": "overview-table"}}
     #targetspecies=TargetSpecies.objects.get(=pk)
     # def render_collection_status(self, value):
@@ -61,7 +64,7 @@ class OverviewTable(tables.Table):
         return value
       
     def render_genomic_sample_status(self, value, record):
-        html = '<a href="/erga-stream-dev/collection/?species='+str(record.pk)+'"><span class="status '+escape(value.replace(" ",''))+'">'+escape(value)+'</span></a>'
+        html = '<a href="' + settings.DEFAULT_DOMAIN + 'collection/?species='+str(record.pk)+'"><span class="status '+escape(value.replace(" ",''))+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
     def value_genomic_sample_status(self, value):
@@ -82,35 +85,35 @@ class OverviewTable(tables.Table):
     #     return value
 
     def render_long_seq_status(self, value, record):
-        html = '<a href="/erga-stream-dev/sequencing/?species='+str(record.pk)+'"><span class="status '+escape(value)+'">'+escape(value)+'</span></a>'
+        html = '<a href="' + settings.DEFAULT_DOMAIN + 'sequencing/?species='+str(record.pk)+'"><span class="status '+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
     def value_long_seq_status(self, value):
         return value
 
     def render_short_seq_status(self, value, record):
-        html = '<a href="/erga-stream-dev/sequencing/?species='+str(record.pk)+'"><span class="status '+escape(value)+'">'+escape(value)+'</span></a>'
+        html = '<a href="' + settings.DEFAULT_DOMAIN + 'sequencing/?species='+str(record.pk)+'"><span class="status '+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
     def value_short_seq_status(self, value):
         return value
     
     def render_hic_seq_status(self, value, record):
-        html = '<a href="/erga-stream-dev/sequencing/?species='+str(record.pk)+'"><span class="status '+escape(value)+'">'+escape(value)+'</span></a>'
+        html = '<a href="' + settings.DEFAULT_DOMAIN + 'sequencing/?species='+str(record.pk)+'"><span class="status '+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
     def value_hic_seq_status(self, value):
         return value
 
     def render_rna_seq_status(self, value, record):
-        html = '<a href="/erga-stream-dev/sequencing/?species='+str(record.pk)+'"><span class="status '+escape(value)+'">'+escape(value)+'</span></a>'
+        html = '<a href="' + settings.DEFAULT_DOMAIN + 'sequencing/?species='+str(record.pk)+'"><span class="status '+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
     def value_rna_seq_status(self, value):
         return value
     
     def render_assembly_status(self, value, record):
-        html = '<a href="/erga-stream-dev/projects/?species='+str(record.pk)+'"><span class="status '+escape(value)+'">'+escape(value)+'</span></a>'
+        html = '<a href="' + settings.DEFAULT_DOMAIN + 'projects/?species='+str(record.pk)+'"><span class="status '+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
     def value_assembly_status(self, value):
@@ -124,14 +127,14 @@ class OverviewTable(tables.Table):
     #     return value
 
     def render_annotation_status(self, value, record):
-        html = '<a href="/erga-stream-dev/annotation/?species='+str(record.pk)+'"><span class="status '+escape(value)+'">'+escape(value)+'</span></a>'
+        html = '<a href="' + settings.DEFAULT_DOMAIN + 'annotation/?species='+str(record.pk)+'"><span class="status '+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
     def value_annotation_status(self, value):
         return value
     
     def render_community_annotation_status(self, value, record):
-        html = '<a href="/erga-stream-dev/community_annotation/?species='+str(record.pk)+'"><span class="status '+escape(value)+'">'+escape(value)+'</span></a>'
+        html = '<a href="' + settings.DEFAULT_DOMAIN + 'community_annotation/?species='+str(record.pk)+'"><span class="status '+escape(value)+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
     def value_community_annotation_status(self, value):
@@ -148,7 +151,7 @@ class OverviewTable(tables.Table):
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
         # fields = ('tolid_prefix', 'scientific_name','genomic_sample_status','hic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','curation_status','annotation_status','submission_status')
-        fields = ('scientific_name','tolid_prefix','genomic_sample_status','long_seq_status','short_seq_status','hic_seq_status','rna_seq_status','assembly_status','annotation_status','community_annotation_status','log')
+        fields = ('scientific_name','tolid_prefix','seq_center','genomic_sample_status','long_seq_status','short_seq_status','hic_seq_status','rna_seq_status','assembly_status','annotation_status','community_annotation_status','log')
 
 class TargetSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']
@@ -238,7 +241,8 @@ class SampleCollectionTable(tables.Table):
         fields = ('species', 'team', 'specimens','note', 'genomic_sample_status','rna_sample_status')
 
 class SequencingTable(tables.Table):
-    genomic_seq_status = tables.TemplateColumn('<span class="status {{record.genomic_seq_status}}">{{record.genomic_seq_status}}</span>',empty_values=(), verbose_name='gDNA Status')
+    long_seq_status = tables.TemplateColumn('<span class="status {{record.long_seq_status}}">{{record.long_seq_status}}</span>',empty_values=(), verbose_name='Long-read Status')
+    short_seq_status = tables.TemplateColumn('<span class="status {{record.short_seq_status}}">{{record.short_seq_status}}</span>',empty_values=(), verbose_name='Short-read Status')
     hic_seq_status = tables.TemplateColumn('<span class="status {{record.hic_seq_status}}">{{record.hic_seq_status}}</span>',empty_values=(), verbose_name='HiC Status')
     rna_seq_status = tables.TemplateColumn('<span class="status {{record.rna_seq_status}}">{{record.rna_seq_status}}</span>',empty_values=(), verbose_name='RNA Status')
     species = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("species.pk")}, empty_values=())
@@ -256,7 +260,7 @@ class SequencingTable(tables.Table):
         model = Sequencing
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        fields = ('species', 'team', 'recipe', 'note', 'reads', 'genomic_seq_status','hic_seq_status','rna_seq_status')
+        fields = ('species', 'team', 'recipe', 'note', 'reads', 'long_seq_status','short_seq_status','hic_seq_status','rna_seq_status')
 
 class RunTable(tables.Table):
     export_formats = ['csv', 'tsv','xls']
@@ -538,7 +542,7 @@ class SpecimenTable(tables.Table):
     # def __init__(self, *args, **kwargs):
     #     self.columns['nagoya_statement'].column.attrs = {"td":{"style" : "width:200;" }}
     def render_collection(self, value, record):
-        html = '<a href="/erga-stream-dev/collection/?species='+str(record.species.pk)+'">'+escape(value)+'</a>'
+        html = '<a href="' + settings.DEFAULT_DOMAIN + 'collection/?species='+str(record.species.pk)+'">'+escape(value)+'</a>'
         return mark_safe(html)
     def render_nagoya_statement(self, value, record):
         return mark_safe("<div style='width:300'>"+value.statement+"</div>")
@@ -553,13 +557,13 @@ class SampleTable(tables.Table):
     # biosampleAccession = tables.TemplateColumn( '<a href="https://www.ebi.ac.uk/biosamples/samples/{{record.biosampleAccession}}"{{record.biosampleAccession}}</a>',empty_values=(), verbose_name='BioSample')
     species = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("species.pk")}, empty_values=())
     def render_specimen(self, value, record):
-        html = '<a target="blank" <a href="/erga-stream-dev/specimens/'+ str(record.specimen.pk) +'/">'+escape(value)+'</a>'
+        html = '<a target="blank" <a href="' + settings.DEFAULT_DOMAIN + 'specimens/'+ str(record.specimen.pk) +'/">'+escape(value)+'</a>'
         return mark_safe(html)
 
     #specimen = tables.Column(linkify=True)
     #copo = tables.TemplateColumn('<a href="{% url \'copo\' %}/{{record.copo_id}}/">copo</a>',empty_values=(), verbose_name='COPO Record')
     def render_copo_id(self, value, record):
-        html = '<a target="blank" <a href="/erga-stream-dev/copo/'+ value +'">'+escape(value)+'</a>'
+        html = '<a target="blank" <a href="' + settings.DEFAULT_DOMAIN + 'copo/'+ value +'">'+escape(value)+'</a>'
         return mark_safe(html)
 
     def render_biosampleAccession(self, value, record):

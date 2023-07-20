@@ -605,6 +605,8 @@ class SampleCollection(models.Model):
     rna_sample_status = models.CharField(max_length=20, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
     #hic_sample_status = models.CharField(max_length=12, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
+    # ship_date = models.DateTimeField(verbose_name="Date shipped", editable=True, null=True, blank=True, default=None)
+    shipped  =  models.BooleanField(verbose_name="Shipped")
 
     class Meta:
         verbose_name_plural = 'collection'
@@ -688,7 +690,9 @@ class Sample(models.Model):
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species",null=True, blank=True)
     leftover = models.CharField(max_length=20, help_text='Leftover sample', choices=LEFTOVER_CHOICES, default=LEFTOVER_CHOICES[0][0])
     leftover_biobanking_team = models.ForeignKey(BiobankingTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="biobanking team")
-    
+    date_sent = models.DateField(blank=True,null=True)
+    date_received = models.DateField(blank=True,null=True)
+
     def get_absolute_url(self):
         return reverse('sample_detail', args=[str(self.pk)])
 
@@ -775,7 +779,7 @@ class Sequencing(models.Model):
                         '[ERGA] Long read genomic sequencing for '+ self.species.scientific_name +'is done',
                         'Dear '+ assembly_team.lead.first_name+",\n\nLong-read genomic sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
                         'denovo@cnag.crg.eu',
-                        [assembly_team.lead.email],
+                        [assembly_team.lead.user.email],
                         fail_silently=True,
                     )
 
@@ -788,7 +792,7 @@ class Sequencing(models.Model):
                         '[ERGA] Genomic sequencing for '+ self.species.scientific_name +'is done',
                         'Dear '+ assembly_team.lead.first_name+",\n\nShort-read genomic sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
                         'denovo@cnag.crg.eu',
-                        [assembly_team.lead.email],
+                        [assembly_team.lead.user.email],
                         fail_silently=True,
                     )
 
@@ -957,7 +961,10 @@ class CommunityAnnotation(models.Model):
                 status=self.status
             )
         super(CommunityAnnotation, self).save(*args, **kwargs)
-
+        
+    def __str__(self):
+        return self.species.scientific_name or str(self.id)
+    
 class Annotation(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
     #team = models.ForeignKey(AnnotationTeam, on_delete=models.SET_NULL, null=True, verbose_name="annotation team")
