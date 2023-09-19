@@ -65,6 +65,7 @@ my %SEQUENCING_STATUS_CHOICES = (
 
 ########################
 
+
 GetOptions(
   'c|config:s' => \$conf,
   'f|file:s' => \$sequencing_tsv_file,
@@ -140,11 +141,53 @@ update($seq_data,$erga_status_url);
 sub update{
   my $sequpdate= shift;
   my $erga_status_url = shift;
+  my @fields = qw(
+        center 
+        scientific_name 
+        tolid 
+        common_names 
+        biosample_accession 
+        sample_tube_or_well_id 
+        sample_coordinator 
+        recipe 
+        aim 
+        locus_tag 
+        alt_assembly 
+        alt_annotation 
+        instrument 
+        library_selection 
+        library_strategy 
+        exp_attr 
+        lib_attr 
+        yield 
+        forward_file_name 
+        forward_file_md5 
+        reverse_file_name 
+        reverse_file_md5 
+        native_file_name 
+        native_file_md5
+        );
+  print join("\t",@fields),"\n";
   for (my $i = 0;$i<@$sequpdate; $i++){
-    my $tolid_prefix=$sequpdate->[$i]->{'tolid_prefix'};
+    #print STDERR "here1\n";
+    my $tolid_prefix=$sequpdate->[$i]->{'tolid'};
     my $scientific_name=$sequpdate->[$i]->{'scientific_name'};
-    my $read_type=$sequpdate->[$i]->{'read_type'};
+    my $instrument=$sequpdate->[$i]->{'instrument'};
+    my $library_strategy=$sequpdate->[$i]->{'library_strategy'};
+    my $out_library_strategy = "WGS";
+    my $read_type = '';
+    if ($library_strategy =~ /RNA-?Seq/i){$read_type = "RNA";$library_strategy = "RNA-Seq";}
+    if ($instrument =~ /^Illumina/i && $library_strategy =~  /WGS/i){$read_type = "Illumina";$library_strategy = "WGS";}
+    if ($instrument =~ /(PacBio|Revio|Sequel)/i  && $library_strategy =~ /WGS/i){$read_type = "HiFi";$library_strategy = "WGS";}
+    if ($instrument =~ /^Illumina/i && $library_strategy =~ /Hi-?C/i){$read_type = "HiC";$library_strategy = "Hi-C";}
+    if ($instrument =~ /ION$/i && $library_strategy =~ /WGS/i){$read_type = "ONT";$library_strategy = "WGS";}
     my $yield=$sequpdate->[$i]->{'yield'};
+    #my $status = $sequpdate->[$i]->{status};
+    #print STDERR "yield: $yield\n";
+    # if ($status !~/\S/){
+    next if not $yield > 0;
+    next if $yield eq '';
+    # }
     my $species_id = 0;
     my $species_url = 0;
     if ($tolid_prefix =~m/\w/){
@@ -172,43 +215,55 @@ sub update{
 
     if ($response2->{count} == 1) { #proceed if there is one and only one project
       $sequpdate->[$i]->{project}=$project_id;
-      my $status=$sequpdate->[$i]->{status};
-      if (($status =~/\S/) && ! exists $SEQUENCING_STATUS_CHOICES{$status}){
-        die "Status must be one of: ".join(", ",sort keys %SEQUENCING_STATUS_CHOICES)."\n";
-      }
-      my $note=$sequpdate->[$i]->{notes};
-      my $recipe=$sequpdate->[$i]->{recipe};
-      if ($status =~/\S/){
-        $client->GET("$erga_status_url/recipe/?name=". $recipe);
-        my $recipe_response = decode_json $client->responseContent();
-        my $recipe_url = $recipe_response->{results}->[0]->{url};
-        my %seq_insert_data = ();
-        $seq_insert_data{species}=$species_url;
-        $seq_insert_data{long_seq_status}=$status if $read_type =~/(HiFi|ONT)/i;
-        $seq_insert_data{short_seq_status}=$status if $read_type =~/Illumina/i;
-        $seq_insert_data{hic_seq_status}=$status if $read_type =~/HiC/i;
-        $seq_insert_data{rna_seq_status}=$status if $read_type =~/RNA/i;
-        $seq_insert_data{note}=$note if $note =~/\S/;
-        $seq_insert_data{recipe}=$recipe if $recipe =~/\S/;
-        my $seqinsert = encode_json \%seq_insert_data;
-        print STDERR "$seqinsert\n";
-        print STDERR "Updating $project_url\n";
-        $client->PATCH($project_url, $seqinsert);
-        print STDERR $client->responseContent(),"\n";
-      }
+      #my $status=$sequpdate->[$i]->{status};
+      # if (($status =~/\S/) && ! exists $SEQUENCING_STATUS_CHOICES{$status}){
+      #   die "Status must be one of: ".join(", ",sort keys %SEQUENCING_STATUS_CHOICES)."\n";
+      # }
+      # my $note=$sequpdate->[$i]->{notes};
+      # my $recipe=$sequpdate->[$i]->{recipe};
+      # if ($status =~/\S/){
+      #   $client->GET("$erga_status_url/recipe/?name=". $recipe);
+      #   my $recipe_response = decode_json $client->responseContent();
+      #   my $recipe_url = $recipe_response->{results}->[0]->{url};
+      #   my %seq_insert_data = ();
+      #   $seq_insert_data{species}=$species_url;
+      #   $seq_insert_data{long_seq_status}=$status if $read_type =~/(HiFi|ONT)/i;
+      #   $seq_insert_data{short_seq_status}=$status if $read_type =~/Illumina/i;
+      #   $seq_insert_data{hic_seq_status}=$status if $read_type =~/HiC/i;
+      #   $seq_insert_data{rna_seq_status}=$status if $read_type =~/RNA/i;
+      #   $seq_insert_data{note}=$note if $note =~/\S/;
+      #   $seq_insert_data{recipe}=$recipe if $recipe =~/\S/;
+      #   my $seqinsert = encode_json \%seq_insert_data;
+      #   print STDERR "$seqinsert\n";
+      #   print STDERR "Updating $project_url\n";
+      #   $client->PATCH($project_url, $seqinsert);
+      #   print STDERR $client->responseContent(),"\n";
+      # }
       if ($sequpdate->[$i]->{'yield'} =~/\S/){
 
         my $squery = "$erga_status_url/sample/?tube_or_well_id=".$sequpdate->[$i]->{'sample_tube_or_well_id'};
-        print "$squery\n";
+        #print "$squery\n";
         $client->GET($squery);
-        print STDERR $client->responseContent(),"\n";
+        #print STDERR $client->responseContent(),"\n";
         my $sample_response = decode_json $client->responseContent();
         my $biosample = '';
         my $sample_url = '';
+        my  $tolid = '';
         if ($sample_response->{count} > 0) {
-          $biosample = $sample_response ->{results}->[0]->{biosampleAccession};
-          $sample_url = $sample_response ->{results}->[0]->{url};
-          print STDERR "BioSample Accession: $biosample\n";
+          $biosample = $sample_response->{results}->[0]->{biosampleAccession};
+          $sample_url = $sample_response->{results}->[0]->{url};
+          #print STDERR "BioSample Accession: $biosample\n";
+          $sequpdate->[$i]->{'biosample_accession'} = $biosample;
+          $sequpdate->[$i]->{'common_names'} = '';
+          $sequpdate->[$i]->{'tolid'} = '';
+          my $specimenquery = $sample_response->{results}->[0]->{'specimen'} ;
+           
+          #print "$specimenquery\n";
+          $client->GET($specimenquery);
+          #print STDERR $client->responseContent(),"\n";
+          my $specimen_response = decode_json $client->responseContent();
+          $tolid = $sample_response->{results}->[0]->{'tolid'};
+          $sequpdate->[$i]->{'tolid'} = $tolid;
         } else {die "Sample corresponding to ".$sequpdate->[$i]->{'sample_tube_or_well_id'}. " not found.\n";}
         
 
@@ -244,9 +299,18 @@ sub update{
           $client->POST("$erga_status_url/run/", $readinsert);
           print STDERR $client->responseContent(),"\n";
         }
+
+        #print back table
+        $sequpdate->[$i]->{'library_selection'} = 'RANDOM';
+        $sequpdate->[$i]->{'tolid'} = $tolid;
+        foreach my $f (@fields){
+          print exists($sequpdate->[$i]->{$f})?$sequpdate->[$i]->{$f}:"-";
+          print "\t";
+        }
+        print "\n";
       }
     } else {
-      print STDERR "Couldn't find project. Please add project for $tolid_prefix via the admin interface. Skipping for now.\n"; 
+      print STDERR "Couldn't find project. Please add project for $scientific_name $tolid_prefix via the admin interface. Skipping for now.\n"; 
     }
   }
   return 1;
