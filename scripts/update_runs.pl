@@ -85,21 +85,22 @@ usage: update_sequencing.pl [-h] [-c <ergastream.cnf>] -f <sequencing_runs_updat
 
   sequencing_runs_update.tsv has the following tab-delimited columns:
     center 
-    scientific_name tolid  
+    scientific_name (* one or the other of scientific_name or tolid_prefix is required)
+    tolid (* one or the other of scientific_name or tolid_prefix is required)
     common_names   
     biosample_accession 
-    sample_tube_or_well_id 
+    sample_tube_or_well_id *
     sample_coordinator 
     recipe aim
     locus_tag
     alt_assembly
     alt_annotation
-    instrument
-    library_selection
-    library_strategy
+    instrument *
+    library_selection 
+    library_strategy *
     exp_attrlib_attr
-    yield
-    forward_file_name
+    yield *
+    forward_file_name *
     forward_file_md5
     reverse_file_name
     reverse_file_md5
