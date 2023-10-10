@@ -205,7 +205,7 @@ sub update{
           #print STDERR "tolid: ",$response_specimen->{tolid},"\n\n";
           $sequpdate->[$i]->{'tolid'} = $response_specimen->{tolid};
         }else{
-          print STDERR "No sample found for $scientific_name with tube_or_well_id:",$sequpdate->[$i]->{'sample_tube_or_well_id'},"\n" and next;
+          print STDERR "No sample found for $scientific_name with tube_or_well_id:",$sequpdate->[$i]->{'sample_tube_or_well_id'},"\n";
         }
 
         $client->GET("$erga_status_url/reads/?project=". $project_id);
@@ -233,6 +233,7 @@ sub update{
           print STDERR "Updating existing run record: \n",
           my $run_url = $response_reads->{results}->[0]->{url};
           $client->PATCH($run_url, $readinsert);
+          print STDERR "\n";
           #print STDERR $client->responseContent(),"\n";
         }else{
           #POST
