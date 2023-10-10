@@ -217,6 +217,31 @@ sub update{
     if ($response2->{count} == 1) { #proceed if there is one and only one project
       $sequpdate->[$i]->{project}=$project_id;
       if ($sequpdate->[$i]->{'yield'} =~/\S/){
+
+        # my $squery = "$erga_status_url/sample/?tube_or_well_id=".$sequpdate->[$i]->{'sample_tube_or_well_id'};
+        # #print "$squery\n";
+        # $client->GET($squery);
+        # #print STDERR $client->responseContent(),"\n";
+        # my $sample_response = decode_json $client->responseContent();
+        # my $biosample = '';
+        # my $sample_url = '';
+        # my  $tolid = '';
+        # if ($sample_response->{count} > 0) {
+        #   $biosample = $sample_response->{results}->[0]->{biosampleAccession};
+        #   $sample_url = $sample_response->{results}->[0]->{url};
+        #   #print STDERR "BioSample Accession: $biosample\n";
+        #   $sequpdate->[$i]->{'biosample_accession'} = $biosample;
+        #   $sequpdate->[$i]->{'common_names'} = '';
+        #   $sequpdate->[$i]->{'tolid'} = '';
+        #   my $specimenquery = $sample_response->{results}->[0]->{'specimen'} ;
+           
+        #   #print "$specimenquery\n";
+        #   $client->GET($specimenquery);
+        #   #print STDERR $client->responseContent(),"\n";
+        #   my $specimen_response = decode_json $client->responseContent();
+        #   $tolid = $sample_response->{results}->[0]->{'tolid'};
+        #   $sequpdate->[$i]->{'tolid'} = $tolid;
+        # } else {die "Sample corresponding to ".$sequpdate->[$i]->{'sample_tube_or_well_id'}. " not found.\n";}
         my $sample_url = '';
         my $squery = "$erga_status_url/sample/?tube_or_well_id=".$sequpdate->[$i]->{'sample_tube_or_well_id'};
         $client->GET($squery);
