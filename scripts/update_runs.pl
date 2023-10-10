@@ -83,25 +83,44 @@ usage: update_sequencing.pl [-h] [-c <ergastream.cnf>] -f <sequencing_runs_updat
   The username and passwords are the ones assigned to your team. If you'd like to use one attached to an email, 
   let Tyler know and he will grant your registered user the same priveleges.
 
-  sequencing_runs_update.tsv has the following tab-delimited columns (this format is used by the ENA run submission script):
-    center  scientific_name tolid   common_names    biosample_accession     sample_tube_or_well_id  sample_coordinator      recipe aim      locus_tag       alt_assembly    alt_annotation  instrument      library_selection       library_strategy        exp_attrlib_attr        yield   forward_file_name       forward_file_md5        reverse_file_name       reverse_file_md5        native_file_name        native_file_md5
+  sequencing_runs_update.tsv has the following tab-delimited columns:
+    center 
+    scientific_name tolid  
+    common_names   
+    biosample_accession 
+    sample_tube_or_well_id 
+    sample_coordinator 
+    recipe aim
+    locus_tag
+    alt_assembly
+    alt_annotation
+    instrument
+    library_selection
+    library_strategy
+    exp_attrlib_attr
+    yield
+    forward_file_name
+    forward_file_md5
+    reverse_file_name
+    reverse_file_md5
+    native_file_name
+    native_file_md5
   
     - For the ERGA-Stream update only the following fields are required to be filled:
         scientific_name or tolid_prefix
-        read_type
-        yield
         sample_tube_or_well_id (this needs to correspond to the tube_or_well_id submitted to COPO)
+        instrument
+        library_strategy
+        yield
         forward_file_name
-        all other filenames and md5sums are optional (but recommended)
-  
-  Fields not used by update_runs.pl but useful for submission of experiments and runs to the ENA:
-    experiment_attributes run_attributes nominal_length nominal_sdev library_construction_protocol
+        all other fields are optional (but recommended as they can be useful for submission of runs to the ENA)
 
-  read_type choices: 'ONT', 'HiFi', 'Illumina', 'HiC', 'RNA'
   recipe choices: 
     'ONT60','HIFI25'
   instrument_model choices: 
     'Illumina NovaSeq 6000', 'PromethION', 'GridION', https://ena-docs.readthedocs.io/en/latest/submit/reads/webin-cli.html#permitted-values-for-instrument
+  library_strategy choices: 
+    'WGS', 'Hi-C', 'RNA-Seq'
   status choices: 
     'Waiting','Received','Extracted','Sequencing','TopUp','External','Done','Submitted','Issue'
 END_HELP

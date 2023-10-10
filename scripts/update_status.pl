@@ -79,7 +79,7 @@ GetOptions(
   'h|help' => \$printhelp
 );
 my $usage = <<'END_HELP';
-usage: update_sequencing.pl [-h] [-c <ergastream.cnf>] -f <sequencing_update.tsv>
+usage: update_sequencing.pl [-h] [-c <ergastream.cnf>] -f <sequencing_status_update.tsv>
  
   The ergastream configuration file (default name: ".ergastream.cnf") has the format:
     URL https://genomes.cnag.cat/erga-stream/api
@@ -91,24 +91,21 @@ usage: update_sequencing.pl [-h] [-c <ergastream.cnf>] -f <sequencing_update.tsv
   let Tyler know and he will grant your registered user the same priveleges.
 
   sequencing_update.tsv has the following tab-delimited columns:
-    center scientific_name tolid_prefix recipe read_type status notes sample_tube_or_well_id instrument_model yield forward_file_name forward_file_md5 reverse_file_name reverse_file_md5 experiment_attributes run_attributes nominal_length nominal_sdev library_construction_protocol
+    center
+    scientific_name (one or the other of scientific_name or tolid_prefix is required)
+    tolid_prefix (one or the other of scientific_name or tolid_prefix is required)
+    recipe
+    instrument
+    library_strategy
+    status
+    notes (optional)
 
-  Two types of records are parsed from the tsv: status updates and sequencing runs. These can be in the same tsv or submitted via separate tsvs.
-    - Status update records require the following fields:
-        scientific_name or tolid_prefix (one or the other is required)
-        recipe
-        read_type
-        status
-        notes (optional)
-
-  Fields not used by update_runs.pl but useful for submission of experiments and runs to the ENA:
-    experiment_attributes run_attributes nominal_length nominal_sdev library_construction_protocol
-
-  read_type choices: 'ONT', 'HiFi', 'Illumina', 'HiC', 'RNA'
   recipe choices: 
     'ONT60','HIFI25'
   instrument_model choices: 
     'Illumina NovaSeq 6000', 'PromethION', 'GridION', https://ena-docs.readthedocs.io/en/latest/submit/reads/webin-cli.html#permitted-values-for-instrument
+  library_strategy choices: 
+    'WGS', 'Hi-C', 'RNA-Seq'
   status choices: 
     'Waiting','Received','Extracted','Sequencing','TopUp','External','Done','Submitted','Issue'
 END_HELP
