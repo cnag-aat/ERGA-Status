@@ -72,7 +72,7 @@ GetOptions(
   'h|help' => \$printhelp
 );
 my $usage = <<'END_HELP';
-usage: update_sequencing.pl [-h] [-c <ergastream.cnf>] -f <sequencing_update.tsv>
+usage: update_sequencing.pl [-h] [-c <ergastream.cnf>] -f <sequencing_runs_update.tsv>
  
   The ergastream configuration file (default name: ".ergastream.cnf") has the format:
     URL https://genomes.cnag.cat/erga-stream/api
@@ -83,23 +83,15 @@ usage: update_sequencing.pl [-h] [-c <ergastream.cnf>] -f <sequencing_update.tsv
   The username and passwords are the ones assigned to your team. If you'd like to use one attached to an email, 
   let Tyler know and he will grant your registered user the same priveleges.
 
-  sequencing_update.tsv has the following tab-delimited columns:
-    center scientific_name tolid_prefix recipe read_type status notes sample_tube_or_well_id instrument_model yield forward_file_name forward_file_md5 reverse_file_name reverse_file_md5 experiment_attributes run_attributes nominal_length nominal_sdev library_construction_protocol
-
-  Two types of records are parsed from the tsv: status updates and sequencing runs. These can be in the same tsv or submitted via separate tsvs.
-    - Status update records require the following fields:
-        scientific_name or tolid_prefix
-        recipe
-        read_type
-        status
-        notes (optional)
-
-    - Run records require the following fields:
+  sequencing_runs_update.tsv has the following tab-delimited columns (this format is used by the ENA run submission script):
+    center  scientific_name tolid   common_names    biosample_accession     sample_tube_or_well_id  sample_coordinator      recipe aim      locus_tag       alt_assembly    alt_annotation  instrument      library_selection       library_strategy        exp_attrlib_attr        yield   forward_file_name       forward_file_md5        reverse_file_name       reverse_file_md5        native_file_name        native_file_md5
+  
+    - For the ERGA-Stream update only the following fields are required to be filled:
         scientific_name or tolid_prefix
         read_type
         yield
+        sample_tube_or_well_id (this needs to correspond to the tube_or_well_id submitted to COPO)
         forward_file_name
-        sample_tube_or_well_id (this should correspond to the tube_or_well_id submitted to COPO)
         all other filenames and md5sums are optional (but recommended)
   
   Fields not used by update_runs.pl but useful for submission of experiments and runs to the ENA:
