@@ -95,20 +95,12 @@ usage: update_sequencing.pl [-h] [-c <ergastream.cnf>] -f <sequencing_update.tsv
 
   Two types of records are parsed from the tsv: status updates and sequencing runs. These can be in the same tsv or submitted via separate tsvs.
     - Status update records require the following fields:
-        scientific_name or tolid_prefix
+        scientific_name or tolid_prefix (one or the other is required)
         recipe
         read_type
         status
         notes (optional)
 
-    - Run records require the following fields:
-        scientific_name or tolid_prefix
-        read_type
-        yield
-        forward_file_name
-        sample_tube_or_well_id (this should correspond to the tube_or_well_id submitted to COPO)
-        all other filenames and md5sums are optional (but recommended)
-  
   Fields not used by update_runs.pl but useful for submission of experiments and runs to the ENA:
     experiment_attributes run_attributes nominal_length nominal_sdev library_construction_protocol
 
