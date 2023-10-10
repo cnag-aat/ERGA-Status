@@ -4,18 +4,15 @@ use lib "/home/groups/assembly/talioto/myperlmods/"; #change this to point to yo
 use REST::Client;
 use MIME::Base64;
 use JSON::PP;
-#use Data::Dumper;
 use Getopt::Long;
 use strict;
 
 # https://metacpan.org/pod/REST::Client
 # https://metacpan.org/pod/JSON::PP
 # https://metacpan.org/pod/MIME::Base64
-
 # https://anaconda.org/bioconda/perl-rest-client
 # https://anaconda.org/bioconda/perl-json-pp
 # https://anaconda.org/bioconda/perl-mime-base64
-
 
 my $conf = ".ergastream.cnf";
 my $erga_status_url="https://genomes.cnag.cat/erga-stream/api";
@@ -33,38 +30,6 @@ my %SEQUENCING_STATUS_CHOICES = (
   'Done'=>1,
   'Issue'=>1
 );
-
-##### Sequencing Table Model
-    # species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
-    # genomic_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
-    # hic_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
-    # rna_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
-    # note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
-    # rnaseq_numlibs_target = models.IntegerField(null=True, blank=True, default=3, verbose_name="RNAseq libs target")
-    # recipe = models.ForeignKey(Recipe, on_delete=models.SET_NULL, to_field='name', default='HiFi25', verbose_name="Recipe", null=True)
-
-##### Reads Table Model
-    # project = models.ForeignKey(Sequencing, on_delete=models.CASCADE, verbose_name="Sequencing project")
-    # ont_yield = models.BigIntegerField(null=True, blank=True, verbose_name="ONT yield")
-    # hifi_yield = models.BigIntegerField(null=True, blank=True, verbose_name="HiFi yield")
-    # hic_yield = models.BigIntegerField(null=True, blank=True, verbose_name="Hi-C yield")
-    # short_yield = models.BigIntegerField(null=True, blank=True, verbose_name="Short read yield")
-    # rnaseq_numlibs = models.IntegerField(null=True, blank=True, verbose_name="RNAseq libs")
-    # ont_ena = models.CharField(max_length=12, null=True, blank=True, verbose_name="ONT Accession")
-    # hifi_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="HiFi Accession")
-    # hic_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="Hi-C Accession")
-    # short_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="Short read Accession")
-    # rnaseq_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="RNAseq Accession")
-##### Run Table Model
-    # project = models.ForeignKey(Sequencing, on_delete=models.CASCADE, verbose_name="Sequencing project")
-    # read_type = models.CharField(max_length=15, help_text='Read type', choices=READ_TYPES, default=READ_TYPES[0][0])
-    # seq_yield = models.BigIntegerField(null=True, blank=True, verbose_name="yield")
-    # md5sum = models.CharField(max_length=32, help_text='Read 1 md5sum')
-
-#### EXAMPLE TABLES ####
-
-########################
-
 
 GetOptions(
   'c|config:s' => \$conf,
@@ -179,9 +144,8 @@ sub update{
         native_file_name 
         native_file_md5
         );
-  print join("\t",@fields),"\n";
+  print join("\t",@fields),"\n"; #print header of returned output table, with retrieved biosample accession added.
   for (my $i = 0;$i<@$sequpdate; $i++){
-    #print STDERR "here1\n";
     my $tolid_prefix=$sequpdate->[$i]->{'tolid'};
     $tolid_prefix =~ s/\d+$//;
     my $scientific_name=$sequpdate->[$i]->{'scientific_name'};
@@ -195,12 +159,8 @@ sub update{
     if ($instrument =~ /^Illumina/i && $library_strategy =~ /Hi-?C/i){$read_type = "HiC";$library_strategy = "Hi-C";}
     if ($instrument =~ /ION$/i && $library_strategy =~ /WGS/i){$read_type = "ONT";$library_strategy = "WGS";}
     my $yield=$sequpdate->[$i]->{'yield'};
-    #my $status = $sequpdate->[$i]->{status};
-    #print STDERR "yield: $yield\n";
-    # if ($status !~/\S/){
     next if not $yield > 0;
     next if $yield eq '';
-    # }
     my $species_id = 0;
     my $species_url = 0;
     if ($tolid_prefix =~m/\w/){
@@ -217,7 +177,9 @@ sub update{
       $species_url = $response1->{results}->[0]->{url};
       $species_url =~/(\d+)\/$/;
       $species_id = $1;
-    }else{die "please provide tolid or scientific_name\n"}
+    }else{
+      die "please provide tolid or scientific_name\n";
+    }
 
     #Retrieve project based on species_id
     $client->GET("$erga_status_url/sequencing/?species=". $species_id);
@@ -229,31 +191,6 @@ sub update{
     if ($response2->{count} == 1) { #proceed if there is one and only one project
       $sequpdate->[$i]->{project}=$project_id;
       if ($sequpdate->[$i]->{'yield'} =~/\S/){
-
-        # my $squery = "$erga_status_url/sample/?tube_or_well_id=".$sequpdate->[$i]->{'sample_tube_or_well_id'};
-        # #print "$squery\n";
-        # $client->GET($squery);
-        # #print STDERR $client->responseContent(),"\n";
-        # my $sample_response = decode_json $client->responseContent();
-        # my $biosample = '';
-        # my $sample_url = '';
-        # my  $tolid = '';
-        # if ($sample_response->{count} > 0) {
-        #   $biosample = $sample_response->{results}->[0]->{biosampleAccession};
-        #   $sample_url = $sample_response->{results}->[0]->{url};
-        #   #print STDERR "BioSample Accession: $biosample\n";
-        #   $sequpdate->[$i]->{'biosample_accession'} = $biosample;
-        #   $sequpdate->[$i]->{'common_names'} = '';
-        #   $sequpdate->[$i]->{'tolid'} = '';
-        #   my $specimenquery = $sample_response->{results}->[0]->{'specimen'} ;
-           
-        #   #print "$specimenquery\n";
-        #   $client->GET($specimenquery);
-        #   #print STDERR $client->responseContent(),"\n";
-        #   my $specimen_response = decode_json $client->responseContent();
-        #   $tolid = $sample_response->{results}->[0]->{'tolid'};
-        #   $sequpdate->[$i]->{'tolid'} = $tolid;
-        # } else {die "Sample corresponding to ".$sequpdate->[$i]->{'sample_tube_or_well_id'}. " not found.\n";}
         my $sample_url = '';
         my $squery = "$erga_status_url/sample/?tube_or_well_id=".$sequpdate->[$i]->{'sample_tube_or_well_id'};
         $client->GET($squery);
@@ -267,8 +204,9 @@ sub update{
           my $response_specimen = decode_json $client->responseContent();
           #print STDERR "tolid: ",$response_specimen->{tolid},"\n\n";
           $sequpdate->[$i]->{'tolid'} = $response_specimen->{tolid};
-          
-        }else{print STDERR "No sample found for $scientific_name with tube_or_well_id:",$sequpdate->[$i]->{'sample_tube_or_well_id'},"\n" and next;}
+        }else{
+          print STDERR "No sample found for $scientific_name with tube_or_well_id:",$sequpdate->[$i]->{'sample_tube_or_well_id'},"\n" and next;
+        }
 
         $client->GET("$erga_status_url/reads/?project=". $project_id);
         my $readsresp = decode_json $client->responseContent();
@@ -304,7 +242,6 @@ sub update{
         }
         #print back table
         $sequpdate->[$i]->{'library_selection'} = 'RANDOM';
-
         foreach my $f (@fields){
           print exists($sequpdate->[$i]->{$f})?$sequpdate->[$i]->{$f}:"-";
           print "\t";

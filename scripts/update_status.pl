@@ -4,18 +4,15 @@ use lib "/home/groups/assembly/talioto/myperlmods/"; #change this to point to yo
 use REST::Client;
 use MIME::Base64;
 use JSON::PP;
-#use Data::Dumper;
 use Getopt::Long;
 use strict;
 
 # https://metacpan.org/pod/REST::Client
 # https://metacpan.org/pod/JSON::PP
 # https://metacpan.org/pod/MIME::Base64
-
 # https://anaconda.org/bioconda/perl-rest-client
 # https://anaconda.org/bioconda/perl-json-pp
 # https://anaconda.org/bioconda/perl-mime-base64
-
 
 my $conf = ".ergastream.cnf";
 my $erga_status_url="https://genomes.cnag.cat/erga-stream/api";
@@ -34,45 +31,6 @@ my %SEQUENCING_STATUS_CHOICES = (
   'Issue'=>1
 );
 
-##### Sequencing Table Model
-    # species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
-    # genomic_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
-    # hic_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
-    # rna_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
-    # note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
-    # rnaseq_numlibs_target = models.IntegerField(null=True, blank=True, default=3, verbose_name="RNAseq libs target")
-    # recipe = models.ForeignKey(Recipe, on_delete=models.SET_NULL, to_field='name', default='HiFi25', verbose_name="Recipe", null=True)
-
-##### Reads Table Model
-    # project = models.ForeignKey(Sequencing, on_delete=models.CASCADE, verbose_name="Sequencing project")
-    # ont_yield = models.BigIntegerField(null=True, blank=True, verbose_name="ONT yield")
-    # hifi_yield = models.BigIntegerField(null=True, blank=True, verbose_name="HiFi yield")
-    # hic_yield = models.BigIntegerField(null=True, blank=True, verbose_name="Hi-C yield")
-    # short_yield = models.BigIntegerField(null=True, blank=True, verbose_name="Short read yield")
-    # rnaseq_numlibs = models.IntegerField(null=True, blank=True, verbose_name="RNAseq libs")
-    # ont_ena = models.CharField(max_length=12, null=True, blank=True, verbose_name="ONT Accession")
-    # hifi_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="HiFi Accession")
-    # hic_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="Hi-C Accession")
-    # short_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="Short read Accession")
-    # rnaseq_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="RNAseq Accession")
-##### Run Table Model
-    # project = models.ForeignKey(Sequencing, on_delete=models.CASCADE, verbose_name="Sequencing project")
-    # read_type = models.CharField(max_length=15, help_text='Read type', choices=READ_TYPES, default=READ_TYPES[0][0])
-    # seq_yield = models.BigIntegerField(null=True, blank=True, verbose_name="yield")
-    # md5sum = models.CharField(max_length=32, help_text='Read 1 md5sum')
-
-#### EXAMPLE TABLES ####
-
-########################
-
-#PacBio
-#Revio
-#Sequel
-#GridION
-#Illumina
-
-
-
 GetOptions(
   'c|config:s' => \$conf,
   'f|file:s' => \$sequencing_tsv_file,
@@ -90,7 +48,7 @@ usage: update_sequencing.pl [-h] [-c <ergastream.cnf>] -f <sequencing_status_upd
   The username and passwords are the ones assigned to your team. If you'd like to use one attached to an email, 
   let Tyler know and he will grant your registered user the same priveleges.
 
-  sequencing_update.tsv has the following tab-delimited columns:
+  sequencing_status_update.tsv has the following tab-delimited columns:
     center
     scientific_name (one or the other of scientific_name or tolid_prefix is required)
     tolid_prefix (one or the other of scientific_name or tolid_prefix is required)
@@ -151,11 +109,8 @@ sub update{
     if ($instrument =~ /ION$/i && $library_strategy =~ /WGS/i){$read_type = "ONT";$library_strategy = "WGS";}
     my $yield=$sequpdate->[$i]->{'yield'};
     my $status = $sequpdate->[$i]->{status};
-    print STDERR "\n$read_type\t$library_strategy\t$status\n\n";
-    # if ($status !~/\S/){
-    #   next if not $yield > 0;
-    #   next if $yield eq '';
-    # }
+    #print STDERR "\n$read_type\t$library_strategy\t$status\n\n";
+
     my $species_id = 0;
     my $species_url = 0;
     if ($tolid_prefix =~m/\w/){
@@ -180,7 +135,7 @@ sub update{
     my $project_url = $response2->{results}->[0]->{url};
     $project_url =~/(\d+)\/$/;
     my $project_id = $1;
-    print STDERR "\n$project_url\n";
+    #print STDERR "\n$project_url\n";
     if ($response2->{count} == 1) { #proceed if there is one and only one project
       $sequpdate->[$i]->{project}=$project_id;
       #my $status=$sequpdate->[$i]->{status};
@@ -205,62 +160,13 @@ sub update{
         }
         $seq_insert_data{recipe}=$recipe if $recipe =~/\S/;
         my $seqinsert = encode_json \%seq_insert_data;
-        print STDERR "$seqinsert\n";
+        #print STDERR "$seqinsert\n";
         print STDERR "Updating $project_url\n";
         $client->PATCH($project_url, $seqinsert);
-        print STDERR $client->responseContent(),"\n";
+        #print STDERR $client->responseContent(),"\n";
       }
-      # if ($sequpdate->[$i]->{'yield'} =~/\S/){
-
-      #   my $squery = "$erga_status_url/sample/?tube_or_well_id=".$sequpdate->[$i]->{'sample_tube_or_well_id'};
-      #   print "$squery\n";
-      #   $client->GET($squery);
-      #   print STDERR $client->responseContent(),"\n";
-      #   my $sample_response = decode_json $client->responseContent();
-      #   my $biosample = '';
-      #   my $sample_url = '';
-      #   if ($sample_response->{count} > 0) {
-      #     $biosample = $sample_response ->{results}->[0]->{biosampleAccession};
-      #     $sample_url = $sample_response ->{results}->[0]->{url};
-      #     print STDERR "BioSample Accession: $biosample\n";
-      #   } else {die "Sample corresponding to ".$sequpdate->[$i]->{'sample_tube_or_well_id'}. " not found.\n";}
-        
-
-      #   $client->GET("$erga_status_url/reads/?project=". $project_id);
-      #   my $readsresp = decode_json $client->responseContent();
-      #   my $reads_url = $readsresp->{results}->[0]->{url};
-      #   my %read_insert_data = ();
-      #   $read_insert_data{project}=$project_url;
-      #   $read_insert_data{tube_or_well_id}=$sequpdate->[$i]->{'sample_tube_or_well_id'};
-      #   $read_insert_data{read_type}=$read_type;
-      #   $read_insert_data{seq_yield}=$sequpdate->[$i]->{'yield'};
-      #   $read_insert_data{forward_filename}=$sequpdate->[$i]->{'forward_file_name'};
-      #   $read_insert_data{forward_md5sum}=$sequpdate->[$i]->{'forward_file_md5'};
-      #   $read_insert_data{reverse_filename}=$sequpdate->[$i]->{'reverse_file_name'};
-      #   $read_insert_data{reverse_md5sum}=$sequpdate->[$i]->{'reverse_file_md5'};
-      #   $read_insert_data{native_filename}=$sequpdate->[$i]->{'native_file_name'};
-      #   $read_insert_data{native_md5sum}=$sequpdate->[$i]->{'native_file_md5'};
-      #   $read_insert_data{reads}=$reads_url;
-      #   $read_insert_data{sample}=$sample_url;
-      #   my $readinsert = encode_json \%read_insert_data;
-        
-      #   $client->GET("$erga_status_url/run/?sample_tube_or_well_id=". $sequpdate->[$i]->{'sample_tube_or_well_id'} ."&read_type=".$read_type ."&forward_filename=".$sequpdate->[$i]->{'forward_file_name'});
-      #   my $response_reads = decode_json $client->responseContent();
-      #   if ($response_reads->{count} > 0) {
-      #     #PATCH
-      #     print STDERR "Updating existing run record: \n",
-      #     my $run_url = $response_reads->{results}->[0]->{url};
-      #     $client->PATCH($run_url, $readinsert);
-      #     print STDERR $client->responseContent(),"\n";
-      #   }else{
-      #     #POST
-      #     print STDERR "Inserting new run data... \n";
-      #     $client->POST("$erga_status_url/run/", $readinsert);
-      #     print STDERR $client->responseContent(),"\n";
-      #   }
-      # }
     } else {
-      print STDERR "Couldn't find project. Please add project for $tolid_prefix via the admin interface. Skipping for now.\n"; 
+      print STDERR "Couldn't find project. Please add project for $scientific_name $tolid_prefix via the admin interface. Skipping for now.\n"; 
     }
   }
   return 1;
@@ -277,7 +183,6 @@ sub loadTbl {
   while (my $record = <TAB>) {
     chomp $record;
     my @r = split /[\t]/,$record;
-
     for (my $i=0;$i<@h; $i++) {
       $arrayref->[$count]->{$h[$i]}=($r[$i]);
     }
