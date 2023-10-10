@@ -1,10 +1,15 @@
 #!/usr/bin/env perl
 use lib "/home/groups/assembly/talioto/myperlmods/";
+use lib "/home/groups/assembly/talioto/erga_scripts/";
+use LWP::Protocol::https;
 use REST::Client;
 use MIME::Base64;
 use JSON::PP;
 use Data::Dumper;
 use Getopt::Long;
+use utf8;
+
+use Unicode::Normalize;
 my $conf = ".ergastream.cnf";
 my $erga_status_url="https://genomes.cnag.cat/erga-stream/api";
 my $printhelp = 0;
@@ -50,6 +55,7 @@ $client->addHeader('Authorization' => 'Basic '.encode_base64($config{'username'}
 
 
 my $copoclient = REST::Client->new();
+$copoclient->setTimeout(60);
 $copoclient->addHeader('Content-Type', 'application/json');
 $copoclient->addHeader('charset', 'UTF-8');
 $copoclient->addHeader('Accept', 'application/json');
@@ -61,7 +67,7 @@ usage: $0
 END_HELP
 my $all_species_query = "$erga_status_url/species/";
 $client->GET($all_species_query);
-#print $client->responseContent() and exit;
+print $client->responseContent();# and exit;
 my $response = decode_json $client->responseContent();
 my %taxids = ();
 if ($response->{count} > 0){
@@ -73,22 +79,27 @@ if ($response->{count} > 0){
 print scalar %taxids," found\n";
 foreach my $k (sort keys %taxids){print STDERR "$k\n";} 
 my $sample_data;
+# print STDERR "Ingesting ERGA data from COPO... \n";
+# die "No sample data!\n" unless $sample_data=(getSamples($sample_data, 'sample/erga/'));
+# print STDERR "Done.\n";
+
+print STDERR "Ingesting ERGA-BGE data from COPO... \n";
+die "No sample data!\n" unless $sample_data=(getSamples($sample_data, 'sample/associated_tol_project/BGE-ERGA/'));
+print STDERR "Done.\n";
+
 print STDERR "Ingesting ERGA data from COPO... \n";
-#die "No sample data!\n" unless $sample_data=(getSamples($sample_data, 'sample/erga/'));
+die "No sample data!\n" unless $sample_data=(getSamples($sample_data, 'sample/erga/'));
 print STDERR "Done.\n";
 
-print STDERR "Ingesting ERGA-BGE data from COPO... \n";
+print STDERR "Ingesting associated project ERGA data from COPO... \n";
 die "No sample data!\n" unless $sample_data=(getSamples($sample_data, 'sample/associated_tol_project/ERGA/'));
-print STDERR "Done.\n";
-
-print STDERR "Ingesting ERGA-BGE data from COPO... \n";
-#die "No sample data!\n" unless $sample_data=(getSamples($sample_data, 'sample/associated_tol_project/BGE-ERGA/'));
 print STDERR "Done.\n";
 
 sub getSamples {
   my $arrayref = shift;
   my $project_sub_url = shift;
   #Retrieve copo_ids from COPO for ERGA project
+  print STDERR "$copo_url/$project_sub_url\n";
   $copoclient->GET("$copo_url/$project_sub_url");
   my $response1 = decode_json $copoclient->responseContent();
   #print STDERR "$response1\n";
@@ -97,6 +108,7 @@ sub getSamples {
   foreach my $record (@$sample_array){
     my $copo_id = $record->{copo_id};
     print STDERR "COPO ID: $copo_id\n";
+    print STDERR "$copo_url/sample/copo_id/$copo_id/\n";
     $copoclient->GET("$copo_url/sample/copo_id/$copo_id/");
     my $response2 = decode_json $copoclient->responseContent();
     #print STDERR "$response2\n";
@@ -157,6 +169,17 @@ sub getSamples {
     # proxy_voucher_link = models.CharField(max_length=200, null=True, blank=True)
     # voucher_institution = models.CharField(max_length=200, null=True, blank=True)
     # biobanking_team = models.ForeignKey(BiobankingTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="biobanking team")
+          my $decomposed = NFKD( $s->{GAL} );
+          $decomposed =~ s/\p{NonspacingMark}//g;
+          my $seqteam_q = "$erga_status_url/sequencing_team/?gal_name=".$decomposed;
+          my $seqteam_url = '';
+          $client->GET($seqteam_q);
+          my $seqteam_response = decode_json $client->responseContent();
+          if ($seqteam_response->{count} > 0) {
+            $seqteam_url = $seqteam_response->{results}->[0]->{url};
+          }
+          print STDERR "$seqteam_url\n";# and exit;
+
           my $sample_collection_q = "$erga_status_url/sample_collection/?species=".$species_pk;
           my $scurl = '';
           $client->GET($sample_collection_q);
@@ -237,15 +260,15 @@ sub getSamples {
           my $response3 = decode_json $client->responseContent();
           if ($response3->{count} > 0) {
             #PATCH
-            print STDERR "Updating existing record: ",
+            #print STDERR "Updating existing record: ",
               $response3 ->{results}->[0]->{url},"... \n";
             $client->PATCH($response3 ->{results}->[0]->{url}, $insert);
-            print STDERR "\nResponse:",$client->responseContent(),"\n";
+            #print STDERR "\nResponse:",$client->responseContent(),"\n";
           }else{
             #POST
-            print STDERR "Inserting... ";
+            #print STDERR "Inserting... ";
             $client->POST("$erga_status_url/sample/", $insert);
-            print STDERR "\nResponse:",$client->responseContent(),"\n";
+            #print STDERR "\nResponse:",$client->responseContent(),"\n";
           }
           my $sample_collection_record = {};
           $sample_collection_record->{species} = $species_id;
@@ -255,6 +278,11 @@ sub getSamples {
             }else{
               $sample_collection_record->{genomic_sample_status} = 'Submitted';
             }
+            if ($s->{status} eq 'pending'){
+              $sample_collection_record->{copo_status} = 'Pending';
+            }else{
+              $sample_collection_record->{copo_status} = 'Accepted';
+            }
           }
           if ($s->{PURPOSE_OF_SPECIMEN} =~/RNA_SEQUENCING/){
             if ($s->{status} eq 'pending'){
@@ -263,19 +291,42 @@ sub getSamples {
               $sample_collection_record->{rna_sample_status} = 'Submitted';
             }
           }
+
+          # Due to notification sent on save, genome team must exist before collection status
+          my $genome_team_record = {};
+          $genome_team_record->{sequencing_team} = $seqteam_url;
+          $genome_team_record->{species} = $species_id;
+          my $gt_insert = encode_json $genome_team_record;
+          my $genome_team_query = "$erga_status_url/genome_team/?species=".$species_pk;
+          #print "$query\n";
+          $client->GET($genome_team_query);
+          #print STDERR "Genome Team Query Response:", $client->responseContent(),"\n";
+          my $gt_response = decode_json $client->responseContent();
+          if ($gt_response->{count} > 0 ){
+            if (!($gt_response->{results}->[0]->{sequencing_team}) || $gt_response->{results}->[0]->{sequencing_team} !~ /\w/){
+              #print STDERR "Updating genome team... ";
+              $client->PATCH($gt_response ->{results}->[0]->{url}, $gt_insert);
+              #print STDERR "\nResponse:",$client->responseContent(),"\n";
+            }
+          }else{
+            #print STDERR "Creating genome team... ";
+            $client->POST("$erga_status_url/genome_team/", $gt_insert);
+            #print STDERR "\nResponse:",$client->responseContent(),"\n";
+          }
+
           my $status_insert = encode_json $sample_collection_record;
           my $sample_collection_query = "$erga_status_url/sample_collection/?species=".$species_pk;
           #print "$query\n";
           $client->GET($sample_collection_query);
-          print STDERR "Sample Collection Query Response:", $client->responseContent(),"\n";
+          #print STDERR "Sample Collection Query Response:", $client->responseContent(),"\n";
           my $response4 = decode_json $client->responseContent();
           if ($response4->{count} > 0) {
-            print STDERR "Updating sample collection record... ";
+            #print STDERR "Updating sample collection record... ";
             $client->PATCH($response4 ->{results}->[0]->{url}, $status_insert);
-            print STDERR "\nResponse:",$client->responseContent(),"\n";
+            #print STDERR "\nResponse:",$client->responseContent(),"\n";
           }else{
             $client->POST("$erga_status_url/sample_collection/", $status_insert);
-            print STDERR "\nResponse:",$client->responseContent(),"\n";
+            #print STDERR "\nResponse:",$client->responseContent(),"\n";
           }
         }
       }
