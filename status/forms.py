@@ -18,6 +18,7 @@ ROLE_CHOICES = (
 ('assembly_team', 'Assembly Team'),
 ('community_annotation_team', 'Community Annotation Team'),
 ('annotation_team', 'Annotation Team'),
+('other', 'other'),
 )
 class CustomSignupForm(SignupForm):
     first_name = forms.CharField(max_length=60, label='First Name')

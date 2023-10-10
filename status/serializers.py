@@ -90,6 +90,36 @@ class SampleCollectionSerializer(BulkSerializerMixin, serializers.HyperlinkedMod
         model = SampleCollection
         fields = '__all__'
 
+class SampleHandlingTeamSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = SampleHandlingTeam
+        fields = '__all__'
+
+class TaxonomyTeamSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = TaxonomyTeam
+        fields = '__all__'
+
+class BarcodingTeamSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = BarcodingTeam
+        fields = '__all__'
+
+class ExtractionTeamSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = ExtractionTeam
+        fields = '__all__'
+
+class CommunityAnnotationTeamSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = CommunityAnnotationTeam
+        fields = '__all__'
+
+class AnnotationTeamSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = AnnotationTeam
+        fields = '__all__'
+
 class SequencingSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Sequencing
@@ -103,6 +133,16 @@ class SequencingTeamSerializer(BulkSerializerMixin, serializers.HyperlinkedModel
 class BiobankingTeamSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = BiobankingTeam
+        fields = '__all__'
+
+class VoucheringTeamSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = VoucheringTeam
+        fields = '__all__'
+
+class GenomeTeamSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = GenomeTeam
         fields = '__all__'
 
 class ReadsSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):

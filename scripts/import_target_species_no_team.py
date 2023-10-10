@@ -117,6 +117,10 @@ with open(args.csv_file) as csvfile:
             targetspecies.taxon_order = t_order or None
             targetspecies.taxon_family = t_family or None
             targetspecies.taxon_genus = t_genus or None
+            #targetspecies.common_name = row['common_name'] or None
+            targetspecies.synonym = row['synonym'] or None
+            targetspecies.goat_target_list_status = row['goat_target_list_status'] or None
+            targetspecies.goat_sequencing_status = row['goat_sequencing_status'] or None
             targetspecies.save()
             if row['synonym'] or None:
                 for syn in row['synonym'].split(','):
@@ -142,108 +146,50 @@ with open(args.csv_file) as csvfile:
             collection_record, created = SampleCollection.objects.get_or_create(
                         species=targetspecies
                     )
-            collection_record.genomic_sample_status="Not collected"
-            collection_record.rna_sample_status="Not collected"
-            collection_record.save()
+            # collection_record.genomic_sample_status="Not collected"
+            # collection_record.rna_sample_status="Not collected"
+            # collection_record.save()
 
             sequencing_record, created = Sequencing.objects.get_or_create(
                         species=targetspecies
                     )
-            sequencing_record.genomic_seq_status="Waiting"
-            sequencing_record.hic_seq_status="Waiting"
-            sequencing_record.rna_seq_status="Waiting"
-            sequencing_record.save()
+            # sequencing_record.genomic_seq_status="Waiting"
+            # sequencing_record.hic_seq_status="Waiting"
+            # sequencing_record.rna_seq_status="Waiting"
+            # sequencing_record.save()
 
             assemblyproject_record, created = AssemblyProject.objects.get_or_create(
                         species=targetspecies
                     )
-            assemblyproject_record.status="Waiting"
-            assemblyproject_record.save()
+            # assemblyproject_record.status="Waiting"
+            # assemblyproject_record.save()
 
             annotation_record, created = Annotation.objects.get_or_create(
                         species=targetspecies
                     )
-            annotation_record.status="Waiting"
-            annotation_record.save()
+            # annotation_record.status="Waiting"
+            # annotation_record.save()
 
             cannotation_record, created = CommunityAnnotation.objects.get_or_create(
                         species=targetspecies
                     )
-            cannotation_record.status="Waiting"
-            cannotation_record.save()
+            # cannotation_record.status="Waiting"
+            # cannotation_record.save()
 
-            if row['sequencing_team']:
-                try:
-                    gteam = GenomeTeam.objects.get(species=targetspecies)
-                except GenomeTeam.DoesNotExist:
-                    gteam, _ = GenomeTeam.objects.get_or_create(
-                        species=targetspecies
-                    )
-                gteam.sequencing_team, _ = SequencingTeam.objects.get_or_create(name = row['sequencing_team'])
-                gteam.extraction_team, _ = ExtractionTeam.objects.get_or_create(name = row['sequencing_team'])
-                gteam.assembly_team, _ = AssemblyTeam.objects.get_or_create(name = ASSEMBLY_TEAMS[row['sequencing_team']])
-                gteam.save()
+            # if row['sequencing_team']:
+            #     try:
+            #         gteam = GenomeTeam.objects.get(species=targetspecies)
+            #     except GenomeTeam.DoesNotExist:
+            #         gteam, _ = GenomeTeam.objects.get_or_create(
+            #             species=targetspecies
+            #         )
+            #     gteam.sequencing_team, _ = SequencingTeam.objects.get_or_create(name = row['sequencing_team'])
+            #     gteam.extraction_team, _ = ExtractionTeam.objects.get_or_create(name = row['sequencing_team'])
+            #     gteam.assembly_team, _ = AssemblyTeam.objects.get_or_create(name = ASSEMBLY_TEAMS[row['sequencing_team']])
+            #     gteam.save()
 
         else:
-            print(row)
-            try:
-                targetspecies = TargetSpecies.objects.get(listed_species=row['original_species'])
-            except TargetSpecies.DoesNotExist:
-                targetspecies, _ = TargetSpecies.objects.get_or_create(
-                    listed_species=row['original_species'])
-
-            if row['tags'] or None:
-                for t in row['tags'].split(' '):
-                    species_tag, created = Tag.objects.get_or_create(
-                        tag=t
-                    )
-                    targetspecies.tags.add(species_tag)
-                    targetspecies.save()
-
-            collection_record, created = SampleCollection.objects.get_or_create(
-                        species=targetspecies
-                    )
-            collection_record.note="No taxon_id; not found in GoaT."
-            collection_record.genomic_sample_status="Issue"
-            collection_record.rna_sample_status="Not collected"
-            collection_record.save()
-
-            sequencing_record, created = Sequencing.objects.get_or_create(
-                        species=targetspecies
-                    )
-            sequencing_record.genomic_seq_status="Waiting"
-            sequencing_record.hic_seq_status="Waiting"
-            sequencing_record.rna_seq_status="Waiting"
-            sequencing_record.save()
-
-            assemblyproject_record, created = AssemblyProject.objects.get_or_create(
-                        species=targetspecies
-                    )
-            assemblyproject_record.status="Waiting"
-            assemblyproject_record.save()
-
-            annotation_record, created = Annotation.objects.get_or_create(
-                        species=targetspecies
-                    )
-            annotation_record.status="Waiting"
-            annotation_record.save()
-
-            cannotation_record, created = CommunityAnnotation.objects.get_or_create(
-                        species=targetspecies
-                    )
-            cannotation_record.status="Waiting"
-            cannotation_record.save()
-            
-            if row['sequencing_team']:
-                try:
-                    gteam = GenomeTeam.objects.get(species=targetspecies)
-                except GenomeTeam.DoesNotExist:
-                    gteam, _ = GenomeTeam.objects.get_or_create(
-                        species=targetspecies
-                    )
-                gteam.sequencing_team, _ = SequencingTeam.objects.get_or_create(name = row['sequencing_team'])
-                gteam.extraction_team, _ = ExtractionTeam.objects.get_or_create(name = row['sequencing_team'])
-                gteam.assembly_team, _ = AssemblyTeam.objects.get_or_create(name = ASSEMBLY_TEAMS[row['sequencing_team']])
-                gteam.save()
+            print("no taxon_id\n") + print(row)
+          
 
 print("Finished")

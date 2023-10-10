@@ -26,6 +26,7 @@ from status.views import EditProfileView
 from status.views import SuccessView
 from status.views import LogView
 from status.views import SpeciesLogView
+from status.views import GoaTListView
 
 
 urlpatterns = [
@@ -34,6 +35,7 @@ urlpatterns = [
     path("log/", LogView.as_view(), name="log"),
     path("log/?species=<int:id>/", SpeciesLogView.as_view(), name="species_log"),
     path("species/", TargetSpeciesListView.as_view(), name="species_list"),
+    path("goat/", GoaTListView.as_view(), name="goat_list"),
     path("species/<int:pk>/", views.species_detail, name="species_detail"),
     path("species/?scientific_name=<scientific_name>", views.species_detail, name="species_detail"),
     path("assemblies/", AssemblyListView.as_view(), name="assembly_list"),

@@ -22,8 +22,8 @@ class OverviewTable(tables.Table):
     #         }
     #     }
     # )
-    seq_center = tables.Column(accessor='genometeam__sequencing_team',linkify=True, verbose_name='Center')
-    genomic_sample_status = tables.Column(accessor='samplecollection.genomic_sample_status',verbose_name='Samples',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
+    seq_center = tables.Column(accessor='gt_rel__sequencing_team',linkify=True, verbose_name='Center')
+    copo_status = tables.Column(accessor='samplecollection.copo_status',verbose_name='COPO',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     # hic_sample_status = tables.Column(accessor='samplecollection.hic_sample_status',verbose_name='HiC Sample',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     # rna_sample_status = tables.Column(accessor='samplecollection.rna_sample_status',verbose_name='RNA Sample',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     long_seq_status = tables.Column(accessor='sequencing.long_seq_status',verbose_name='Long-read',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
@@ -43,6 +43,8 @@ class OverviewTable(tables.Table):
     #log = tables.Column(accessor='updatestatus',verbose_name='Log')
     log = tables.TemplateColumn('<a href="' + settings.DEFAULT_DOMAIN + 'log/?species={{record.id}}"><i class="fas fa-history"></i></a>',empty_values=(), verbose_name='log')
     attrs={"td": {"class": "overview-table"}}
+
+    goat_sequencing_status = tables.Column(verbose_name="GoaT Status",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     #targetspecies=TargetSpecies.objects.get(=pk)
     # def render_collection_status(self, value):
     #     return mark_safe('<a href="'+
@@ -56,18 +58,27 @@ class OverviewTable(tables.Table):
     #         return ''
     def render_scientific_name(self, value, record):
         url = reverse('species_detail',kwargs={'pk': record.pk})
-        if (str(value) == str(record.listed_species)):
-            return format_html('<a href="{}">{}</a>',url, str(value))
-        else:
-            return format_html('<a href="{}">{}</a>',url, str(value) + " (" + str(record.listed_species) + ")") #'<a href="{}/{}">{}</a>', 
+        return format_html('<a href="{}">{}</a>',url, str(value))
+
+        # if (str(value) == str(record.listed_species)):
+        #     return format_html('<a href="{}">{}</a>',url, str(value))
+        # else:
+        #     return format_html('<a href="{}">{}</a>',url, str(value) + " (" + str(record.listed_species) + ")") #'<a href="{}/{}">{}</a>', 
     def value_scientific_name(self, value):
         return value
       
-    def render_genomic_sample_status(self, value, record):
+    def render_goat_sequencing_status(self, value, record):
+        html = '<a href="' + settings.DEFAULT_DOMAIN + 'collection/?species='+str(record.pk)+'"><span class="status '+escape(value.replace(" ",''))+'">'+escape(value.replace("sample_",''))+'</span></a>'
+        return mark_safe(html)
+
+    def value_goat_sequencing_status(self, value):
+        return value
+        
+    def render_copo_status(self, value, record):
         html = '<a href="' + settings.DEFAULT_DOMAIN + 'collection/?species='+str(record.pk)+'"><span class="status '+escape(value.replace(" ",''))+'">'+escape(value)+'</span></a>'
         return mark_safe(html)
 
-    def value_genomic_sample_status(self, value):
+    def value_copo_status(self, value):
         return value
 
     # def render_hic_sample_status(self, value, record):
@@ -151,7 +162,7 @@ class OverviewTable(tables.Table):
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
         # fields = ('tolid_prefix', 'scientific_name','genomic_sample_status','hic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','curation_status','annotation_status','submission_status')
-        fields = ('scientific_name','tolid_prefix','seq_center','genomic_sample_status','long_seq_status','short_seq_status','hic_seq_status','rna_seq_status','assembly_status','annotation_status','community_annotation_status','log')
+        fields = ('scientific_name','tolid_prefix','seq_center','goat_sequencing_status','copo_status','long_seq_status','short_seq_status','hic_seq_status','rna_seq_status','assembly_status','annotation_status','community_annotation_status','log')
 
 class TargetSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']
@@ -159,17 +170,46 @@ class TargetSpeciesTable(tables.Table):
     #listed_species = tables.Column()
     def render_scientific_name(self, value, record):
         url = reverse('species_detail',kwargs={'pk': record.pk})
-        if (str(value) == str(record.listed_species)):
-            return format_html('<a href="{}">{}</a>',url, str(value))
-        else:
-            return format_html('<a href="{}">{}</a>',url, str(value) + " (" + str(record.listed_species) + ")")
+        return format_html('<a href="{}">{}</a>',url, str(value))
+    
+        # url = reverse('species_detail',kwargs={'pk': record.pk})
+        # if (str(value) == str(record.listed_species)):
+        #     return format_html('<a href="{}">{}</a>',url, str(value))
+        # else:
+        #     return format_html('<a href="{}">{}</a>',url, str(value) + " (" + str(record.listed_species) + ")")
     #tolid_prefix = tables.Column(linkify=True)
     class Meta:
         model = TargetSpecies
         template_name = "django_tables2/bootstrap4.html"
         #order_by = 'taxon_kingdom,taxon_phylum,taxon_class,taxon_order,taxon_family,taxon_genus,scientific_name' # use dash for descending order
         paginate = {"per_page": 100}
-        fields = ('scientific_name','tags','taxon_id', 'genome_size', 'c_value','ploidy','haploid_number','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus')
+        fields = ('scientific_name','tags','taxon_id','goat_target_list_status','goat_sequencing_status', 'genome_size', 'c_value','ploidy','haploid_number','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus')
+
+class GoaTSpeciesTable(tables.Table):
+    export_formats = ['csv', 'tsv']
+    scientific_name = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("pk")}, empty_values=())
+    #listed_species = tables.Column()
+
+        # url = reverse('species_detail',kwargs={'pk': record.pk})
+        # if (str(value) == str(record.listed_species)):
+        #     return format_html('<a href="{}">{}</a>',url, str(value))
+        # else:
+        #     return format_html('<a href="{}">{}</a>',url, str(value) + " (" + str(record.listed_species) + ")")
+    #tolid_prefix = tables.Column(linkify=True)
+    taxon_id = tables.Column(verbose_name="ncbi_taxon_id")
+    scientific_name = tables.Column(verbose_name="species")
+    subspecies = tables.Column(verbose_name="subspecies")
+    taxon_family = tables.Column(verbose_name="family")
+    goat_target_list_status = tables.Column(verbose_name="target_list_status")
+    goat_sequencing_status = tables.Column(verbose_name="sequencing_status")
+    synonym = tables.Column(verbose_name="synonym")
+    publication_id = tables.Column(verbose_name="publication_id")
+    class Meta:
+        model = TargetSpecies
+        template_name = "django_tables2/bootstrap4.html"
+        #order_by = 'taxon_kingdom,taxon_phylum,taxon_class,taxon_order,taxon_family,taxon_genus,scientific_name' # use dash for descending order
+        paginate = {"per_page": 100}
+        fields = ('taxon_id', 'scientific_name','subspecies','taxon_family','goat_target_list_status','goat_sequencing_status','synonym','publication_id')
 
 class AssemblyTable(tables.Table):
     export_formats = ['csv', 'tsv']
@@ -218,14 +258,15 @@ class AssemblyProjectTable(tables.Table):
 
 class SampleCollectionTable(tables.Table):
     export_formats = ['csv', 'tsv']
-    genomic_sample_status = tables.TemplateColumn('<span class="status {{record.genomic_sample_status|cut:" "}}">{{record.genomic_sample_status}}</span>',empty_values=(), verbose_name='Genomic Sample')
+    copo_status = tables.TemplateColumn('<span class="status {{record.copo_status|cut:" "}}">{{record.copo_status}}</span>',empty_values=(), verbose_name='COPO')
     # hic_sample_status = tables.TemplateColumn('<span class="{{record.hic_sample_status}}">{{record.hic_sample_status}}</span>',empty_values=(), verbose_name='HiC Sample')
-    rna_sample_status = tables.TemplateColumn('<span class="status {{record.rna_sample_status|cut:" "}}">{{record.rna_sample_status}}</span>',empty_values=(), verbose_name='RNA Sample')
+    # rna_sample_status = tables.TemplateColumn('<span class="status {{record.rna_sample_status|cut:" "}}">{{record.rna_sample_status}}</span>',empty_values=(), verbose_name='RNA Sample')
     # species = tables.Column(linkify=True)
     species = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("species.pk")}, empty_values=())
     specimens = tables.TemplateColumn('<a href="{% url \'specimen_list\' %}?collection={{record.pk}}">specimens</a>',empty_values=(), verbose_name='Specimen(s)')
-    team = tables.Column(accessor='species__genometeam__collection_team',linkify=True)
-
+    team = tables.Column(accessor='species__genometeam__collection_team',linkify=True, verbose_name="Team")
+    #goat_sequencing_status = tables.Column(accessor='species__goat_sequencing_status', verbose_name="GoaT")
+    goat_sequencing_status = tables.TemplateColumn('<span class="status {{record.species.goat_sequencing_status}}">{{record.species.goat_sequencing_status|cut:"sample_"}}</span>',empty_values=(), verbose_name='GoaT Status')
     def value_genomic_sample_status(self, value):
         return value
     # def value_hic_sample_status(self, value):
@@ -238,7 +279,7 @@ class SampleCollectionTable(tables.Table):
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
         #fields = ('species', 'team', 'specimens','note', 'genomic_sample_status','hic_sample_status','rna_sample_status')
-        fields = ('species', 'team', 'specimens','note', 'genomic_sample_status','rna_sample_status')
+        fields = ('species', 'team', 'specimens','note', 'copo_status','goat_sequencing_status')
 
 class SequencingTable(tables.Table):
     long_seq_status = tables.TemplateColumn('<span class="status {{record.long_seq_status}}">{{record.long_seq_status}}</span>',empty_values=(), verbose_name='Long-read Status')

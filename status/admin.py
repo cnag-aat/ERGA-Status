@@ -31,25 +31,110 @@ def export_csv(modeladmin, request, queryset):
 export_csv.short_description = "Export CSV"
 
 # Register your models here.
+GOAT_TARGET_LIST_STATUS_CHOICES = (
+    ('none', 'none'),
+    ('long_list', 'long_list'),
+    ('other_priority', 'other_priority'),
+    ('family_representative', 'family_representative')
+)
+
+GOAT_SEQUENCING_STATUS_CHOICES = (
+    ('', ''),
+    ('sample_collected', 'sample_collected'),
+    ('sample_acquired', 'sample_acquired'),
+    ('data_generation', 'data_generation'),
+    ('in_assembly', 'in_assembly'),
+    ('insdc_open', 'insdc_open'),
+    ('publication_available', 'publication_available')
+)
+
+class UpdateSpeciesActionForm(ActionForm):
+    tags = forms.ModelMultipleChoiceField(
+        queryset=Tag.objects.all().order_by('tag'),
+        required=False
+    )
+    goat_target_list_status = forms.ChoiceField(
+        choices = GOAT_TARGET_LIST_STATUS_CHOICES,
+        required=False
+    )
+
+    goat_sequencing_status = forms.ChoiceField(
+        choices = GOAT_SEQUENCING_STATUS_CHOICES,
+        required=False
+    )
+
+def add_tags(modeladmin, request, queryset):
+    if 'tags' in request.POST:
+        tags = request.POST.getlist('tags')
+        try:
+            for obj in queryset:
+                for t in tags:
+                    obj.tags.add(t)
+        except ValueError:
+             pass
+    messages.add_message(request, messages.INFO, "Added tags successfully")
+
+def remove_tags(modeladmin, request, queryset):
+    if 'tags' in request.POST:
+        tags = request.POST.getlist('tags')
+        try:
+            for obj in queryset:
+                for t in tags:
+                    obj.tags.remove(t)
+        except ValueError:
+             pass
+    messages.add_message(request, messages.INFO, "Removed tags successfully")
+
+def update_status(modeladmin, request, queryset):
+    if 'goat_target_list_status' in request.POST:
+        goat_target_list_status = request.POST['goat_target_list_status']
+        queryset.update(goat_target_list_status=goat_target_list_status)
+    if 'goat_sequencing_status' in request.POST:
+        goat_sequencing_status = request.POST['goat_sequencing_status']
+        queryset.update(goat_sequencing_status=goat_sequencing_status)
+    messages.add_message(request, messages.INFO, "GoaT status updated successfully")
+
 @register(TargetSpecies)
 class TargetSpeciesAdmin(admin.ModelAdmin):
+    list_filter = ["tags"]
+    action_form = UpdateSpeciesActionForm
+    actions = [add_tags,remove_tags,update_status]
+    def get_actions(self, request):
+        actions = super(TargetSpeciesAdmin, self).get_actions(request)
+        # try:
+        #     del actions['delete_selected']
+        # except KeyError:
+        #     pass
+        return actions
+    def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
+        context.update({
+            # 'show_delete': False, # Here
+            # 'show_save': False,
+            # 'show_save_and_continue': False,
+        })
+        return super().render_change_form(request, context, add, change, form_url, obj)
+    list_per_page = 10000
     list_display = (
         'scientific_name',
         'tolid_prefix',
+        'subspecies',
+        'synonym',
+        'taxon_id',
+        'goat_target_list_status',
+        'goat_sequencing_status',
+        'publication_id',
         'get_tags',
         'taxon_kingdom',
         'taxon_phylum',
         'taxon_class',
         'taxon_order',
         'taxon_family',
-        'taxon_genus',
-        # 'taxon_species',
         'chromosome_number',
         'haploid_number',
         'ploidy',
-        'taxon_id',
         'c_value',
-        'genome_size'
+        'genome_size',
+        'date_updated'
     )
 
 @register(UserProfile)
@@ -65,15 +150,6 @@ class UserProfileAdmin(admin.ModelAdmin):
         'get_roles',
         'get_affiliations'
     )
-# Register your models here.
-# @register(CommonNames)
-# class CommonNamesAdmin(admin.ModelAdmin):
-#     list_display = (
-#         'species',
-#         'name'
-#     )
-
-
 
 class MyUserAdmin(UserAdmin):
     def group(self, user):
@@ -198,6 +274,7 @@ def update_teams(modeladmin, request, queryset):
 class GenomeTeamAdmin(admin.ModelAdmin):
     save_as = True
     list_filter = admin.ModelAdmin.list_filter + ('species__tags',)
+    list_per_page = 10000
     action_form = UpdateActionForm
     actions = [update_teams]
     def get_actions(self, request):
@@ -242,8 +319,6 @@ class SpecimenAdmin(admin.ModelAdmin):
         })
         return super().render_change_form(request, context, add, change, form_url, obj)
 
-
-
 admin.site.register(CommonNames)
 admin.site.register(Synonyms)
 admin.site.register(AssemblyTeam)
@@ -271,7 +346,16 @@ admin.site.register(CommunityAnnotation)
 admin.site.register(Annotation)
 admin.site.register(BUSCOdb)
 admin.site.register(BUSCOversion)
-admin.site.register(Run)
+@register(Run)
+class RunAdmin(admin.ModelAdmin):
+    list_filter = ["project__species__gt_rel__sequencing_team","project", "read_type"]
+    list_display = (
+        'project',
+        'read_type',
+        'seq_yield',
+        'tube_or_well_id'
+    )
+
 # admin.site.register(Specimen)
 LEFTOVER_CHOICES = (
     ('None', 'None'),

@@ -76,9 +76,31 @@ class TargetSpeciesListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, F
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
+    def get_queryset(self):
+        return TargetSpecies.objects.exclude(goat_sequencing_status = None).exclude(goat_sequencing_status = '')
 
     # def get_queryset(self):
     #     return TargetSpecies.objects.all().order_by('taxon_kingdom').values()
+
+class GoaTListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
+    # permission_required = "resistome.view_sample"
+    login_url = "access_denied"
+    model = TargetSpecies
+    table_class = GoaTSpeciesTable
+    template_name = 'goatlist.html'
+    #filterset_class = SpeciesFilter
+    table_pagination = {"per_page": 100000}
+    export_formats = ['csv', 'tsv','xlsx','json']
+
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super().get_context_data(**kwargs)
+        # Add in a QuerySet of all the books
+        context["last_updated"] = TargetSpecies.objects.order_by('-date_updated')[:1].get().date_updated
+        return context
+    
+    def get_queryset(self):
+        return TargetSpecies.objects.exclude(goat_target_list_status = 'none')
 
 class OverView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
@@ -88,7 +110,9 @@ class OverView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
     template_name = 'overview.html'
     export_formats = ['csv', 'tsv','xlsx','json']
     #filterset_class = SpeciesFilter
-    table_pagination = {"per_page": 100}
+    table_pagination = {"per_page": 1000}
+    def get_queryset(self):
+        return TargetSpecies.objects.exclude(goat_sequencing_status = None).exclude(goat_sequencing_status = '')
 
 @login_required
 def species_detail(request, pk=None, scientific_name=None):

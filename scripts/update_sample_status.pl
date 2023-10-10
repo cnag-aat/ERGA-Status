@@ -74,11 +74,15 @@ print scalar %taxids," found\n";
 foreach my $k (sort keys %taxids){print STDERR "$k\n";} 
 my $sample_data;
 print STDERR "Ingesting ERGA data from COPO... \n";
-die "No sample data!\n" unless $sample_data=(getSamples($sample_data, 'sample/erga/'));
+#die "No sample data!\n" unless $sample_data=(getSamples($sample_data, 'sample/erga/'));
 print STDERR "Done.\n";
 
 print STDERR "Ingesting ERGA-BGE data from COPO... \n";
-die "No sample data!\n" unless $sample_data=(getSamples($sample_data, 'sample/associated_tol_project/BGE-ERGA/'));
+die "No sample data!\n" unless $sample_data=(getSamples($sample_data, 'sample/associated_tol_project/ERGA/'));
+print STDERR "Done.\n";
+
+print STDERR "Ingesting ERGA-BGE data from COPO... \n";
+#die "No sample data!\n" unless $sample_data=(getSamples($sample_data, 'sample/associated_tol_project/BGE-ERGA/'));
 print STDERR "Done.\n";
 
 sub getSamples {

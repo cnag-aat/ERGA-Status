@@ -142,6 +142,31 @@ class CollectionTeamViewSet(BulkModelViewSet):
     serializer_class = CollectionTeamSerializer
     filter_fields = '__all__'
 
+class SampleHandlingTeamViewset(BulkModelViewSet):
+    """
+    API endpoint that allows Collection Team to be viewed or edited.
+    """
+    queryset = SampleHandlingTeam.objects.all()
+    serializer_class = SampleHandlingTeamSerializer
+    filter_fields = '__all__'
+
+class VoucheringTeamViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows Collection Team to be viewed or edited.
+    """
+    queryset = VoucheringTeam.objects.all()
+    serializer_class = VoucheringTeamSerializer
+    filter_fields = '__all__'
+
+
+class BiobankingTeamViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows BiobankingTeam Team to be viewed or edited.
+    """
+    queryset = BiobankingTeam.objects.all()
+    serializer_class = BiobankingTeamSerializer
+    filter_fields = '__all__'
+
 class SequencingViewSet(BulkModelViewSet):
     """
     API endpoint that allows Sequencing projects to be viewed or edited.
@@ -158,12 +183,52 @@ class SequencingTeamViewSet(BulkModelViewSet):
     serializer_class = SequencingTeamSerializer
     filter_fields = '__all__'
 
-class BiobankingTeamViewSet(BulkModelViewSet):
+class BarcodingTeamViewSet(BulkModelViewSet):
     """
     API endpoint that allows BiobankingTeam Team to be viewed or edited.
     """
-    queryset = BiobankingTeam.objects.all()
-    serializer_class = BiobankingTeamSerializer
+    queryset = BarcodingTeam.objects.all()
+    serializer_class = BarcodingTeamSerializer
+    filter_fields = '__all__'
+
+class ExtractionTeamViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows BiobankingTeam Team to be viewed or edited.
+    """
+    queryset = ExtractionTeam.objects.all()
+    serializer_class = ExtractionTeamSerializer
+    filter_fields = '__all__'
+
+class CommunityAnnotationTeamViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows BiobankingTeam Team to be viewed or edited.
+    """
+    queryset = CommunityAnnotationTeam.objects.all()
+    serializer_class = CommunityAnnotationTeamSerializer
+    filter_fields = '__all__'
+
+class AnnotationTeamViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows BiobankingTeam Team to be viewed or edited.
+    """
+    queryset = AnnotationTeam.objects.all()
+    serializer_class = AnnotationTeamSerializer
+    filter_fields = '__all__'
+
+class TaxonomyTeamViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows BiobankingTeam Team to be viewed or edited.
+    """
+    queryset = TaxonomyTeam.objects.all()
+    serializer_class = TaxonomyTeamSerializer
+    filter_fields = '__all__'
+
+class GenomeTeamViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows GenomeTeam Team to be viewed or edited.
+    """
+    queryset = GenomeTeam.objects.all()
+    serializer_class = GenomeTeamSerializer
     filter_fields = '__all__'
 
 class ReadsViewSet(BulkModelViewSet):
