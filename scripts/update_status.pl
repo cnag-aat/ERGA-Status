@@ -22,6 +22,7 @@ my $sequencing_tsv_file = 0;
 my %SEQUENCING_STATUS_CHOICES = (
   'Waiting'=>1,
   'Received'=>1,
+  'Prep'=>1,
   'Extracted'=>1,
   'Sequencing'=>1,
   'TopUp'=>1,
@@ -150,10 +151,10 @@ sub update{
         my $recipe_url = $recipe_response->{results}->[0]->{url};
         my %seq_insert_data = ();
         $seq_insert_data{species}=$species_url;
-        $seq_insert_data{long_seq_status}=$status if $read_type =~/(HiFi|ONT)/i;
-        $seq_insert_data{short_seq_status}=$status if $read_type =~/Illumina/i;
-        $seq_insert_data{hic_seq_status}=$status if $read_type =~/HiC/i;
-        $seq_insert_data{rna_seq_status}=$status if $read_type =~/RNA/i;
+        $seq_insert_data{long_seq_status}=$status if $read_type =~/(HiFi|ONT)/i and $response2->{results}->[0]->{long_seq_status} ne 'Submitted';
+        $seq_insert_data{short_seq_status}=$status if $read_type =~/Illumina/i and $response2->{results}->[0]->{short_seq_status} ne 'Submitted';
+        $seq_insert_data{hic_seq_status}=$status if $read_type =~/HiC/i and $response2->{results}->[0]->{hic_seq_status} ne 'Submitted';
+        $seq_insert_data{rna_seq_status}=$status if $read_type =~/RNA/i and $response2->{results}->[0]->{rna_seq_status} ne 'Submitted';
         if ($note =~/\S/){
           my $shortened_note = substr( $note, 0, 300 );
           $seq_insert_data{note}=$shortened_note; 

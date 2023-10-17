@@ -190,14 +190,25 @@ sub update{
 
     if ($response2->{count} == 1) { #proceed if there is one and only one project
       $sequpdate->[$i]->{project}=$project_id;
+      my $tubestring = $sequpdate->[$i]->{'sample_tube_or_well_id'};
+      my $first_tube = $tubestring;
+      my $pool = 0;
+      if ($tubestring=~/[,;]/){
+        my @tubes = split /[,;]/, $tubestring;
+        $first_tube = $tubes[0];
+        $pool = 1;
+      }
       if ($sequpdate->[$i]->{'yield'} =~/\S/){
         my $sample_url = '';
-        my $squery = "$erga_status_url/sample/?tube_or_well_id=".$sequpdate->[$i]->{'sample_tube_or_well_id'};
+        my $squery = "$erga_status_url/sample/?tube_or_well_id=".$first_tube ;
         $client->GET($squery);
         my $response_sample = decode_json $client->responseContent();
         #print STDERR $client->responseContent(),"\n\n";
         if ($response_sample->{count} > 0) {
           $sequpdate->[$i]->{'biosample_accession'} = $response_sample->{results}->[0]->{biosampleAccession};
+          if ($pool){
+            $sequpdate->[$i]->{'biosample_accession'} = $response_sample->{results}->[0]->{sampleDerivedFrom};
+          }
           $sample_url = $response_sample->{results}->[0]->{url};
           $client->GET($response_sample->{results}->[0]->{specimen});
           #print STDERR $client->responseContent(),"\n\n";
@@ -205,7 +216,7 @@ sub update{
           #print STDERR "tolid: ",$response_specimen->{tolid},"\n\n";
           $sequpdate->[$i]->{'tolid'} = $response_specimen->{tolid};
         }else{
-          print STDERR "No sample found for $scientific_name with tube_or_well_id:",$sequpdate->[$i]->{'sample_tube_or_well_id'},"\n";
+          print STDERR "No sample found for $scientific_name with tube_or_well_id:",$first_tube,"\n";
         }
 
         $client->GET("$erga_status_url/reads/?project=". $project_id);
@@ -244,7 +255,7 @@ sub update{
         #print back table
         $sequpdate->[$i]->{'library_selection'} = 'RANDOM';
         foreach my $f (@fields){
-          print exists($sequpdate->[$i]->{$f})?$sequpdate->[$i]->{$f}:"-";
+          print exists(($sequpdate->[$i]->{$f}) && $sequpdate->[$i]->{$f} =~ /\S/)?$sequpdate->[$i]->{$f}:"-";
           print "\t";
         }
         print "\n";
