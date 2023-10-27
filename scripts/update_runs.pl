@@ -255,7 +255,11 @@ sub update{
         #print back table
         $sequpdate->[$i]->{'library_selection'} = 'RANDOM';
         foreach my $f (@fields){
-          print exists(($sequpdate->[$i]->{$f}) && $sequpdate->[$i]->{$f} =~ /\S/)?$sequpdate->[$i]->{$f}:"-";
+          if (exists($sequpdate->[$i]->{$f}) && $sequpdate->[$i]->{$f} =~ /\S/){
+            print $sequpdate->[$i]->{$f};
+          }else{
+            print '-';
+          }
           print "\t";
         }
         print "\n";
