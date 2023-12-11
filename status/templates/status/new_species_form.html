@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+{% load bootstrap4 %}
+{% block page_content %}
+
+
+      <div class="card mx-auto">
+        <div class="card-header">
+          <h5>Add Species</h5>
+        </div>
+        <div class="card-body">
+          
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <table>
+            {{ form.as_table }}
+            </table>
+            <button type="submit">Submit</button>
+        </form>
+        <br>
+          </p>
+      </div>
+
+
+
+{% endblock %}

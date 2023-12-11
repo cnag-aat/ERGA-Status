@@ -19,17 +19,7 @@ my $erga_status_url="https://genomes.cnag.cat/erga-stream/api";
 my $printhelp = 0;
 my $seq_data;
 my $sequencing_tsv_file = 0;
-my %SEQUENCING_STATUS_CHOICES = (
-  'Waiting'=>1,
-  'Received'=>1,
-  'Extracted'=>1,
-  'Sequencing'=>1,
-  'TopUp'=>1,
-  'External'=>1,
-  'Submitted'=>1,
-  'Done'=>1,
-  'Issue'=>1
-);
+
 
 GetOptions(
   'c|config:s' => \$conf,
