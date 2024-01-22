@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-use lib "/home/groups/assembly/talioto/myperlmods/"; #change this to point to your PERL5LIB module directory or set the $PERL5LIB environment variable
+use lib "/home/www/resistome.cnag.cat/erga-dev/scripts/"; #change this to point to your PERL5LIB module directory or set the $PERL5LIB environment variable
 #use lib '/home/groups/assembly/talioto/erga_scripts';
 use REST::Client;
 use MIME::Base64;
@@ -124,6 +124,7 @@ sub update{
     }elsif($scientific_name =~m/\w/){
       #Retrieve species from target species table
       $client->GET("$erga_status_url/species/?scientific_name=". $scientific_name);
+      print STDERR $client->responseContent();
       my $response1 = decode_json $client->responseContent();
       $species_url = $response1->{results}->[0]->{url};
       $species_url =~/(\d+)\/$/;
@@ -183,6 +184,7 @@ sub loadTbl {
   my $count=0;
   while (my $record = <TAB>) {
     chomp $record;
+    next if $record !~ /\w/;
     my @r = split /[\t]/,$record;
     for (my $i=0;$i<@h; $i++) {
       $arrayref->[$count]->{$h[$i]}=($r[$i]);

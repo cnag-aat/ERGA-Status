@@ -271,6 +271,7 @@ sub loadTbl {
   my $count=0;
   while (my $record = <TAB>) {
     chomp $record;
+    next if $record !~ /\w/;
     my @r = split /[\t]/,$record;
 
     for (my $i=0;$i<@h; $i++) {
