@@ -1,5 +1,6 @@
 #!/usr/bin/env perl
-use lib "/home/groups/assembly/talioto/myperlmods/";
+use lib "/home/groups/assembly/talioto/myperlmods/"; #change this to point to your PERL5LIB module directory or set the $PERL5LIB environment variable
+use lib '/home/groups/assembly/talioto/erga_scripts';
 use REST::Client;
 use MIME::Base64;
 use JSON::PP;
@@ -68,19 +69,27 @@ if ($sample_response->{count} > 0) {
 	my $sample_accession = '';
 	foreach $mysample (@{$sample_response->{results}}){
 		$sample_accession = $mysample->{biosampleAccession};
-	
-		
-		#library_strategy Hi-C, WGS, RNA-Seq,
-		#Instrument_platform OXFORD_NANOPORE PACBIO_SMRT ILLUMINA
-		#y $sample_accession = shift @ARGV;
+		$sampleDerivedFrom_accession = $mysample->{sampleDerivedFrom};
+		next if $sample_accession !~/\S/;
+		update($sample_accession);
+		next if $sampleDerivedFrom_accession !~/\S/;
+		update($sampleDerivedFrom_accession);
+	}
+}
 
-		#### Query the ENA for the experiment
-		my $ena_query = "$ena_url/?result=read_experiment&query=sample_accession%3D%22$sample_accession%22&fields=study_accession%2Cexperiment_accession%2Caccession%2Cinstrument_platform%2Ccenter_name%2Ctax_id%2Ctissue_type%2Cstudy_title%2Csequencing_method%2Csample_title%2Cscientific_name%2Clibrary_strategy&format=json";
-		# curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'result=read_experiment&query=sample_accession%3D%22SAMEA12832259%22&fields=accession%2Ccenter_name%2Ctax_id%2Ctissue_type%2Cstudy_title%2Cstudy_accession%2Csequencing_method%2Csample_title%2Cscientific_name%2Cproject_name%2Clibrary_strategy&format=json "https://www.ebi.ac.uk/ena/portal/api/search"
-		$enaclient->GET($ena_query);
-		#print STDERR "ENA Response:", $enaclient->responseContent(),"\n";
-		my $ena_json = $enaclient->responseContent();
-		if ($ena_json){
+sub update{
+	my $sample_accession = shift;
+	#library_strategy Hi-C, WGS, RNA-Seq,
+	#Instrument_platform OXFORD_NANOPORE PACBIO_SMRT ILLUMINA
+	#y $sample_accession = shift @ARGV;
+
+	#### Query the ENA for the experiment
+	my $ena_query = "$ena_url/?result=read_experiment&query=sample_accession%3D%22$sample_accession%22&fields=study_accession%2Cexperiment_accession%2Caccession%2Cinstrument_platform%2Ccenter_name%2Ctax_id%2Ctissue_type%2Cstudy_title%2Csequencing_method%2Csample_title%2Cscientific_name%2Clibrary_strategy&format=json";
+	# curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'result=read_experiment&query=sample_accession%3D%22SAMEA12832259%22&fields=accession%2Ccenter_name%2Ctax_id%2Ctissue_type%2Cstudy_title%2Cstudy_accession%2Csequencing_method%2Csample_title%2Cscientific_name%2Cproject_name%2Clibrary_strategy&format=json "https://www.ebi.ac.uk/ena/portal/api/search"
+	$enaclient->GET($ena_query);
+	#print STDERR "ENA Response:", $enaclient->responseContent(),"\n";
+	my $ena_json = $enaclient->responseContent();
+	if ($ena_json){
 		my $ena_response = decode_json $ena_json;
 		#print Data::Dumper->Dump([$ena_response]);
 		my $number_found = scalar @$ena_response;
@@ -106,11 +115,41 @@ if ($sample_response->{count} > 0) {
 			my $sequencing_id = $1;
 			print STDERR $r->{instrument_platform},"\t",$r->{library_strategy},"\n";
 			my $reads_record = {};
-			if ($r->{instrument_platform} eq 'OXFORD_NANOPORE'){$reads_record->{ont_ena} = $r->{study_accession};}
-			if ($r->{instrument_platform} eq 'PACBIO_SMRT'){$reads_record->{hifi_ena} = $r->{study_accession};}
-			if ($r->{instrument_platform} eq 'ILLUMINA' and $r->{library_strategy} eq 'WGS'){$reads_record->{short_ena} = $r->{study_accession};}
-			if ($r->{instrument_platform} eq 'ILLUMINA' and $r->{library_strategy} eq 'RNA-Seq'){$reads_record->{rnaseq_ena} = $r->{study_accession};}
-			if ($r->{instrument_platform} eq 'ILLUMINA' and $r->{library_strategy} eq 'Hi-C'){$reads_record->{hic_ena} = $r->{study_accession};}
+			if ($r->{instrument_platform} eq 'OXFORD_NANOPORE'){
+				$reads_record->{ont_ena} = $r->{study_accession};
+				my %seq_insert_data =();
+				$seq_insert_data{long_seq_status}="Submitted";
+				my $seqinsert = encode_json \%seq_insert_data;
+				$client->PATCH($sequencing_url, $seqinsert);	
+			}
+			if ($r->{instrument_platform} eq 'PACBIO_SMRT'){
+				$reads_record->{hifi_ena} = $r->{study_accession};
+				my %seq_insert_data =();
+				$seq_insert_data{long_seq_status}="Submitted";
+				my $seqinsert = encode_json \%seq_insert_data;
+				$client->PATCH($sequencing_url, $seqinsert);	
+			}
+			if ($r->{instrument_platform} eq 'ILLUMINA' and $r->{library_strategy} eq 'WGS'){
+				$reads_record->{short_ena} = $r->{study_accession};
+				my %seq_insert_data =();
+				$seq_insert_data{short_seq_status}="Submitted";
+				my $seqinsert = encode_json \%seq_insert_data;
+				$client->PATCH($sequencing_url, $seqinsert);	
+			}
+			if ($r->{instrument_platform} eq 'ILLUMINA' and $r->{library_strategy} eq 'RNA-Seq'){
+				$reads_record->{rnaseq_ena} = $r->{study_accession};
+				my %seq_insert_data =();
+				$seq_insert_data{rna_seq_status}="Submitted";
+				my $seqinsert = encode_json \%seq_insert_data;
+				$client->PATCH($sequencing_url, $seqinsert);	
+			}
+			if ($r->{instrument_platform} eq 'ILLUMINA' and $r->{library_strategy} eq 'Hi-C'){
+				$reads_record->{hic_ena} = $r->{study_accession};
+				my %seq_insert_data =();
+				$seq_insert_data{hic_seq_status}="Submitted";
+				my $seqinsert = encode_json \%seq_insert_data;
+				$client->PATCH($sequencing_url, $seqinsert);	
+			}
 			$reads_record->{project} = $sequencing_url;
 			my $insert = encode_json $reads_record;
 			print STDERR "$insert\n";
@@ -137,6 +176,6 @@ if ($sample_response->{count} > 0) {
 			}
 		}
 		# {"experiment_accession":"ERX5643445","sample_accession":"SAMEA7519948","accession":"SAMEA7519948","center_name":"WELLCOME SANGER INSTITUTE","tax_id":"987985","tissue_type":"","study_title":"Mythimna impura (smoky wainscot), genomic and transcriptomic data","study_accession":"PRJEB42100","sequencing_method":"","sample_title":"61d718a7-c047-4973-8f59-97c8067c9bfc-dtol","scientific_name":"Mythimna impura","project_name":"DTOL","library_strategy":"WGS"}
-		}
 	}
+
 }
