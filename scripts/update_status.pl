@@ -1,6 +1,5 @@
 #!/usr/bin/env perl
 use lib "/home/www/resistome.cnag.cat/erga-dev/scripts/"; #change this to point to your PERL5LIB module directory or set the $PERL5LIB environment variable
-#use lib '/home/groups/assembly/talioto/erga_scripts';
 use REST::Client;
 use MIME::Base64;
 use JSON::PP;
@@ -114,22 +113,27 @@ sub update{
 
     my $species_id = 0;
     my $species_url = 0;
+    my $species_string = '';
     if ($tolid_prefix =~m/\w/){
       #Retrieve species from target species table
+      $tolid_prefix =~ s/\d+$//;
+      $species_string = $tolid_prefix;
       $client->GET("$erga_status_url/species/?tolid_prefix=". $tolid_prefix);
       my $response1 = decode_json $client->responseContent();
       $species_url = $response1->{results}->[0]->{url};
       $species_url =~/(\d+)\/$/;
       $species_id = $1;
     }elsif($scientific_name =~m/\w/){
+      $species_string = $scientific_name;
       #Retrieve species from target species table
       $client->GET("$erga_status_url/species/?scientific_name=". $scientific_name);
-      print STDERR $client->responseContent();
+      #print STDERR "$erga_status_url/species/?scientific_name=". $scientific_name."\n";
+      #print STDERR $client->responseContent();
       my $response1 = decode_json $client->responseContent();
       $species_url = $response1->{results}->[0]->{url};
       $species_url =~/(\d+)\/$/;
       $species_id = $1;
-    }else{die "please provide tolid or scientific_name\n"}
+    }else{die "please provide tolid prefix or scientific_name for record $i\n"}
 
     #Retrieve project based on species_id
     $client->GET("$erga_status_url/sequencing/?species=". $species_id);
@@ -163,7 +167,7 @@ sub update{
         $seq_insert_data{recipe}=$recipe if $recipe =~/\S/;
         my $seqinsert = encode_json \%seq_insert_data;
         #print STDERR "$seqinsert\n";
-        print STDERR "Updating $project_url\n";
+        print STDERR "Updating sequencing status for $species_string:$read_type at $project_url\n";
         $client->PATCH($project_url, $seqinsert);
         #print STDERR $client->responseContent(),"\n";
       }
