@@ -39,7 +39,7 @@ GOAT_TARGET_LIST_STATUS_CHOICES = (
 )
 
 GOAT_SEQUENCING_STATUS_CHOICES = (
-    ('', ''),
+    ('none', 'none'),
     ('sample_collected', 'sample_collected'),
     ('sample_acquired', 'sample_acquired'),
     ('data_generation', 'data_generation'),
@@ -85,10 +85,12 @@ def remove_tags(modeladmin, request, queryset):
              pass
     messages.add_message(request, messages.INFO, "Removed tags successfully")
 
-def update_status(modeladmin, request, queryset):
+def update_goat_list_status(modeladmin, request, queryset):
     if 'goat_target_list_status' in request.POST:
         goat_target_list_status = request.POST['goat_target_list_status']
         queryset.update(goat_target_list_status=goat_target_list_status)
+
+def update_goat_seq_status(modeladmin, request, queryset):
     if 'goat_sequencing_status' in request.POST:
         goat_sequencing_status = request.POST['goat_sequencing_status']
         queryset.update(goat_sequencing_status=goat_sequencing_status)
@@ -96,9 +98,9 @@ def update_status(modeladmin, request, queryset):
 
 @register(TargetSpecies)
 class TargetSpeciesAdmin(admin.ModelAdmin):
-    list_filter = ["tags"]
+    list_filter = ["tags",'goat_target_list_status','goat_sequencing_status']
     action_form = UpdateSpeciesActionForm
-    actions = [add_tags,remove_tags,update_status]
+    actions = [add_tags,remove_tags,update_goat_list_status,update_goat_seq_status]
     def get_actions(self, request):
         actions = super(TargetSpeciesAdmin, self).get_actions(request)
         # try:
@@ -306,10 +308,10 @@ class SpecimenAdmin(admin.ModelAdmin):
     actions = [update_specimens]
     def get_actions(self, request):
       actions = super(SpecimenAdmin, self).get_actions(request)
-      try:
-          del actions['delete_selected']
-      except KeyError:
-        pass
+    #   try:
+    #       del actions['delete_selected']
+    #   except KeyError:
+    #     pass
       return actions
     def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
         context.update({
@@ -323,7 +325,15 @@ admin.site.register(CommonNames)
 admin.site.register(Synonyms)
 admin.site.register(AssemblyTeam)
 admin.site.register(Statement)
-admin.site.register(AssemblyProject)
+#admin.site.register(AssemblyProject)
+@register(AssemblyProject)
+class AssemblyProjectAdmin(admin.ModelAdmin):
+    list_filter = ["species__gt_rel__assembly_team"]
+    list_display = (
+        'species',
+        'status',
+        'note'
+    )
 admin.site.register(Assembly)
 admin.site.register(CollectionTeam)
 admin.site.register(SampleCollection)
@@ -339,7 +349,20 @@ admin.site.register(SampleHandlingTeam)
 admin.site.register(CommunityAnnotationTeam)
 admin.site.register(BiobankingTeam)
 admin.site.register(ExtractionTeam)
-admin.site.register(Sequencing)
+#admin.site.register(Sequencing)
+@register(Sequencing)
+class SequencingAdmin(admin.ModelAdmin):
+    list_filter = ["species__gt_rel__sequencing_team"]
+    list_display = (
+        'species',
+        'long_seq_status',
+        'short_seq_status',
+        'hic_seq_status',
+        'rna_seq_status',
+        'recipe',
+        'note'
+    )
+
 admin.site.register(Reads)
 admin.site.register(AnnotationTeam)
 admin.site.register(CommunityAnnotation)
@@ -408,10 +431,10 @@ class SampleAdmin(admin.ModelAdmin):
     actions = [update_samples]
     def get_actions(self, request):
         actions = super(SampleAdmin, self).get_actions(request)
-        try:
-            del actions['delete_selected']
-        except KeyError:
-            pass
+        # try:
+        #     del actions['delete_selected']
+        # except KeyError:
+        #     pass
         return actions
     def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
         context.update({

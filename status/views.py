@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+from django.http import HttpResponseRedirect
 from django.views.generic import ListView
 from status.models import *
 from django.views.generic import TemplateView
@@ -44,8 +45,10 @@ from django.shortcuts import get_object_or_404
 #from status.filters import SpecimenFilter
 #from status.forms import (EditProfileForm, ProfileForm)
 from status.forms import ProfileUpdateForm
+from status.forms import NewSpeciesForm
 from django.urls import reverse_lazy
 from status.filters import GenomeTeamFilter
+from status.filters import TargetSpeciesFilter
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -67,9 +70,9 @@ class SuccessView(TemplateView):
     template_name = 'success.html'
 
 # Create your views here.
-class TargetSpeciesListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
+class TargetSpeciesListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    login_url = "access_denied"
+    #login_url = "access_denied"
     model = TargetSpecies
     table_class = TargetSpeciesTable
     template_name = 'targetspecies.html'
@@ -77,14 +80,14 @@ class TargetSpeciesListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, F
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_queryset(self):
-        return TargetSpecies.objects.exclude(goat_sequencing_status = None).exclude(goat_sequencing_status = '')
+        return TargetSpecies.objects.exclude(goat_target_list_status = None).exclude(goat_target_list_status = '')
+        #return TargetSpecies.objects.exclude(goat_sequencing_status = None).exclude(goat_sequencing_status = '')
 
     # def get_queryset(self):
     #     return TargetSpecies.objects.all().order_by('taxon_kingdom').values()
 
-class GoaTListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
+class GoaTListView(ExportMixin, SingleTableMixin, FilterView):
     # permission_required = "resistome.view_sample"
-    login_url = "access_denied"
     model = TargetSpecies
     table_class = GoaTSpeciesTable
     template_name = 'goatlist.html'
@@ -102,19 +105,21 @@ class GoaTListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView
     def get_queryset(self):
         return TargetSpecies.objects.exclude(goat_target_list_status = 'none')
 
-class OverView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
+class OverView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    login_url = "access_denied"
+    #login_url = "access_denied"
     model = TargetSpecies
     table_class = OverviewTable
     template_name = 'overview.html'
+    filterset_class = TargetSpeciesFilter
     export_formats = ['csv', 'tsv','xlsx','json']
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 1000}
     def get_queryset(self):
-        return TargetSpecies.objects.exclude(goat_sequencing_status = None).exclude(goat_sequencing_status = '')
+        return TargetSpecies.objects.exclude(goat_target_list_status = None).exclude(goat_target_list_status = '')
+        #return TargetSpecies.objects.exclude(goat_sequencing_status = None).exclude(goat_sequencing_status = '')
 
-@login_required
+#@login_required
 def species_detail(request, pk=None, scientific_name=None):
     if pk:
         sp = TargetSpecies.objects.get(pk=pk)
@@ -222,9 +227,9 @@ def annotation_team_detail(request, pk=None):
     response = render(request, "team_detail.html", context)
     return response
 
-class AssemblyProjectListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
+class AssemblyProjectListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    login_url = "access_denied"
+    #login_url = "access_denied"
     model = AssemblyProject
     table_class = AssemblyProjectTable
     template_name = 'assemblyproject.html'
@@ -236,16 +241,16 @@ class AssemblyProjectListView(LoginRequiredMixin, ExportMixin, SingleTableMixin,
             queryset = queryset.filter(pk=self.request.GET['project'])
             return queryset
 
-class AssemblyListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
+class AssemblyListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    login_url = "access_denied"
+    #login_url = "access_denied"
     model = Assembly
     table_class = AssemblyTable
     template_name = 'assembly.html'
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
 
-@login_required
+#@login_required
 def assembly_pipeline_detail(request, pk=None):
     pipeline = AssemblyPipeline.objects.get(pk=pk)
     context = {"pipeline": pipeline
@@ -253,18 +258,18 @@ def assembly_pipeline_detail(request, pk=None):
     response = render(request, "assembly_pipeline_detail.html", context)
     return response
 
-class SampleCollectionListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
+class SampleCollectionListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    login_url = "access_denied"
+    #login_url = "access_denied"
     model = SampleCollection
     table_class = SampleCollectionTable
     template_name = 'collection.html'
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
 
-class SpecimenListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
+class SpecimenListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    login_url = "access_denied"
+    # login_url = "access_denied"
     model = Specimen
     table_class = SpecimenTable
     #filterset_class = SpecimenFilter
@@ -278,16 +283,16 @@ class SpecimenListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, Filter
         if 'collection' in self.kwargs:
             return Specimen.objects.filter(collection=self.kwargs['collection'])
     
-class SampleListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
+class SampleListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    login_url = "access_denied"
+    # login_url = "access_denied"
     model = Sample
     table_class = SampleTable
     template_name = 'samples.html'
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
 
-@login_required
+#@login_required
 def copo_record(request, copoid):
     r=requests.get("https://copo-project.org/api/sample/copo_id/"+ copoid)
     resp = ""
@@ -300,9 +305,9 @@ def copo_record(request, copoid):
     return render(request,'copo.html',{'response':resp})
     
 
-class SequencingListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
+class SequencingListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    login_url = "access_denied"
+    # login_url = "access_denied"
     model = Sequencing
     table_class = SequencingTable
     template_name = 'sequencing.html'
@@ -317,9 +322,9 @@ class SequencingListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, Filt
             return queryset
 
 
-class SequencingDetailView(LoginRequiredMixin, DetailView):
+class SequencingDetailView(DetailView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    login_url = "access_denied"
+    # login_url = "access_denied"
     model = Sequencing
     table_class = SequencingTable
     queryset = Sequencing.objects.all()
@@ -327,9 +332,9 @@ class SequencingDetailView(LoginRequiredMixin, DetailView):
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
 
-class RunListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
+class RunListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    login_url = "access_denied"
+    # login_url = "access_denied"
     model = Run
     table_class = RunTable
     template_name = 'runs.html'
@@ -338,9 +343,9 @@ class RunListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView)
     export_formats = ['csv', 'tsv','xlsx','json']
 
     
-class ReadsListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
+class ReadsListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    login_url = "access_denied"
+    #login_url = "access_denied"
     model = Reads
     table_class = ReadsTable
     template_name = 'reads.html'
@@ -350,17 +355,21 @@ class ReadsListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterVie
     def get_queryset(self):
         queryset = super(ReadsListView, self).get_queryset()
         queryset = queryset.annotate(ont_yield=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='ONT')),
+                                     ont_cov=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='ONT'))/(F("project__species__genome_size")),
                                      hifi_yield=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='HiFi')),
+                                     hifi_cov=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='HiFi'))/(F("project__species__genome_size")),
                                      short_yield=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='Illumina')),
+                                     short_cov=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='Illumina'))/(F("project__species__genome_size")),
                                      hic_yield=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='HiC')),
+                                     hic_cov=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='HiC'))/(F("project__species__genome_size")),
                                      rnaseq_pe=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='RNA')),
                                      )
         return queryset
     
 
-class CurationListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
+class CurationListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    login_url = "access_denied"
+    #login_url = "access_denied"
     model = Curation
     table_class = CurationTable
     template_name = 'curation.html'
@@ -368,9 +377,9 @@ class CurationListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, Filter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
 
-class AnnotationListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
+class AnnotationListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    login_url = "access_denied"
+    #login_url = "access_denied"
     model = Annotation
     table_class = AnnotationTable
     template_name = 'annotation.html'
@@ -378,9 +387,9 @@ class AnnotationListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, Filt
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
 
-class CommunityAnnotationListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
+class CommunityAnnotationListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    login_url = "access_denied"
+    # login_url = "access_denied"
     model = CommunityAnnotation
     table_class = CommunityAnnotationTable
     template_name = 'community_annotation.html'
@@ -476,7 +485,21 @@ class SpeciesLogView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterVi
         queryset = queryset.filter(species=self.request.GET['id'])
         return queryset
 
-@login_required
+class NewSpeciesView(LoginRequiredMixin, FormView):
+    login_url = "access_denied"
+    model = TargetSpecies
+    fields = ['taxon_ids']
+    template_name = 'status/new_species_form.html'
+    form_class = NewSpeciesForm
+    success_url = reverse_lazy("add_species") #reverse_lazy('success')
+    def form_valid(self, form):
+        # form.instance.tag = "bge"
+        form.save()
+        messages.success(self.request, 'Species added successfully. Add another?')  
+        #return HttpResponseRedirect(self.request.path_info)
+        return super(NewSpeciesView, self).form_valid(form)
+ 
+#@login_required
 def recipe_detail(request, pk=None):
     recipe = Recipe.objects.get(pk=pk)
     context = {"recipe": recipe
@@ -484,7 +507,7 @@ def recipe_detail(request, pk=None):
     response = render(request, "recipe_detail.html", context)
     return response
 
-@login_required
+#@login_required
 def sample_detail(request, pk=None):
     sample = Sample.objects.get(pk=pk)
     site_url = settings.DEFAULT_DOMAIN

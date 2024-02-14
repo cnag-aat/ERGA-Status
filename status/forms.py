@@ -76,3 +76,10 @@ class ProfileUpdateForm(ModelForm):
 
     # roles = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple,choices=ROLE_CHOICES)
     # lead =forms.BooleanField(widget=forms.CheckboxInput,required=False)
+class NewSpeciesForm(ModelForm):
+    class Meta:
+        model = TargetSpecies
+        fields = ('taxon_id',)
+        widgets = {
+            'taxon_id': forms.TextInput(attrs={'class':'form-control'})
+        }

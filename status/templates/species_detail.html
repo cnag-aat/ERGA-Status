@@ -11,8 +11,8 @@
       <div class="card-body">
         <h5 class="card-title">{{ species.tolid_prefix }}</h5>
         <table class="table">
-          <tr><td>Listed name:</td><td><i>{{ species.listed_species }}</i></br></td></tr>
           <tr><td>Scientific name:</td><td><i>{{ species.scientific_name }}</i></br></td></tr>
+          <tr><td>ToLID prefix:</td><td>{{ species.tolid_prefix }}</br></td></tr>
           <tr><td>Taxon ID</td><td>{{ species.taxon_id }} <a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{ species.taxon_id }}"><code>NCBI</code></a>&nbsp;<a href="https://goat.genomehubs.org/record?recordId={{ species.taxon_id }}&result=taxon&taxonomy=ncbi"><code>GoaT</code></a></br></td></tr>
             <tr><td>Taxonomy:</td><td> 
               {{ species.taxon_kingdom }}:

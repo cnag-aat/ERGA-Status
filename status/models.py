@@ -37,16 +37,19 @@ COLLECTION_STATUS_CHOICES = (
     #('COPO', 'COPO'),
     ('Submitted', 'Submitted'),
     ('Pending', 'Pending'),
+    ('Rejected', 'Rejected'),
     ('Issue', 'Issue')
 )
 COPO_STATUS_CHOICES = (
     ('Not submitted', 'Not submitted'),
+    ('Rejected', 'Rejected'),
     ('Accepted', 'Accepted'),
     ('Pending', 'Pending')
 )
 SEQUENCING_STATUS_CHOICES = (
     ('Waiting', 'Waiting'),
     ('Received', 'Received'),
+    ('Prep', 'Prep'),
     ('Extracted', 'Extracted'),
     ('Sequencing', 'Sequencing'),
     ('TopUp', 'TopUp'),
@@ -139,7 +142,7 @@ GOAT_TARGET_LIST_STATUS_CHOICES = (
 )
 
 GOAT_SEQUENCING_STATUS_CHOICES = (
-    ('', ''),
+    ('none', 'none'),
     ('sample_collected', 'sample_collected'),
     ('sample_acquired', 'sample_acquired'),
     ('data_generation', 'data_generation'),
@@ -189,6 +192,7 @@ class TaxonKingdom(models.Model):
     name = models.CharField(max_length=100)
     class Meta:
         verbose_name_plural = 'kingdoms'
+        ordering = ("name",)
 
     def __str__(self):
         return self.name or str(self.id)
@@ -198,6 +202,7 @@ class TaxonPhylum(models.Model):
     name = models.CharField(max_length=100)
     class Meta:
         verbose_name_plural = 'phyla'
+        ordering = ("name",)
 
     def __str__(self):
         return self.name or str(self.id)
@@ -208,6 +213,7 @@ class TaxonClass(models.Model):
     name = models.CharField(max_length=100)
     class Meta:
         verbose_name_plural = 'classes'
+        ordering = ("name",)
 
     def __str__(self):
         return self.name or str(self.id)
@@ -219,6 +225,7 @@ class TaxonOrder(models.Model):
     name = models.CharField(max_length=100)
     class Meta:
         verbose_name_plural = 'orders'
+        ordering = ("name",)
 
     def __str__(self):
         return self.name or str(self.id)
@@ -231,6 +238,7 @@ class TaxonFamily(models.Model):
     name = models.CharField(max_length=100)
     class Meta:
         verbose_name_plural = 'families'
+        ordering = ("name",)
 
     def __str__(self):
         return self.name or str(self.id)
@@ -244,23 +252,10 @@ class TaxonGenus(models.Model):
     name = models.CharField(max_length=100)
     class Meta:
         verbose_name_plural = 'genera'
+        ordering = ("name",)
 
     def __str__(self):
         return self.name or str(self.id)
-
-# class TaxonSpecies(models.Model):
-#     taxon_kingdom = models.ForeignKey(TaxonKingdom, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Kingdom")
-#     taxon_phylum = models.ForeignKey(TaxonPhylum, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Kingdom")
-#     taxon_class = models.ForeignKey(TaxonClass, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Kingdom")
-#     taxon_order = models.ForeignKey(TaxonOrder, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Kingdom")
-#     taxon_family = models.ForeignKey(TaxonFamily, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Kingdom")
-#     taxon_genus = models.ForeignKey(TaxonGenus, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Kingdom")
-#     name = models.CharField(max_length=100)
-#     class Meta:
-#         verbose_name_plural = 'species'
-#
-#     def __str__(self):
-#         return self.name
 
 class TargetSpecies(models.Model):
     # ncbi_taxon_id	species	subspecies	family	target_list_status	sequencing_status	synonym	publication_id
@@ -281,11 +276,11 @@ class TargetSpecies(models.Model):
     taxon_id = models.CharField(max_length=20,unique=True, null=True, blank=True, db_index=True)
     c_value = models.DecimalField(max_digits=8, decimal_places=3, null=True, blank=True, verbose_name="C-value")
     genome_size = models.BigIntegerField(null=True, blank=True)
-    subspecies = models.CharField(max_length=100, verbose_name="subspecies", blank=True, null=True)
+    subspecies = models.CharField(max_length=100, verbose_name="Subspecies", blank=True, null=True)
     goat_target_list_status = models.CharField(max_length=30, verbose_name="target_list_status", help_text='Target List Status', choices=GOAT_TARGET_LIST_STATUS_CHOICES, default=GOAT_TARGET_LIST_STATUS_CHOICES[0][0])
-    goat_sequencing_status = models.CharField(max_length=30, blank=True, null=True, verbose_name="sequencing_status", help_text='Sequencing Status', choices=GOAT_SEQUENCING_STATUS_CHOICES, default=GOAT_SEQUENCING_STATUS_CHOICES[0][0])
-    synonym = models.CharField(max_length=100, verbose_name="synonym", blank=True, null=True)
-    publication_id = models.CharField(max_length=50, verbose_name="publication_id", blank=True, null=True)
+    goat_sequencing_status = models.CharField(max_length=30, blank=True, null=True, verbose_name="GoaT Sequencing Status", help_text='Sequencing Status', choices=GOAT_SEQUENCING_STATUS_CHOICES, default=GOAT_SEQUENCING_STATUS_CHOICES[0][0])
+    synonym = models.CharField(max_length=100, verbose_name="Synonym", blank=True, null=True)
+    publication_id = models.CharField(max_length=50, verbose_name="Publication ID", blank=True, null=True)
     date_updated = models.DateTimeField(auto_now=True)  
 
     def save(self, *args, **kwargs):
@@ -387,8 +382,6 @@ class TargetSpecies(models.Model):
                                     name=cname,
                                     species=targetspecies
                                 )
-
-
 
                         collection_record, created = SampleCollection.objects.get_or_create(
                                     species=self
@@ -501,8 +494,8 @@ class UserProfile(models.Model):
         send_mail(
             '[ERGA] New user, '+ self.first_name + " " + self.last_name +', has registered in ERGA-Stream',
             'name: '+ self.first_name +" "+self.last_name +"\nemail: "+self.user.email+"\naffiliations: "+self.get_affiliations()+"\nroles: "+self.get_roles()+"\nlead: "+str(self.lead)+"\n",
-            'denovo@cnag.crg.eu',
-            ['denovo@cnag.crg.eu'],
+            'denovo@cnag.eu',
+            ['denovo@cnag.eu'],
             fail_silently=True,
         )
 
@@ -532,6 +525,7 @@ class AnnotationTeam(models.Model):
     modified = models.DateTimeField(auto_now=True)
     class Meta:
         verbose_name_plural = 'annotation teams'
+        ordering = ("name",)
 
     def get_absolute_url(self):
         return reverse('annotation_team_detail', args=[str(self.pk)])
@@ -551,6 +545,7 @@ class CommunityAnnotationTeam(models.Model):
     modified = models.DateTimeField(auto_now=True)
     class Meta:
         verbose_name_plural = 'Community annotation teams'
+        ordering = ("name",)
 
     def get_absolute_url(self):
         return reverse('community_annotation_team_detail', args=[str(self.pk)])
@@ -572,6 +567,7 @@ class BiobankingTeam(models.Model):
     modified = models.DateTimeField(auto_now=True)
     class Meta:
         verbose_name_plural = 'biobanking teams'
+        ordering = ("name",)
 
     def get_absolute_url(self):
         return reverse('biobanking_team_detail', args=[str(self.pk)])
@@ -591,6 +587,7 @@ class AssemblyTeam(models.Model):
     modified = models.DateTimeField(auto_now=True)
     class Meta:
         verbose_name_plural = 'assembly teams'
+        ordering = ("name",)
 
     def get_absolute_url(self):
         return reverse('assembly_team_detail', args=[str(self.pk)])
@@ -610,6 +607,7 @@ class CurationTeam(models.Model):
     modified = models.DateTimeField(auto_now=True)
     class Meta:
         verbose_name_plural = 'curation teams'
+        ordering = ("name",)
 
     def get_absolute_url(self):
         return reverse('curation_team_detail', args=[str(self.pk)])
@@ -631,6 +629,7 @@ class SequencingTeam(models.Model):
 
     class Meta:
         verbose_name_plural = 'sequencing teams'
+        ordering = ("name",)
 
     def get_absolute_url(self):
         return reverse('sequencing_team_detail', args=[str(self.pk)])
@@ -650,6 +649,7 @@ class ExtractionTeam(models.Model):
     modified = models.DateTimeField(auto_now=True)
     class Meta:
         verbose_name_plural = 'extraction teams'
+        ordering = ("name",)
 
     def get_absolute_url(self):
         return reverse('extraction_team_detail', args=[str(self.pk)])
@@ -668,6 +668,10 @@ class CollectionTeam(models.Model):
     members = models.ManyToManyField(UserProfile, null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
+    class Meta:
+        verbose_name_plural = 'collection teams'
+        ordering = ("name",)
+
     def get_absolute_url(self):
         return reverse('collection_team_detail', args=[str(self.pk)])
 
@@ -686,6 +690,10 @@ class TaxonomyTeam(models.Model):
     members = models.ManyToManyField(UserProfile,null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
+    class Meta:
+        verbose_name_plural = 'taxonomy teams'
+        ordering = ("name",)
+
     def get_absolute_url(self):
         return reverse('taxonomy_team_detail', args=[str(self.pk)])
 
@@ -703,6 +711,10 @@ class SampleHandlingTeam(models.Model):
     members = models.ManyToManyField(UserProfile,null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
+    class Meta:
+        verbose_name_plural = 'sample handling teams'
+        ordering = ("name",)
+
     def get_absolute_url(self):
         return reverse('sample_handling_team_detail', args=[str(self.pk)])
 
@@ -720,6 +732,10 @@ class VoucheringTeam(models.Model):
     members = models.ManyToManyField(UserProfile,null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
+    class Meta:
+        verbose_name_plural = 'vouchering teams'
+        ordering = ("name",)
+
     def get_absolute_url(self):
         return reverse('vouchering_team_detail', args=[str(self.pk)])
 
@@ -736,6 +752,10 @@ class BarcodingTeam(models.Model):
     members = models.ManyToManyField(UserProfile,null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
+    class Meta:
+        verbose_name_plural = 'barcoding teams'
+        ordering = ("name",)
+
     def get_absolute_url(self):
         return reverse('barcoding_team_detail', args=[str(self.pk)])
 
@@ -754,6 +774,7 @@ class GenomeTeam(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species",related_name='gt_rel')
     sample_handling_team = models.ForeignKey(SampleHandlingTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="sample handling team")
     sample_coordinator = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="sample_coordinator")
+    coordinator = models.ForeignKey(Person,on_delete=models.SET_NULL, null=True, blank=True, verbose_name="coordinator")
     collection_team = models.ForeignKey(CollectionTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="collection team")
     taxonomy_team = models.ForeignKey(TaxonomyTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="taxonomy team")
     vouchering_team = models.ForeignKey(VoucheringTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="vouchering team")
@@ -823,7 +844,7 @@ class SampleCollection(models.Model):
                     send_mail(
                         '[ERGA] Metadata for '+ self.species.scientific_name +' accepted in COPO.',
                         'Dear '+ sequencing_team.lead.first_name+",\n\nMetadata for one or more specimens of "+ self.species.scientific_name +" have been submitted and accepted by COPO. More info can be found here:\n" +myurl,
-                        'denovo@cnag.crg.eu',
+                        'denovo@cnag.eu',
                         [sequencing_team.lead.user.email],
                         fail_silently=True,
                     )
@@ -849,15 +870,16 @@ class Specimen(models.Model):
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species",null=True, blank=True)
     #barcode = models.CharField(max_length=20, help_text='Tube barcode')
     tolid = models.CharField(max_length=20, help_text='Registered ToLID for the Specimen', null=True, blank=True)
+    biosampleAccession = models.CharField(max_length=20, help_text='BioSample Accession', null=True, blank=True, verbose_name="BioSample")
     collection = models.ForeignKey(SampleCollection, on_delete=models.CASCADE, verbose_name="Collection")
-    sample_coordinator = models.CharField(max_length=50, help_text='Sample coordinator', null=True, blank=True)
+    sample_coordinator = models.CharField(max_length=100, help_text='Sample coordinator', null=True, blank=True)
     tissue_removed_for_biobanking = models.BooleanField(default=False)
-    tissue_voucher_id_for_biobanking = models.CharField(max_length=50, null=True, blank=True)
+    tissue_voucher_id_for_biobanking = models.CharField(max_length=200, null=True, blank=True)
     tissue_for_biobanking = models.CharField(max_length=50, null=True, blank=True)
     dna_removed_for_biobanking = models.BooleanField(default=False)
-    dna_voucher_id_for_biobanking = models.CharField(max_length=50, null=True, blank=True)
-    voucher_id = models.CharField(max_length=50, help_text='Voucher ID', null=True, blank=True)
-    proxy_voucher_id = models.CharField(max_length=50, help_text='Proxy voucher ID', null=True, blank=True)
+    dna_voucher_id_for_biobanking = models.CharField(max_length=200, null=True, blank=True)
+    voucher_id = models.CharField(max_length=200, help_text='Voucher ID', null=True, blank=True)
+    proxy_voucher_id = models.CharField(max_length=200, help_text='Proxy voucher ID', null=True, blank=True)
     voucher_link = models.CharField(max_length=200, null=True, blank=True)
     proxy_voucher_link = models.CharField(max_length=200, null=True, blank=True)
     voucher_institution = models.CharField(max_length=200, null=True, blank=True)
@@ -869,7 +891,7 @@ class Specimen(models.Model):
         return reverse('specimen_list', args=[str(self.pk)])
     
     def __str__(self):
-        return self.tolid or str(self.id)
+        return self.tolid or self.specimen_id or str(self.id)
 
 LEFTOVER_CHOICES = (
     ('None', 'None'),
@@ -880,13 +902,16 @@ LEFTOVER_CHOICES = (
 class Sample(models.Model):
     copo_id = models.CharField(max_length=30, help_text='COPO ID', null=True, blank=True, verbose_name="CopoID")
     biosampleAccession = models.CharField(max_length=20, help_text='BioSample Accession', null=True, blank=True, verbose_name="BioSample")
+    sampleDerivedFrom = models.CharField(max_length=20, help_text='BioSample Derived From', null=True, blank=True, verbose_name="SampleDerivedFrom")
     barcode = models.CharField(max_length=20, help_text='Tube barcode', null=True, blank=True)
     # collection = models.ForeignKey(SampleCollection, on_delete=models.CASCADE, verbose_name="Collection")
     purpose_of_specimen = models.CharField(max_length=30, help_text='Purpose', null=True, blank=True)
     gal = models.CharField(max_length=120, help_text='GAL', null=True, blank=True, verbose_name="GAL")
-    collector_sample_id = models.CharField(max_length=40, help_text='Collector Sample ID', null=True, blank=True)
-    tube_or_well_id = models.CharField(max_length=40, help_text='Tube or Well ID', null=True, blank=True)
+    gal_sample_id = models.CharField(max_length=40, help_text='GAL Sample ID', null=True, blank=True)
+    collector_sample_id = models.CharField(max_length=200, help_text='Collector Sample ID', null=True, blank=True)
+    tube_or_well_id = models.CharField(max_length=100, help_text='Tube or Well ID', null=True, blank=True)
     copo_date = models.CharField(max_length=30, help_text='COPO Time Updated', null=True, blank=True, verbose_name="date")
+    copo_status = models.CharField(max_length=30, help_text='COPO Status', null=True, blank=True, verbose_name="Status")
     specimen = models.ForeignKey(Specimen, on_delete=models.CASCADE, verbose_name="Specimen",null=True, blank=True)
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species",null=True, blank=True)
     leftover = models.CharField(max_length=20, help_text='Leftover sample', choices=LEFTOVER_CHOICES, default=LEFTOVER_CHOICES[0][0])
@@ -979,7 +1004,7 @@ class Sequencing(models.Model):
                     send_mail(
                         '[ERGA] Long read genomic sequencing for '+ self.species.scientific_name +'is done',
                         'Dear '+ assembly_team.lead.first_name+",\n\nLong-read genomic sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
-                        'denovo@cnag.crg.eu',
+                        'denovo@cnag.eu',
                         [assembly_team.lead.user.email],
                         fail_silently=True,
                     )
@@ -992,7 +1017,7 @@ class Sequencing(models.Model):
                     send_mail(
                         '[ERGA] Genomic sequencing for '+ self.species.scientific_name +'is done',
                         'Dear '+ assembly_team.lead.first_name+",\n\nShort-read genomic sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
-                        'denovo@cnag.crg.eu',
+                        'denovo@cnag.eu',
                         [assembly_team.lead.user.email],
                         fail_silently=True,
                     )
@@ -1005,7 +1030,7 @@ class Sequencing(models.Model):
                     send_mail(
                         '[ERGA] Hi-C sequencing for '+ self.species.scientific_name +'is done',
                         'Dear '+ assembly_team.lead.first_name+",\n\nHi-C sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
-                        'denovo@cnag.crg.eu',
+                        'denovo@cnag.eu',
                         [assembly_team.lead.user.email],
                         fail_silently=True,
                     )
@@ -1019,7 +1044,7 @@ class Sequencing(models.Model):
                         send_mail(
                             '[ERGA] RNA sequencing for '+ self.species.scientific_name +'is done',
                             'Dear '+ community_annotation_team.lead.first_name+",\n\nRNA sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
-                            'denovo@cnag.crg.eu',
+                            'denovo@cnag.eu',
                             [community_annotation_team.lead.user.email],
                             fail_silently=True,
                         )
@@ -1115,9 +1140,10 @@ class Run(models.Model):
     reverse_md5sum = models.CharField(max_length=32, null=True, blank=True, help_text='Forward read md5sum')
     native_filename = models.CharField(max_length=200, null=True, blank=True, help_text='Forward read filename')
     native_md5sum = models.CharField(max_length=32, null=True, blank=True, help_text='Forward read md5sum')
-    sample = models.ForeignKey(Sample, null=True, blank=True, on_delete=models.CASCADE, verbose_name="Sample")
+    #sample = models.ForeignKey(Sample, null=True, blank=True, on_delete=models.CASCADE, verbose_name="Sample")
+    sample = models.CharField(max_length=200, null=True, blank=True, help_text='Sample(s)')
     tube_or_well_id = models.CharField(max_length=32, null=True, blank=True, help_text='Tube or Well ID')
-    reads = models.ForeignKey(Reads, related_name="run_set", related_query_name="run_set", on_delete=models.CASCADE, verbose_name="Reads aggregate view")
+    reads = models.ForeignKey(Reads, related_name="run_set", related_query_name="run_set", null=True, blank=True, on_delete=models.CASCADE, verbose_name="Reads aggregate view")
 
     class Meta:
         verbose_name_plural = 'runs'
@@ -1291,6 +1317,10 @@ class BUSCOversion(models.Model):
     def __str__(self):
         return self.version or str(self.id)
 
+def user_directory_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
+    return "user_{0}/{1}".format(instance.project, filename)
+
 class Assembly(models.Model):
     project = models.ForeignKey(AssemblyProject, on_delete=models.CASCADE, verbose_name="Assembly project")
     description = models.CharField(null=True, blank=True, max_length=100)
@@ -1306,6 +1336,8 @@ class Assembly(models.Model):
     busco_version = models.ForeignKey(BUSCOversion, on_delete=models.SET_NULL, null=True, verbose_name="BUSCO version", blank=True)
     qv = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True, verbose_name="QV")
     report = models.URLField(max_length = 400, null=True, blank=True)
+    accession = models.CharField(max_length=12,null=True, blank=True, verbose_name="Project Accession")
+    #pretext = models.FileField(upload_to=user_directory_path, max_length = 400, null=True, blank=True)
 
     class Meta:
         verbose_name_plural = 'assemblies'

@@ -28,7 +28,7 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['resistome.cnag.cat','resistome.cnag.es','resistome.cnag.eu','genomes.cnag.cat','genomes.cnag.es','genomes.cnag.eu']
+ALLOWED_HOSTS = ['resistome.cnag.cat','resistome.cnag.es','resistome.cnag.eu','genomes.cnag.cat','genomes.cnag.es','genomes.cnag.eu','localhost','10.73.4.1']
 
 
 # Application definition
@@ -70,7 +70,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    #'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -201,13 +201,22 @@ ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = "https://genomes.cnag.cat/erga-stream-dev/accounts/login/"
 LOGIN_URL="/erga-stream-dev/accounts/login/"
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-#EMAIL_USE_TLS = False
-EMAIL_HOST = 'smtp.crg.eu'
-EMAIL_PORT = 25
+
+EMAIL_BACKEND = 'django_o365mail.EmailBackend'
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-#EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+O365_MAIL_CLIENT_ID = config('O365_MAIL_CLIENT_ID')
+O365_MAIL_CLIENT_SECRET = config('O365_MAIL_CLIENT_SECRET')
+O365_MAIL_TENANT_ID = config('O365_MAIL_TENANT_ID')
+O365_MAIL_ACCOUNT_KWARGS = {'token_backend': 'O365.utils.token.EnvTokenBackend'}
+
+#EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+#EMAIL_USE_TLS = False
+#EMAIL_HOST = 'smtp.gmail.com'
+#EMAIL_PORT = 25
+#EMAIL_USE_TLS=True
+#EMAIL_PORT=587 # also tried port 25
 NOTIFICATIONS = True
 ACCOUNT_FORMS = {
 'signup': 'status.forms.CustomSignupForm',

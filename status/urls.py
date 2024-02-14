@@ -27,6 +27,7 @@ from status.views import SuccessView
 from status.views import LogView
 from status.views import SpeciesLogView
 from status.views import GoaTListView
+from status.views import NewSpeciesView
 
 
 urlpatterns = [
@@ -84,6 +85,7 @@ urlpatterns = [
     path("copo/<str:copoid>/", views.copo_record, name="copo"),
     path('authors/', AuthorsView.as_view(), name="author_list"),
     path('edit_profile/', EditProfileView.as_view(), name="edit_profile"),
+    path('add_species/', NewSpeciesView.as_view(), name="add_species"),
     path('success/', SuccessView.as_view(), name="success"),
     path("recipe/<int:pk>/", views.recipe_detail, name="recipe_detail"),
 

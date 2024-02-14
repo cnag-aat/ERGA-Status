@@ -32,6 +32,10 @@
   background-color: #99987d;
   color: White;
 }
+.Prep {
+  background-color: #99987d;
+  color: White;
+}
 .Processing {
   background-color: #009f83;
   color: White;
@@ -72,6 +76,10 @@
   background-color: #009fc4;
   color: White;
 }
+.Rejected {
+  background-color: #D2042D;
+  color: White;
+}
 .none {
   background-color: #99987d;
   color: White;
@@ -105,7 +113,11 @@
   color: White;
 }
 .Contigs {
-  background-color: #009fc4;
+  background-color: #009f83;
+  color: White;
+}
+.Scaffolds {
+  background-color: #009f83;
   color: White;
 }
 .Sent {

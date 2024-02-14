@@ -212,51 +212,52 @@ sub update{
         $pool = 1;
       }else{push @tubes, $tubestring;}
       if ($sequpdate->[$i]->{'yield'} =~/\S/){
-        my @biosample_accessions = ();
-        foreach my $t (@tubes){
-          ### try tube id first
-          my $squery = "$erga_status_url/sample/?tube_or_well_id=".$t ;
-          $client->GET($squery);
-          print STDERR $client->responseContent(),"\n\n";
-          my $response_sample = decode_json $client->responseContent();
-
-          if ($response_sample->{count} > 0) {
-            #$sequpdate->[$i]->{'sampleDerivedFrom'} = $response_sample->{results}->[0]->{sampleDerivedFrom};
-            push @biosample_accessions, $response_sample->{results}->[0]->{biosampleAccession};
-            # if ($pool){
-            #   $sequpdate->[$i]->{'biosample_accession'} = $response_sample->{results}->[0]->{sampleDerivedFrom};
-            # }
-            $sample_url = $response_sample->{results}->[0]->{url};
-            $client->GET($response_sample->{results}->[0]->{specimen});
-            print STDERR $client->responseContent(),"\n\n";
-            my $response_specimen = decode_json $client->responseContent();
-            #print STDERR "tolid: ",$response_specimen->{tolid},"\n\n";
-            $sequpdate->[$i]->{'tolid'} = $response_specimen->{tolid};
-          }else{
-            $squery = "$erga_status_url/sample/?gal_sample_id=".$t ;
+        if ($tubestring =~ /\S/){
+          my @biosample_accessions = ();
+          foreach my $t (@tubes){
+            ### try tube id first
+            my $squery = "$erga_status_url/sample/?tube_or_well_id=".$t ;
             $client->GET($squery);
-            my $response_sample_gal_sample_id = decode_json $client->responseContent();
             print STDERR $client->responseContent(),"\n\n";
-            if ($response_sample_gal_sample_id->{count} > 0) {
+            my $response_sample = decode_json $client->responseContent();
+
+            if ($response_sample->{count} > 0) {
               #$sequpdate->[$i]->{'sampleDerivedFrom'} = $response_sample->{results}->[0]->{sampleDerivedFrom};
-              push @biosample_accessions, $response_sample_gal_sample_id->{results}->[0]->{biosampleAccession};
+              push @biosample_accessions, $response_sample->{results}->[0]->{biosampleAccession};
               # if ($pool){
               #   $sequpdate->[$i]->{'biosample_accession'} = $response_sample->{results}->[0]->{sampleDerivedFrom};
               # }
-              $sample_url = $response_sample_gal_sample_id->{results}->[0]->{url};
-              $client->GET($response_sample_gal_sample_id->{results}->[0]->{specimen});
-              #print STDERR $client->responseContent(),"\n\n";
+              $sample_url = $response_sample->{results}->[0]->{url};
+              $client->GET($response_sample->{results}->[0]->{specimen});
+              print STDERR $client->responseContent(),"\n\n";
               my $response_specimen = decode_json $client->responseContent();
               #print STDERR "tolid: ",$response_specimen->{tolid},"\n\n";
               $sequpdate->[$i]->{'tolid'} = $response_specimen->{tolid};
             }else{
-              print STDERR "No sample found for $scientific_name with tube_or_well_id or gal_sample_id:",$t,"\n";
+              $squery = "$erga_status_url/sample/?gal_sample_id=".$t ;
+              $client->GET($squery);
+              my $response_sample_gal_sample_id = decode_json $client->responseContent();
+              print STDERR $client->responseContent(),"\n\n";
+              if ($response_sample_gal_sample_id->{count} > 0) {
+                #$sequpdate->[$i]->{'sampleDerivedFrom'} = $response_sample->{results}->[0]->{sampleDerivedFrom};
+                push @biosample_accessions, $response_sample_gal_sample_id->{results}->[0]->{biosampleAccession};
+                # if ($pool){
+                #   $sequpdate->[$i]->{'biosample_accession'} = $response_sample->{results}->[0]->{sampleDerivedFrom};
+                # }
+                $sample_url = $response_sample_gal_sample_id->{results}->[0]->{url};
+                $client->GET($response_sample_gal_sample_id->{results}->[0]->{specimen});
+                #print STDERR $client->responseContent(),"\n\n";
+                my $response_specimen = decode_json $client->responseContent();
+                #print STDERR "tolid: ",$response_specimen->{tolid},"\n\n";
+                $sequpdate->[$i]->{'tolid'} = $response_specimen->{tolid};
+              }else{
+                print STDERR "No sample found for $scientific_name with tube_or_well_id or gal_sample_id:",$t,"\n";
+              }
             }
-          }
 
+          }
+          $sequpdate->[$i]->{'biosample_accession'} = join(",",@biosample_accessions);
         }
-        $sequpdate->[$i]->{'biosample_accession'} = join(",",@biosample_accessions);
-        
 
         $client->GET("$erga_status_url/reads/?project=". $project_id);
         print STDERR "$erga_status_url/reads/?project=$project_id\n";
