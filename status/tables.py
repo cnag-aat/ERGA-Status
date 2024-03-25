@@ -223,6 +223,7 @@ class AssemblyTable(tables.Table):
     contig_n50 = tables.Column(verbose_name="Contig N50 (Mb)")
     scaffold_n50 = tables.Column(verbose_name="Scaffold N50 (Mb)")
     accession = tables.Column(verbose_name="ENA Study")
+    gca = tables.Column(verbose_name="GCA")
     def render_scaffold_n50(self, value, record):
         return "{:.3f}".format(record.scaffold_n50/1000000)
     def render_contig_n50(self, value, record):
@@ -241,6 +242,9 @@ class AssemblyTable(tables.Table):
     def value_project(self, value):
         return value
     def render_accession(self, value, record):
+        html = '<a target="blank" href="https://www.ebi.ac.uk/ena/browser/view/'+value+'">'+escape(value)+'</a>'
+        return mark_safe(html)
+    def render_gca(self, value, record):
         html = '<a target="blank" href="https://www.ebi.ac.uk/ena/browser/view/'+value+'">'+escape(value)+'</a>'
         return mark_safe(html)
     class Meta:
@@ -579,6 +583,9 @@ class SpecimenTable(tables.Table):
     #collection = tables.Column(linkify=True)
     # def __init__(self, *args, **kwargs):
     #     self.columns['nagoya_statement'].column.attrs = {"td":{"style" : "width:200;" }}
+    def render_biosampleAccession(self, value, record):
+        html = '<a target="blank" href="https://www.ebi.ac.uk/biosamples/samples/'+value+'">'+escape(value)+'</a>'
+        return mark_safe(html)
     def render_collection(self, value, record):
         html = '<a href="' + settings.DEFAULT_DOMAIN + 'collection/?species='+str(record.species.pk)+'">'+escape(value)+'</a>'
         return mark_safe(html)
@@ -589,6 +596,7 @@ class SpecimenTable(tables.Table):
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
         exclude = ['id']
+        sequence = ('specimen_id','species','tolid','biosampleAccession','samples','...')
 
 class SampleTable(tables.Table):
     export_formats = ['csv', 'tsv','xls']

@@ -83,3 +83,11 @@ class NewSpeciesForm(ModelForm):
         widgets = {
             'taxon_id': forms.TextInput(attrs={'class':'form-control'})
         }
+
+class NewSpeciesListForm(ModelForm):
+    class Meta:
+        model = SpeciesUpload
+        fields = ('file',)
+        # widgets = {
+        #     'taxon_id': forms.TextInput(attrs={'class':'form-control'})
+        # }

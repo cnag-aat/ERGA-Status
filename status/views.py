@@ -46,6 +46,7 @@ from django.shortcuts import get_object_or_404
 #from status.forms import (EditProfileForm, ProfileForm)
 from status.forms import ProfileUpdateForm
 from status.forms import NewSpeciesForm
+from status.forms import NewSpeciesListForm
 from django.urls import reverse_lazy
 from status.filters import GenomeTeamFilter
 from status.filters import TargetSpeciesFilter
@@ -116,7 +117,7 @@ class OverView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin,
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 1000}
     def get_queryset(self):
-        return TargetSpecies.objects.exclude(goat_target_list_status = None).exclude(goat_target_list_status = '')
+        return TargetSpecies.objects.exclude(goat_target_list_status = None).exclude(goat_target_list_status = 'none').exclude(goat_target_list_status = '')
         #return TargetSpecies.objects.exclude(goat_sequencing_status = None).exclude(goat_sequencing_status = '')
 
 #@login_required
@@ -228,7 +229,6 @@ def annotation_team_detail(request, pk=None):
     return response
 
 class AssemblyProjectListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
-    # permission_required = "resistome.view_sample"
     #login_url = "access_denied"
     model = AssemblyProject
     table_class = AssemblyProjectTable
@@ -242,7 +242,6 @@ class AssemblyProjectListView(ExportMixin, SingleTableMixin, FilterView): #Login
             return queryset
 
 class AssemblyListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
-    # permission_required = "resistome.view_sample"
     #login_url = "access_denied"
     model = Assembly
     table_class = AssemblyTable
@@ -498,6 +497,89 @@ class NewSpeciesView(LoginRequiredMixin, FormView):
         messages.success(self.request, 'Species added successfully. Add another?')  
         #return HttpResponseRedirect(self.request.path_info)
         return super(NewSpeciesView, self).form_valid(form)
+ 
+class NewSpeciesListView(LoginRequiredMixin, FormView):
+    login_url = "access_denied"
+    model = SpeciesUpload
+    fields = ['file']
+    template_name = 'status/new_species_list_form.html'
+    form_class = NewSpeciesListForm
+    success_url = reverse_lazy("add_species_list") #reverse_lazy('success')
+    def form_valid(self, form):
+        # form.instance.tag = "bge"
+        form.save()
+        with open(settings.MEDIA_ROOT + '/' + form.instance.file.name) as csvfile:
+            csvreader = csv.DictReader(csvfile, delimiter='\t')
+                #csvreader = csv.DictReader(output, delimiter='\t')
+
+            for row in csvreader:  
+                if 'taxon_id' in csvreader:
+                    try:
+                        targetspecies = TargetSpecies.objects.get(taxon_id=row['taxon_id'])
+                    except TargetSpecies.DoesNotExist:
+                        targetspecies, _ = TargetSpecies.objects.get_or_create(
+                            taxon_id=row['taxon_id']
+                        )
+                    if 'original_species' in csvreader:
+                        targetspecies.listed_species = row['original_species'] or None
+                    if 'scientific_name' in csvreader:
+                        targetspecies.scientific_name = row['scientific_name'] or None
+                    if 'tolid_prefix' in csvreader:
+                        targetspecies.tolid_prefix = row['tolid_prefix'] or None
+                    if 'chromosome_number' in csvreader:
+                        targetspecies.chromosome_number = row['chromosome_number'] or None
+                    if 'haploid_number' in csvreader:
+                        targetspecies.haploid_number = row['haploid_number'] or None
+                    if 'ploidy' in csvreader:
+                        targetspecies.ploidy = row['ploidy'] or None
+                    if 'c_value' in csvreader:
+                        targetspecies.c_value = row['c_value'] or None
+                    if 'genome_size' in csvreader:
+                        targetspecies.genome_size = round(float(row['genome_size'])) or None
+                    if 'synonym' in csvreader:
+                        targetspecies.synonym = row['synonym'] or None
+                    if 'goat_target_list_status' in csvreader:
+                        targetspecies.goat_target_list_status = row['goat_target_list_status'] or None
+                    if 'goat_sequencing_status' in csvreader:
+                        targetspecies.goat_sequencing_status = row['goat_sequencing_status'] or None
+                    targetspecies.save()
+                    if 'synonym' in csvreader:
+                        for syn in row['synonym'].split(','):
+                            species_synonyms, created = Synonyms.objects.get_or_create(
+                                name=syn,
+                                species=targetspecies
+                            )
+                    if 'common_name' in csvreader:
+                        for cname in row['common_name'].split(','):
+                            species_cnames, created = CommonNames.objects.get_or_create(
+                                name=cname,
+                                species=targetspecies
+                            )
+                    if 'tags' in csvreader:
+                        for t in row['tags'].split(' '):
+                            species_tag, created = Tag.objects.get_or_create(
+                                tag=t
+                            )
+                            targetspecies.tags.add(species_tag)
+                    collection_record, created = SampleCollection.objects.get_or_create(
+                                species=targetspecies
+                            )
+                    sequencing_record, created = Sequencing.objects.get_or_create(
+                                species=targetspecies
+                            )
+                    assemblyproject_record, created = AssemblyProject.objects.get_or_create(
+                                species=targetspecies
+                            )
+                    annotation_record, created = Annotation.objects.get_or_create(
+                                species=targetspecies
+                            )
+                    cannotation_record, created = CommunityAnnotation.objects.get_or_create(
+                                species=targetspecies
+                            )
+            
+        messages.success(self.request, 'Species in list added successfully. Add more?')  
+        #return HttpResponseRedirect(self.request.path_info)
+        return super(NewSpeciesListView, self).form_valid(form)
  
 #@login_required
 def recipe_detail(request, pk=None):

@@ -284,6 +284,10 @@ class TargetSpecies(models.Model):
     date_updated = models.DateTimeField(auto_now=True)  
 
     def save(self, *args, **kwargs):
+        if not self.goat_target_list_status:
+            self.goat_target_list_status = 'none'
+        if not self.goat_sequencing_status:
+            self.goat_sequencing_status = 'none'
         if self.taxon_id:
             #process = subprocess.run('/home/www/resistome.cnag.cat/incredible/search/mash dist -i /home/www/resistome.cnag.cat/incredible/search/incredble.release7.fasta.msh /home/www/resistome.cnag.cat/incredible/deployment/data/'+ new_query.fasta.name +' | /home/www/resistome.cnag.cat/incredible/search/mash_hits_to_json.pl', shell=True, check=True, stdout=subprocess.PIPE, universal_newlines=True)
             #output = process.stdout
@@ -866,16 +870,17 @@ class Specimen(models.Model):
     # TISSUE_REMOVED_FOR_BIOBANKING	TISSUE_VOUCHER_ID_FOR_BIOBANKING	TISSUE_FOR_BIOBANKING	
     # DNA_REMOVED_FOR_BIOBANKING	DNA_VOUCHER_ID_FOR_BIOBANKING	
     # VOUCHER_ID	 PROXY_VOUCHER_ID	VOUCHER_LINK	PROXY_VOUCHER_LINK	VOUCHER_INSTITUTION
-    specimen_id = models.CharField(max_length=20, help_text='Internal Specimen ID')
+    specimen_id = models.CharField(max_length=100, help_text='Internal Specimen ID')
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species",null=True, blank=True)
     #barcode = models.CharField(max_length=20, help_text='Tube barcode')
     tolid = models.CharField(max_length=20, help_text='Registered ToLID for the Specimen', null=True, blank=True)
-    biosampleAccession = models.CharField(max_length=20, help_text='BioSample Accession', null=True, blank=True, verbose_name="BioSample")
+    biosampleAccession = models.CharField(max_length=20, help_text='BioSample Accession', null=True, blank=True, verbose_name="Specimen BioSample")
     collection = models.ForeignKey(SampleCollection, on_delete=models.CASCADE, verbose_name="Collection")
-    sample_coordinator = models.CharField(max_length=100, help_text='Sample coordinator', null=True, blank=True)
+    sample_coordinator = models.CharField(max_length=120, help_text='Sample coordinator', null=True, blank=True)
     tissue_removed_for_biobanking = models.BooleanField(default=False)
-    tissue_voucher_id_for_biobanking = models.CharField(max_length=200, null=True, blank=True)
-    tissue_for_biobanking = models.CharField(max_length=50, null=True, blank=True)
+    tissue_voucher_id_for_biobanking = models.CharField(max_length=500, null=True, blank=True)
+    proxy_tissue_voucher_id_for_biobanking = models.CharField(max_length=500, null=True, blank=True)
+    tissue_for_biobanking = models.CharField(max_length=100, null=True, blank=True)
     dna_removed_for_biobanking = models.BooleanField(default=False)
     dna_voucher_id_for_biobanking = models.CharField(max_length=200, null=True, blank=True)
     voucher_id = models.CharField(max_length=200, help_text='Voucher ID', null=True, blank=True)
@@ -903,14 +908,16 @@ class Sample(models.Model):
     copo_id = models.CharField(max_length=30, help_text='COPO ID', null=True, blank=True, verbose_name="CopoID")
     biosampleAccession = models.CharField(max_length=20, help_text='BioSample Accession', null=True, blank=True, verbose_name="BioSample")
     sampleDerivedFrom = models.CharField(max_length=20, help_text='BioSample Derived From', null=True, blank=True, verbose_name="SampleDerivedFrom")
-    barcode = models.CharField(max_length=20, help_text='Tube barcode', null=True, blank=True)
+    sampleSameAs = models.CharField(max_length=20, help_text='BioSample Same As', null=True, blank=True, verbose_name="SampleSameAs")
+    barcode = models.CharField(max_length=50, help_text='Tube barcode', null=True, blank=True)
     # collection = models.ForeignKey(SampleCollection, on_delete=models.CASCADE, verbose_name="Collection")
     purpose_of_specimen = models.CharField(max_length=30, help_text='Purpose', null=True, blank=True)
     gal = models.CharField(max_length=120, help_text='GAL', null=True, blank=True, verbose_name="GAL")
-    gal_sample_id = models.CharField(max_length=40, help_text='GAL Sample ID', null=True, blank=True)
+    gal_sample_id = models.CharField(max_length=200, help_text='GAL Sample ID', null=True, blank=True)
     collector_sample_id = models.CharField(max_length=200, help_text='Collector Sample ID', null=True, blank=True)
-    tube_or_well_id = models.CharField(max_length=100, help_text='Tube or Well ID', null=True, blank=True)
+    tube_or_well_id = models.CharField(max_length=200, help_text='Tube or Well ID', null=True, blank=True)
     copo_date = models.CharField(max_length=30, help_text='COPO Time Updated', null=True, blank=True, verbose_name="date")
+    #copo_update_date = models.CharField(max_length=30, help_text='COPO Time Updated', null=True, blank=True, verbose_name="date")
     copo_status = models.CharField(max_length=30, help_text='COPO Status', null=True, blank=True, verbose_name="Status")
     specimen = models.ForeignKey(Specimen, on_delete=models.CASCADE, verbose_name="Specimen",null=True, blank=True)
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species",null=True, blank=True)
@@ -1337,6 +1344,7 @@ class Assembly(models.Model):
     qv = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True, verbose_name="QV")
     report = models.URLField(max_length = 400, null=True, blank=True)
     accession = models.CharField(max_length=12,null=True, blank=True, verbose_name="Project Accession")
+    gca = models.CharField(max_length=20,null=True, blank=True, verbose_name="GCA")
     #pretext = models.FileField(upload_to=user_directory_path, max_length = 400, null=True, blank=True)
 
     class Meta:
@@ -1358,3 +1366,7 @@ class StatusUpdate(models.Model):
 
     # def __str__(self):
     #     return self.id
+
+class SpeciesUpload(models.Model):
+    file = models.FileField(upload_to='uploaded_files/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)

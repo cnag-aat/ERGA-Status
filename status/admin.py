@@ -275,8 +275,15 @@ def update_teams(modeladmin, request, queryset):
 @register(GenomeTeam)
 class GenomeTeamAdmin(admin.ModelAdmin):
     save_as = True
-    list_filter = admin.ModelAdmin.list_filter + ('species__tags',)
+    list_filter = admin.ModelAdmin.list_filter + ('species__tags','sample_handling_team','sequencing_team','assembly_team')
     list_per_page = 10000
+    list_display = (
+        'species',
+        'sample_handling_team',
+        'sequencing_team',
+        'assembly_team',
+        'community_annotation_team'
+    )
     action_form = UpdateActionForm
     actions = [update_teams]
     def get_actions(self, request):
@@ -376,7 +383,9 @@ class RunAdmin(admin.ModelAdmin):
         'project',
         'read_type',
         'seq_yield',
-        'tube_or_well_id'
+        'tube_or_well_id',
+        'forward_filename',
+        'forward_md5sum'
     )
 
 # admin.site.register(Specimen)
