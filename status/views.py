@@ -55,7 +55,6 @@ from status.filters import TargetSpeciesFilter
 logger = logging.getLogger(__name__)
 
 
-
 class AffiliationCreateView(CreatePopupMixin, CreateView):
     model = Affiliation
     template_name = 'affiliation_form.html'
@@ -80,6 +79,11 @@ class TargetSpeciesListView(ExportMixin, SingleTableMixin, FilterView): #LoginRe
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['build_page_title'] = 'ERGA-GTC Species'
+        return context
+    
     def get_queryset(self):
         return TargetSpecies.objects.exclude(goat_target_list_status = None).exclude(goat_target_list_status = '')
         #return TargetSpecies.objects.exclude(goat_sequencing_status = None).exclude(goat_sequencing_status = '')
@@ -101,8 +105,9 @@ class GoaTListView(ExportMixin, SingleTableMixin, FilterView):
         context = super().get_context_data(**kwargs)
         # Add in a QuerySet of all the books
         context["last_updated"] = TargetSpecies.objects.order_by('-date_updated')[:1].get().date_updated
+        context['build_page_title'] = 'ERGA-GTC GoaT List'
         return context
-    
+ 
     def get_queryset(self):
         return TargetSpecies.objects.exclude(goat_target_list_status = 'none')
 
@@ -116,6 +121,11 @@ class OverView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin,
     export_formats = ['csv', 'tsv','xlsx','json']
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 1000}
+    def get_context_data(self, *args, **kwargs):
+        data = super(OverView, self).get_context_data(*args, **kwargs)
+        data['build_page_title'] = 'ERGA-GTC OverView'
+        return data
+    
     def get_queryset(self):
         return TargetSpecies.objects.exclude(goat_target_list_status = None).exclude(goat_target_list_status = 'none').exclude(goat_target_list_status = '')
         #return TargetSpecies.objects.exclude(goat_sequencing_status = None).exclude(goat_sequencing_status = '')
@@ -235,6 +245,11 @@ class AssemblyProjectListView(ExportMixin, SingleTableMixin, FilterView): #Login
     template_name = 'assemblyproject.html'
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['build_page_title'] = 'ERGA-GTC Assembly Status'
+        return context
+    
     def get_queryset(self):
         queryset = super(AssemblyProjectListView, self).get_queryset()
         if 'project' in self.request.GET:
@@ -248,6 +263,10 @@ class AssemblyListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequire
     template_name = 'assembly.html'
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['build_page_title'] = 'ERGA-GTC Assemblies'
+        return context
 
 #@login_required
 def assembly_pipeline_detail(request, pk=None):
@@ -265,6 +284,10 @@ class SampleCollectionListView(ExportMixin, SingleTableMixin, FilterView): #Logi
     template_name = 'collection.html'
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['build_page_title'] = 'ERGA-GTC Sample Collection'
+        return context
 
 class SpecimenListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
@@ -275,6 +298,11 @@ class SpecimenListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequire
     template_name = 'specimens.html'
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['build_page_title'] = 'ERGA-GTC Specimens'
+        return context
+    
     def get_queryset(self):
         #self.id = get_object_or_404(Specimen, pk=self.kwargs['id'])
         if 'id' in self.kwargs:
@@ -290,6 +318,10 @@ class SampleListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredM
     template_name = 'samples.html'
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['build_page_title'] = 'ERGA-GTC GoaT Samples'
+        return context
 
 #@login_required
 def copo_record(request, copoid):
@@ -313,6 +345,10 @@ class SequencingListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequi
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['build_page_title'] = 'ERGA-GTC Sequencing Status'
+        return context
 
     def get_queryset(self):
         queryset = super(SequencingListView, self).get_queryset()
@@ -330,6 +366,10 @@ class SequencingDetailView(DetailView): #LoginRequiredMixin,
     template_name = 'sequencing_detail.html'
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['build_page_title'] = 'ERGA-GTC Sequencing'
+        return context
 
 class RunListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
@@ -340,6 +380,10 @@ class RunListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixi
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['build_page_title'] = 'ERGA-GTC Runs'
+        return context
 
     
 class ReadsListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
@@ -351,6 +395,11 @@ class ReadsListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMi
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['build_page_title'] = 'ERGA-GTC Read Data'
+        return context
+    
     def get_queryset(self):
         queryset = super(ReadsListView, self).get_queryset()
         queryset = queryset.annotate(ont_yield=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='ONT')),
@@ -385,6 +434,10 @@ class AnnotationListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequi
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['build_page_title'] = 'ERGA-GTC Annotations'
+        return context
 
 class CommunityAnnotationListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
@@ -395,9 +448,17 @@ class CommunityAnnotationListView(ExportMixin, SingleTableMixin, FilterView): #L
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['build_page_title'] = 'ERGA-GTC Community Annotations'
+        return context
 
 
 class AccessDeniedView(TemplateView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['build_page_title'] = 'ERGA-GTC Access Denied'
+        return context
     template_name = 'denied.html'
 
 class GenomeTeamsView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
@@ -409,11 +470,16 @@ class GenomeTeamsView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterV
     export_formats = ['csv', 'tsv','xlsx','json']
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['build_page_title'] = 'ERGA-GTC Genome Teams'
+        return context
 
 @permission_required("status.user_profile", login_url='access_denied')
 def user_profile(request, pk=None):
     profile = UserProfile.objects.get(pk=pk)
-    context = {"profile": profile
+    context = {"profile": profile,
+               'build_page_title':'User Profile'
                }
     response = render(request, "user_profile.html", context)
     return response
@@ -426,6 +492,10 @@ class AuthorsView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView)
     export_formats = ['csv', 'tsv','xlsx','json']
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['build_page_title'] = 'ERGA-GTC Authors'
+        return context
 
 class EditProfileView(FormView):
     login_url = "access_denied"
@@ -434,6 +504,10 @@ class EditProfileView(FormView):
     template_name = 'status/userprofile_update_form.html'
     form_class = ProfileUpdateForm
     success_url = reverse_lazy('success')
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['build_page_title'] = 'ERGA-GTC Edit Profile'
+        return context
 
     def get_form(self, form_class = ProfileUpdateForm):
         """
@@ -460,6 +534,10 @@ class LogView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['build_page_title'] = 'ERGA-GTC Log'
+        return context
 
     # def get_queryset(self):
     #     queryset = super(StatusUpdate, self).get_queryset()
@@ -476,6 +554,10 @@ class SpeciesLogView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterVi
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['build_page_title'] = 'ERGA-GTC Species Log'
+        return context
 
     def get_queryset(self):
         #species = TargetSpecies.objects.get(scientfic_name=self.request.GET['scientific_name'])
@@ -491,6 +573,11 @@ class NewSpeciesView(LoginRequiredMixin, FormView):
     template_name = 'status/new_species_form.html'
     form_class = NewSpeciesForm
     success_url = reverse_lazy("add_species") #reverse_lazy('success')
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['build_page_title'] = 'ERGA-GTC Add Species'
+        return context
+    
     def form_valid(self, form):
         # form.instance.tag = "bge"
         form.save()
@@ -505,6 +592,12 @@ class NewSpeciesListView(LoginRequiredMixin, FormView):
     template_name = 'status/new_species_list_form.html'
     form_class = NewSpeciesListForm
     success_url = reverse_lazy("add_species_list") #reverse_lazy('success')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['build_page_title'] = 'ERGA-GTC Upload Species List'
+        return context
+    
     def form_valid(self, form):
         # form.instance.tag = "bge"
         form.save()
@@ -584,7 +677,8 @@ class NewSpeciesListView(LoginRequiredMixin, FormView):
 #@login_required
 def recipe_detail(request, pk=None):
     recipe = Recipe.objects.get(pk=pk)
-    context = {"recipe": recipe
+    context = {"recipe": recipe,
+               'build_page_title':'ERGA-GTC Recipe'
                }
     response = render(request, "recipe_detail.html", context)
     return response
@@ -594,7 +688,8 @@ def sample_detail(request, pk=None):
     sample = Sample.objects.get(pk=pk)
     site_url = settings.DEFAULT_DOMAIN
     context = {"sample": sample,
-               "site_url": site_url
+               "site_url": site_url,
+               'build_page_title':'ERGA-GTC Sample'
                }
     response = render(request, "sample_detail.html", context)
     return response

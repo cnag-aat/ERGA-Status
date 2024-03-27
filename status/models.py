@@ -135,14 +135,17 @@ READ_TYPES = (
 )
 
 GOAT_TARGET_LIST_STATUS_CHOICES = (
+    ('waiting_list', 'waiting_list'), #not shared with goat
     ('none', 'none'),
     ('long_list', 'long_list'),
     ('other_priority', 'other_priority'),
-    ('family_representative', 'family_representative')
+    ('family_representative', 'family_representative'),
+    ('removed', 'removed') #not shared with goat
 )
 
 GOAT_SEQUENCING_STATUS_CHOICES = (
     ('none', 'none'),
+    ('in_collection','in_collection'), #not shared with goat
     ('sample_collected', 'sample_collected'),
     ('sample_acquired', 'sample_acquired'),
     ('data_generation', 'data_generation'),
@@ -796,15 +799,53 @@ class GenomeTeam(models.Model):
     def __str__(self):
         return self.species.scientific_name or str(self.id)
 
+class Task(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        verbose_name_plural = 'tasks'
+
+    def __str__(self):
+        return self.name
+    
+class Country(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        verbose_name_plural = 'countries'
+
+    def __str__(self):
+        return self.name
+
+BARCODING_STATUS_CHOICES = (
+    ('DNA_BARCODING_TO_BE_PERFORMED', 'DNA_BARCODING_TO_BE_PERFORMED'),
+    ('DNA_BARCODING_COMPLETED', 'DNA_BARCODING_COMPLETED'),
+    ('DNA_BARCODING_EXEMPT', 'DNA_BARCODING_EXEMPT'),
+    ('DNA_BARCODING_FAILED', 'DNA_BARCODING_FAILED')
+)
+
 class SampleCollection(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species",unique=True)
     #team = models.ForeignKey(CollectionTeam, on_delete=models.SET_NULL, null=True, verbose_name="collection team", blank=True)
     copo_status = models.CharField(max_length=20, help_text='COPO status', choices=COPO_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
-    genomic_sample_status = models.CharField(max_length=20, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
-    rna_sample_status = models.CharField(max_length=20, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
+    #genomic_sample_status = models.CharField(max_length=20, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
+    #rna_sample_status = models.CharField(max_length=20, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
     #hic_sample_status = models.CharField(max_length=12, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
     # ship_date = models.DateTimeField(verbose_name="Date shipped", editable=True, null=True, blank=True, default=None)
+    task = models.ForeignKey(Task, on_delete=models.SET_NULL, verbose_name="Task", null=True, blank=True)
+    country = models.ForeignKey(Country, on_delete=models.SET_NULL, verbose_name="Country", null=True, blank=True)
+    sample_provider_name = models.CharField(max_length=100, null=True, blank=True)
+    sample_provider_email = models.EmailField(max_length=100, null=True, blank=True)
+    mta1 =  models.BooleanField(default=False, verbose_name="MTA 1: Seq Centers")
+    mta2 =  models.BooleanField(default=False, verbose_name="MTA 2: LIB leftovers")
+    barcoding_status = models.CharField(max_length=30, help_text='Barcoding Status', choices=BARCODING_STATUS_CHOICES, default=BARCODING_STATUS_CHOICES[0][0])
+    barcoding_results = models.CharField(max_length=200, null=True, blank=True)
+    collection_forecast = models.DateField(blank=True,null=True)
+    deadline_sampling = models.DateField(blank=True,null=True)
+    deadline_manifest_sharing = models.DateField(blank=True,null=True)
+    deadline_manifest_acceptance = models.DateField(blank=True,null=True)
+    deadline_sample_shipment = models.DateField(blank=True,null=True)
 
     class Meta:
         verbose_name_plural = 'collection'
@@ -815,23 +856,23 @@ class SampleCollection(models.Model):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.__original_genomic_sample_status = self.genomic_sample_status
-        self.__original_rna_sample_status = self.rna_sample_status
+        # self.__original_genomic_sample_status = self.genomic_sample_status
+        # self.__original_rna_sample_status = self.rna_sample_status
         self.__original_copo_status = self.copo_status
 
     def save(self, *args, **kwargs):
-        if (self.__original_genomic_sample_status != self.genomic_sample_status):
-            stat_gsamp_records, created = StatusUpdate.objects.get_or_create(
-                species=self.species,
-                process='genomic_sample',
-                status=self.genomic_sample_status
-            )
-        if (self.__original_rna_sample_status != self.rna_sample_status):
-            stat_rsamp_records, created = StatusUpdate.objects.get_or_create(
-                species=self.species,
-                process='rna_sample',
-                status=self.rna_sample_status
-            )
+        # if (self.__original_genomic_sample_status != self.genomic_sample_status):
+        #     stat_gsamp_records, created = StatusUpdate.objects.get_or_create(
+        #         species=self.species,
+        #         process='genomic_sample',
+        #         status=self.genomic_sample_status
+        #     )
+        # if (self.__original_rna_sample_status != self.rna_sample_status):
+        #     stat_rsamp_records, created = StatusUpdate.objects.get_or_create(
+        #         species=self.species,
+        #         process='rna_sample',
+        #         status=self.rna_sample_status
+        #     )
         if (self.__original_copo_status != self.copo_status):
             stat_g_records, created = StatusUpdate.objects.get_or_create(
                 species=self.species,
@@ -949,8 +990,18 @@ class Recipe(models.Model):
     def __str__(self):
         return self.name or str(self.id)
 
+class Phase(models.Model):
+    name = models.CharField(max_length=20, unique=True)
+
+    class Meta:
+        verbose_name_plural = 'phases'
+
+    def __str__(self):
+        return self.name
+
 class Sequencing(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
+    phase = models.ForeignKey(Phase, on_delete=models.SET_NULL, verbose_name="Phase", null=True)
     #team = models.ForeignKey(SequencingTeam, on_delete=models.SET_NULL, null=True, verbose_name="sequencing team")
     long_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
     short_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
@@ -978,18 +1029,51 @@ class Sequencing(models.Model):
 
     def save(self, *args, **kwargs):
         if (self.__original_long_seq_status != self.long_seq_status):
+            #get species and set goat_sequencing_status to "data_generation"
+            if self.long_seq_status != "Received" and self.long_seq_status != "Waiting":
+                #species = TargetSpecies.objects.get(species=self.species)
+                if not (
+                    self.species.goat_sequencing_status == "in_assmbly" or 
+                    self.species.goat_sequencing_status == "insdc_submitted" or
+                    self.species.goat_sequencing_status == "open" or
+                    self.species.goat_sequencing_status == "insdc_open" 
+                    ):
+                    self.species.goat_sequencing_status = "data_generation"
+                    #species.save()
             stat_g_records, created = StatusUpdate.objects.get_or_create(
                 species=self.species,
                 process='long_seq',
                 status=self.long_seq_status
             )
         if (self.__original_short_seq_status != self.short_seq_status):
+            #get species and set goat_sequencing_status to "data_generation"
+            if self.short_seq_status != "Received" and self.short_seq_status != "Waiting":
+                #species = TargetSpecies.objects.get(species=self.species)
+                if not (
+                    self.species.goat_sequencing_status == "in_assmbly" or 
+                    self.species.goat_sequencing_status == "insdc_submitted" or
+                    self.species.goat_sequencing_status == "open" or
+                    self.species.goat_sequencing_status == "insdc_open" 
+                    ):
+                    self.species.goat_sequencing_status = "data_generation" 
+                    #species.save()
             stat_g_records, created = StatusUpdate.objects.get_or_create(
                 species=self.species,
                 process='short_seq',
                 status=self.short_seq_status
             )
         if (self.__original_hic_seq_status != self.hic_seq_status):
+            #get species and set goat_sequencing_status to "data_generation"
+            if self.hic_seq_status != "Received" and self.hic_seq_status != "Waiting":
+                #species = TargetSpecies.objects.get(species=self.species)
+                if not (
+                    self.species.goat_sequencing_status == "in_assmbly" or 
+                    self.species.goat_sequencing_status == "insdc_submitted" or
+                    self.species.goat_sequencing_status == "open" or
+                    self.species.goat_sequencing_status == "insdc_open" 
+                    ):
+                    self.species.goat_sequencing_status = "data_generation" 
+                    #species.save()
             stat_h_records, created = StatusUpdate.objects.get_or_create(
                 species=self.species,
                 process='hic_seq',
@@ -1005,48 +1089,51 @@ class Sequencing(models.Model):
 
             if ((self.__original_long_seq_status != 'Done' and self.__original_long_seq_status != 'Submitted') and (self.long_seq_status == 'Done' or self.long_seq_status == 'Submitted')):
                 myurl = settings.DEFAULT_DOMAIN + 'sequencing/?species='+str(self.species.pk)
-                gteam = GenomeTeam.objects.get(species=self.species)
-                assembly_team = AssemblyTeam.objects.get(genometeam=gteam)
-                if assembly_team.lead:
-                    send_mail(
-                        '[ERGA] Long read genomic sequencing for '+ self.species.scientific_name +'is done',
-                        'Dear '+ assembly_team.lead.first_name+",\n\nLong-read genomic sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
-                        'denovo@cnag.eu',
-                        [assembly_team.lead.user.email],
-                        fail_silently=True,
-                    )
+                gteam, created = GenomeTeam.objects.get_or_create(species=self.species)
+                assembly_team = gteam.assembly_team
+                if assembly_team != None:
+                    if assembly_team.lead:
+                        send_mail(
+                            '[ERGA] Long read genomic sequencing for '+ self.species.scientific_name +'is done',
+                            'Dear '+ assembly_team.lead.first_name+",\n\nLong-read genomic sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
+                            'denovo@cnag.eu',
+                            [assembly_team.lead.user.email],
+                            fail_silently=True,
+                        )
 
             if ((self.__original_short_seq_status != 'Done' and self.__original_short_seq_status != 'Submitted') and (self.short_seq_status == 'Done' or self.short_seq_status == 'Submitted')):
                 myurl = settings.DEFAULT_DOMAIN + 'sequencing/?species='+str(self.species.pk)
-                gteam = GenomeTeam.objects.get(species=self.species)
-                assembly_team = AssemblyTeam.objects.get(genometeam=gteam)
-                if assembly_team.lead:
-                    send_mail(
-                        '[ERGA] Genomic sequencing for '+ self.species.scientific_name +'is done',
-                        'Dear '+ assembly_team.lead.first_name+",\n\nShort-read genomic sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
-                        'denovo@cnag.eu',
-                        [assembly_team.lead.user.email],
-                        fail_silently=True,
-                    )
+                gteam, created = GenomeTeam.objects.get_or_create(species=self.species)
+                assembly_team = gteam.assembly_team
+                if assembly_team != None:
+                    if assembly_team.lead:
+                        send_mail(
+                            '[ERGA] Genomic sequencing for '+ self.species.scientific_name +'is done',
+                            'Dear '+ assembly_team.lead.first_name+",\n\nShort-read genomic sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
+                            'denovo@cnag.eu',
+                            [assembly_team.lead.user.email],
+                            fail_silently=True,
+                        )
 
             if ((self.__original_hic_seq_status != 'Done' and self.__original_hic_seq_status != 'Submitted') and (self.hic_seq_status == 'Done' or self.hic_seq_status == 'Submitted')):
                 myurl = settings.DEFAULT_DOMAIN + 'sequencing/?species='+str(self.species.pk)
-                gteam = GenomeTeam.objects.get(species=self.species)
-                assembly_team = AssemblyTeam.objects.get(genometeam=gteam)
-                if assembly_team.lead:
-                    send_mail(
-                        '[ERGA] Hi-C sequencing for '+ self.species.scientific_name +'is done',
-                        'Dear '+ assembly_team.lead.first_name+",\n\nHi-C sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
-                        'denovo@cnag.eu',
-                        [assembly_team.lead.user.email],
-                        fail_silently=True,
-                    )
+                gteam, created = GenomeTeam.objects.get_or_create(species=self.species)
+                team = gteam.assembly_team
+                if team != None:
+                    if assembly_team.lead:
+                        send_mail(
+                            '[ERGA] Hi-C sequencing for '+ self.species.scientific_name +'is done',
+                            'Dear '+ assembly_team.lead.first_name+",\n\nHi-C sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
+                            'denovo@cnag.eu',
+                            [assembly_team.lead.user.email],
+                            fail_silently=True,
+                        )
 
             if ((self.__original_rna_seq_status != 'Done' and self.__original_rna_seq_status != 'Submitted') and (self.rna_seq_status == 'Done' or self.rna_seq_status == 'Submitted')):
                 myurl = settings.DEFAULT_DOMAIN + 'sequencing/?species='+str(self.species.pk)
-                gteam = GenomeTeam.objects.get(species=self.species)
-                if CommunityAnnotationTeam.objects.filter(genometeam=gteam).exists():
-                    community_annotation_team = CommunityAnnotationTeam.objects.get(genometeam=gteam)
+                gteam, created = GenomeTeam.objects.get_or_create(species=self.species)
+                community_annotation_team = gteam.community_annotation_team
+                if community_annotation_team != None:
                     if community_annotation_team.lead:
                         send_mail(
                             '[ERGA] RNA sequencing for '+ self.species.scientific_name +'is done',
@@ -1057,14 +1144,15 @@ class Sequencing(models.Model):
                         )
 
         if self.__original_long_seq_status == 'Waiting' and self.long_seq_status != 'Waiting':
-            gteam = GenomeTeam.objects.get(species=self.species)
-            team = SequencingTeam.objects.get(genometeam=gteam)
-            for m in team.members.all():
-                species_authors, created = Author.objects.get_or_create(
-                    species=self.species,
-                    author=m,
-                    role='sequencing'
-                )
+            gteam, created = GenomeTeam.objects.get_or_create(species=self.species)
+            team = gteam.sequencing_team
+            if team != None:
+                for m in team.members.all():
+                    species_authors, created = Author.objects.get_or_create(
+                        species=self.species,
+                        author=m,
+                        role='sequencing'
+                    )
         if (self.__original_long_seq_status != self.long_seq_status):
             stat_gseq_records, created = StatusUpdate.objects.get_or_create(
                 species=self.species,
@@ -1073,14 +1161,15 @@ class Sequencing(models.Model):
             )
 
         if self.__original_short_seq_status == 'Waiting' and self.short_seq_status != 'Waiting':
-            gteam = GenomeTeam.objects.get(species=self.species)
-            team = SequencingTeam.objects.get(genometeam=gteam)
-            for m in team.members.all():
-                species_authors, created = Author.objects.get_or_create(
-                    species=self.species,
-                    author=m,
-                    role='sequencing'
-                )
+            gteam, created = GenomeTeam.objects.get_or_create(species=self.species)
+            team = gteam.sequencing_team
+            if team != None:
+                for m in team.members.all():
+                    species_authors, created = Author.objects.get_or_create(
+                        species=self.species,
+                        author=m,
+                        role='sequencing'
+                    )
         if (self.__original_short_seq_status != self.short_seq_status):
             stat_gseq_records, created = StatusUpdate.objects.get_or_create(
                 species=self.species,

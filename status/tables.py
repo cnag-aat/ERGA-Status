@@ -276,22 +276,23 @@ class SampleCollectionTable(tables.Table):
     # species = tables.Column(linkify=True)
     species = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("species.pk")}, empty_values=())
     specimens = tables.TemplateColumn('<a href="{% url \'specimen_list\' %}?collection={{record.pk}}">specimens</a>',empty_values=(), verbose_name='Specimen(s)')
-    team = tables.Column(accessor='species__genometeam__collection_team',linkify=True, verbose_name="Team")
+    sample_handling_team = tables.Column(accessor='species__gt_rel__sample_handling_team',linkify=True, verbose_name="Sample Handling Team")
     #goat_sequencing_status = tables.Column(accessor='species__goat_sequencing_status', verbose_name="GoaT")
     goat_sequencing_status = tables.TemplateColumn('<span class="status {{record.species.goat_sequencing_status}}">{{record.species.goat_sequencing_status|cut:"sample_"}}</span>',empty_values=(), verbose_name='GoaT Status')
-    def value_genomic_sample_status(self, value):
-        return value
+    # def value_genomic_sample_status(self, value):
+    #     return value
     # def value_hic_sample_status(self, value):
     #     return value
-    def value_rna_sample_status(self, value):
-        return value
+    # def value_rna_sample_status(self, value):
+    #     return value
 
     class Meta:
         model = SampleCollection
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
+        exclude = ('id', )
         #fields = ('species', 'team', 'specimens','note', 'genomic_sample_status','hic_sample_status','rna_sample_status')
-        fields = ('species', 'team', 'specimens','note', 'copo_status','goat_sequencing_status')
+        sequence = ('species', 'sample_handling_team', 'specimens','note', 'copo_status','goat_sequencing_status','...')
 
 class SequencingTable(tables.Table):
     long_seq_status = tables.TemplateColumn('<span class="status {{record.long_seq_status}}">{{record.long_seq_status}}</span>',empty_values=(), verbose_name='Long-read Status')
