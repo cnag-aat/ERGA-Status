@@ -16,7 +16,7 @@ from status.views import CommunityAnnotationListView
 # from status.views import SubmissionListView
 from status.views import SpecimenListView
 from status.views import SampleListView
-from status.views import HomeView
+#from status.views import HomeView
 from status.views import OverView
 from status.views import AccessDeniedView
 from status.views import GenomeTeamsView
@@ -32,12 +32,13 @@ from status.views import NewSpeciesListView
 
 
 urlpatterns = [
-    path("", HomeView.as_view(), name="home"),
+    path("", views.home, name="home"),
     path("overview/", OverView.as_view(), name="overview"),
     path("log/", LogView.as_view(), name="log"),
     path("log/?species=<int:id>/", SpeciesLogView.as_view(), name="species_log"),
     path("species/", TargetSpeciesListView.as_view(), name="species_list"),
     path("goat/", GoaTListView.as_view(), name="goat_list"),
+    path("goat/?task=<int:task>", GoaTListView.as_view(), name="goat_list"),
     path("species/<int:pk>/", views.species_detail, name="species_detail"),
     path("species/?scientific_name=<scientific_name>", views.species_detail, name="species_detail"),
     path("assemblies/", AssemblyListView.as_view(), name="assembly_list"),
@@ -83,6 +84,7 @@ urlpatterns = [
     path('teams/', GenomeTeamsView.as_view(), name="genome_teams"),
     path('create_affiliation/', AffiliationCreateView.as_view(), name="create_affiliation"),
     path("user_profile/<int:pk>/", views.user_profile, name="user_profile"),
+    path("person/<int:pk>/", views.person_detail, name="person_detail"),
     path("copo/<str:copoid>/", views.copo_record, name="copo"),
     path('authors/', AuthorsView.as_view(), name="author_list"),
     path('edit_profile/', EditProfileView.as_view(), name="edit_profile"),

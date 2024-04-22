@@ -23,14 +23,14 @@ class OverviewTable(tables.Table):
     #     }
     # )
     seq_center = tables.Column(accessor='gt_rel__sequencing_team__name',verbose_name='Center')
-    copo_status = tables.Column(accessor='samplecollection.copo_status',verbose_name='COPO',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
+    copo_status = tables.Column(accessor='collection_rel__copo_status',verbose_name='COPO',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     # hic_sample_status = tables.Column(accessor='samplecollection.hic_sample_status',verbose_name='HiC Sample',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     # rna_sample_status = tables.Column(accessor='samplecollection.rna_sample_status',verbose_name='RNA Sample',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
-    long_seq_status = tables.Column(accessor='sequencing.long_seq_status',verbose_name='Long-read',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
-    short_seq_status = tables.Column(accessor='sequencing.short_seq_status',verbose_name='Short-read',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
-    hic_seq_status = tables.Column(accessor='sequencing.hic_seq_status',verbose_name='Hi-C',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
-    rna_seq_status = tables.Column(accessor='sequencing.rna_seq_status',verbose_name='RNA-Seq',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
-    assembly_status = tables.Column(accessor='assemblyproject.status',verbose_name='Assembly',attrs={"td": {"class": "analysis_col"},"th": {"class": "analysis_col"}})
+    long_seq_status = tables.Column(accessor='sequencing_rel.long_seq_status',verbose_name='Long-read',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
+    short_seq_status = tables.Column(accessor='sequencing_rel.short_seq_status',verbose_name='Short-read',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
+    hic_seq_status = tables.Column(accessor='sequencing_rel.hic_seq_status',verbose_name='Hi-C',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
+    rna_seq_status = tables.Column(accessor='sequencing_rel.rna_seq_status',verbose_name='RNA-Seq',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
+    assembly_status = tables.Column(accessor='assembly_rel__status',verbose_name='Assembly',attrs={"td": {"class": "analysis_col"},"th": {"class": "analysis_col"}})
     # curation_status = tables.Column(accessor='curation.status',verbose_name='Curation',attrs={"td": {"class": "analysis_col"},"th": {"class": "analysis_col"}})
     community_annotation_status = tables.Column(accessor='communityannotation.status',verbose_name='Community Annotation',attrs={"td": {"class": "analysis_col"},"th": {"class": "analysis_col"}})
     annotation_status = tables.Column(accessor='annotation.status',verbose_name='Annotation',attrs={"td": {"class": "analysis_col"},"th": {"class": "analysis_col"}})
@@ -166,7 +166,7 @@ class OverviewTable(tables.Table):
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
         # fields = ('tolid_prefix', 'scientific_name','genomic_sample_status','hic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','curation_status','annotation_status','submission_status')
-        fields = ('scientific_name','tolid_prefix','seq_center','goat_sequencing_status','copo_status','long_seq_status','short_seq_status','hic_seq_status','rna_seq_status','assembly_status','annotation_status','community_annotation_status','log')
+        fields = ('scientific_name','taxon_phylum','tolid_prefix','seq_center','goat_sequencing_status','copo_status','long_seq_status','short_seq_status','hic_seq_status','rna_seq_status','assembly_status','annotation_status','community_annotation_status','log')
 
 class TargetSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']
@@ -191,6 +191,9 @@ class TargetSpeciesTable(tables.Table):
 
 class GoaTSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']
+    subproject = tables.ManyToManyColumn(accessor='collection_rel__subproject',verbose_name='subproject')
+    #secondary_projects = tables.Column(accessor='collection_rel__secondary_projects__name',verbose_name='secondary_projects')
+    contributing_project_lab = tables.Column(accessor='collection_rel__task__name',verbose_name='contributing_project_lab')
     scientific_name = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("pk")}, empty_values=())
     #listed_species = tables.Column()
 
@@ -208,6 +211,12 @@ class GoaTSpeciesTable(tables.Table):
     goat_sequencing_status = tables.Column(verbose_name="sequencing_status")
     synonym = tables.Column(verbose_name="synonym")
     publication_id = tables.Column(verbose_name="publication_id")
+    def render_goat_sequencing_status(self, value, record):
+        if value == "in_collection" or value == "over_collection":
+            return "none"
+        else:
+            return value
+    
     class Meta:
         model = TargetSpecies
         template_name = "django_tables2/bootstrap4.html"
@@ -278,7 +287,9 @@ class SampleCollectionTable(tables.Table):
     specimens = tables.TemplateColumn('<a href="{% url \'specimen_list\' %}?collection={{record.pk}}">specimens</a>',empty_values=(), verbose_name='Specimen(s)')
     sample_handling_team = tables.Column(accessor='species__gt_rel__sample_handling_team',linkify=True, verbose_name="Sample Handling Team")
     #goat_sequencing_status = tables.Column(accessor='species__goat_sequencing_status', verbose_name="GoaT")
-    goat_sequencing_status = tables.TemplateColumn('<span class="status {{record.species.goat_sequencing_status}}">{{record.species.goat_sequencing_status|cut:"sample_"}}</span>',empty_values=(), verbose_name='GoaT Status')
+    goat_sequencing_status = tables.TemplateColumn('<span class="status {{record.species.goat_sequencing_status}}">{{record.species.goat_sequencing_status|cut:"sample_"}}</span>',empty_values=(), verbose_name='GoaT Status',orderable=False)
+    
+    subproject = tables.ManyToManyColumn(verbose_name="subproject")
     # def value_genomic_sample_status(self, value):
     #     return value
     # def value_hic_sample_status(self, value):
@@ -290,9 +301,9 @@ class SampleCollectionTable(tables.Table):
         model = SampleCollection
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        exclude = ('id', )
+        exclude = ('id', 'sample_provider_name','sample_provider_email')
         #fields = ('species', 'team', 'specimens','note', 'genomic_sample_status','hic_sample_status','rna_sample_status')
-        sequence = ('species', 'sample_handling_team', 'specimens','note', 'copo_status','goat_sequencing_status','...')
+        sequence = ('subproject','species', 'sample_handling_team', 'specimens','note', 'copo_status','goat_sequencing_status','...')
 
 class SequencingTable(tables.Table):
     long_seq_status = tables.TemplateColumn('<span class="status {{record.long_seq_status}}">{{record.long_seq_status}}</span>',empty_values=(), verbose_name='Long-read Status')
@@ -338,16 +349,17 @@ class RunTable(tables.Table):
 
 class ReadsTable(tables.Table):
     project = tables.LinkColumn('sequencing_list')
-    ont_yield = tables.Column(verbose_name="ONT (Mb)",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
+    seq_center = tables.Column(accessor='project__species__gt_rel__sequencing_team__name',verbose_name='Center')
+    ont_yield = tables.Column(verbose_name="ONT (Gb)",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     ont_cov = tables.Column(verbose_name="ONT (x)",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     ont_ena = tables.Column(verbose_name="ENA",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
-    hifi_yield = tables.Column(verbose_name="HiFi (Mb)")
+    hifi_yield = tables.Column(verbose_name="HiFi (Gb)")
     hifi_cov = tables.Column(verbose_name="HiFi (x)")
     hifi_ena = tables.Column(verbose_name="ENA")
-    short_yield = tables.Column(verbose_name="Illumina (Mb)",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
+    short_yield = tables.Column(verbose_name="Illumina (Gb)",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     short_cov = tables.Column(verbose_name="Illumina (x)",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     short_ena = tables.Column(verbose_name="ENA",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
-    hic_yield = tables.Column(verbose_name="Hi-C (Mb)")
+    hic_yield = tables.Column(verbose_name="Hi-C (Gb)")
     hic_cov = tables.Column(verbose_name="Hi-C (x)")
     hic_ena = tables.Column(verbose_name="ENA")
     rnaseq_pe = tables.Column(verbose_name="RNA-seq (MPE)",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
@@ -532,7 +544,7 @@ class ReadsTable(tables.Table):
         model = Reads
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        fields = ('project', 'ont_yield', 'ont_cov','ont_ena','hifi_yield', 'hifi_cov','hifi_ena','short_yield','short_cov','short_ena','hic_yield','hic_cov','hic_ena','rnaseq_pe','rnaseq_ena')
+        fields = ('project', 'seq_center', 'ont_yield', 'ont_cov','ont_ena','hifi_yield', 'hifi_cov','hifi_ena','short_yield','short_cov','short_ena','hic_yield','hic_cov','hic_ena','rnaseq_pe','rnaseq_ena')
 
 class CurationTable(tables.Table):
     status = tables.TemplateColumn('<span class="status {{record.status}}">{{record.status}}</span>',empty_values=(), verbose_name='Status')
@@ -580,6 +592,10 @@ class SpecimenTable(tables.Table):
     export_formats = ['csv', 'tsv','xls']
     species = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("species.pk")}, empty_values=())
     samples = tables.TemplateColumn('<a href="{% url \'sample_list\' %}?specimen={{record.pk}}">samples</a>',empty_values=(), verbose_name='Samples')
+    coordinator = tables.ManyToManyColumn(verbose_name="Coordinator",transform=lambda obj: mark_safe('<a href="{}">{}</a>'.format(obj.get_absolute_url(), str(obj))))
+    collector = tables.ManyToManyColumn(verbose_name="Collector",transform=lambda obj: mark_safe('<a href="{}">{}</a>'.format(obj.get_absolute_url(), str(obj))))
+    identifier = tables.ManyToManyColumn(verbose_name="Identifier",transform=lambda obj: mark_safe('<a href="{}">{}</a>'.format(obj.get_absolute_url(), str(obj))))
+    preserver = tables.ManyToManyColumn(verbose_name="Preserver",transform=lambda obj: mark_safe('<a href="{}">{}</a>'.format(obj.get_absolute_url(), str(obj))))
     #nagoya_statement = tables.URLColumn()
     #collection = tables.Column(linkify=True)
     # def __init__(self, *args, **kwargs):
@@ -597,7 +613,7 @@ class SpecimenTable(tables.Table):
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
         exclude = ['id']
-        sequence = ('specimen_id','species','tolid','biosampleAccession','samples','...')
+        sequence = ('specimen_id','species','tolid','biosampleAccession','samples','coordinator','collector','identifier','preserver','...')
 
 class SampleTable(tables.Table):
     export_formats = ['csv', 'tsv','xls']

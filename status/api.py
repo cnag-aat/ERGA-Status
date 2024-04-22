@@ -3,6 +3,38 @@ from rest_framework import viewsets
 from status.serializers import *
 from rest_framework_bulk import BulkModelViewSet
 
+class PhaseViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows Users to be viewed or edited.
+    """
+    queryset = Phase.objects.all()
+    serializer_class = PhaseSerializer
+    filter_fields = '__all__'
+
+class TaskViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows Users to be viewed or edited.
+    """
+    queryset = Task.objects.all()
+    serializer_class = TaskSerializer
+    filter_fields = '__all__'
+
+class CountryViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows Users to be viewed or edited.
+    """
+    queryset = Country.objects.all()
+    serializer_class = CountrySerializer
+    filter_fields = '__all__'
+
+class SubprojectViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows Users to be viewed or edited.
+    """
+    queryset = Subproject.objects.all()
+    serializer_class = SubprojectSerializer
+    filter_fields = '__all__'
+
 class TaxonKingdomViewSet(BulkModelViewSet):
     """
     API endpoint that allows kingdoms to be viewed or edited.
@@ -240,49 +272,36 @@ class ReadsViewSet(BulkModelViewSet):
     filter_fields = '__all__'
 
 class RunViewSet(BulkModelViewSet):
-    """
-    API endpoint that allows Reads to be viewed or edited.
-    """
     queryset = Run.objects.all()
     serializer_class = RunSerializer
     filter_fields = '__all__'
 
 class UserViewSet(BulkModelViewSet):
-    """
-    API endpoint that allows Users to be viewed or edited.
-    """
     queryset = User.objects.all()
     serializer_class = UserSerializer
     filter_fields = '__all__'
 
 class TagViewSet(BulkModelViewSet):
-    """
-    API endpoint that allows Users to be viewed or edited.
-    """
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     filter_fields = '__all__'
 
 class RecipeViewSet(BulkModelViewSet):
-    """
-    API endpoint that allows Users to be viewed or edited.
-    """
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     filter_fields = '__all__'
 
 class AffiliationViewSet(BulkModelViewSet):
-    """
-    API endpoint that allows Users to be viewed or edited.
-    """
     queryset = Affiliation.objects.all()
     serializer_class = AffiliationSerializer
     filter_fields = '__all__'
 
 class UserProfileViewSet(BulkModelViewSet):
-    """
-    API endpoint that allows Users to be viewed or edited.
-    """
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
+    filter_fields = '__all__'
+
+class PersonViewSet(BulkModelViewSet):
+    queryset = Person.objects.all()
+    serializer_class = PersonSerializer
     filter_fields = '__all__'

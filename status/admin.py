@@ -98,7 +98,7 @@ def update_goat_seq_status(modeladmin, request, queryset):
 
 @register(TargetSpecies)
 class TargetSpeciesAdmin(admin.ModelAdmin):
-    list_filter = ["tags",'goat_target_list_status','goat_sequencing_status']
+    list_filter = ["sequencing_rel__phase","collection_rel__country","collection_rel__task","tags",'goat_target_list_status','goat_sequencing_status']
     action_form = UpdateSpeciesActionForm
     actions = [add_tags,remove_tags,update_goat_list_status,update_goat_seq_status]
     def get_actions(self, request):
@@ -138,6 +138,7 @@ class TargetSpeciesAdmin(admin.ModelAdmin):
         'genome_size',
         'date_updated'
     )
+    search_fields = ['scientific_name']
 
 @register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
@@ -152,6 +153,7 @@ class UserProfileAdmin(admin.ModelAdmin):
         'get_roles',
         'get_affiliations'
     )
+    search_fields = ['user__username','first_name','last_name']
 
 class MyUserAdmin(UserAdmin):
     def group(self, user):
@@ -284,6 +286,7 @@ class GenomeTeamAdmin(admin.ModelAdmin):
         'assembly_team',
         'community_annotation_team'
     )
+    search_fields = ['species__scientific_name']
     action_form = UpdateActionForm
     actions = [update_teams]
     def get_actions(self, request):
@@ -311,6 +314,7 @@ def update_specimens(modeladmin, request, queryset):
 class SpecimenAdmin(admin.ModelAdmin):
     save_as = True
     list_filter = admin.ModelAdmin.list_filter + ('species__tags',)
+    search_fields = ['species__scientific_name']
     action_form = SpecimenUpdateActionForm
     actions = [update_specimens]
     def get_actions(self, request):
@@ -341,11 +345,17 @@ class AssemblyProjectAdmin(admin.ModelAdmin):
         'status',
         'note'
     )
+    search_fields = ['species__scientific_name']
 admin.site.register(Assembly)
 admin.site.register(CollectionTeam)
+admin.site.register(Subproject)
 admin.site.register(Task)
 admin.site.register(Country)
-admin.site.register(SampleCollection)
+@register(SampleCollection)
+class SampleCollectionAdmin(admin.ModelAdmin):
+    search_fields = ['species__scientific_name']
+    list_filter = ["task__name","country__name","species__goat_sequencing_status","species__gt_rel__sample_handling_team","species__gt_rel__sequencing_team"]
+    list_display = ('species','task','country','copo_status','sample_provider_name','mta1','mta2','barcoding_status','deadline_manifest_acceptance','note')
 admin.site.register(CurationTeam)
 admin.site.register(Curation)
 # admin.site.register(SubmissionTeam)
@@ -362,9 +372,10 @@ admin.site.register(Phase)
 #admin.site.register(Sequencing)
 @register(Sequencing)
 class SequencingAdmin(admin.ModelAdmin):
-    list_filter = ["species__gt_rel__sequencing_team"]
+    list_filter = ["species__gt_rel__sequencing_team","species__tags","species__sequencing_rel__phase","species__collection_rel__country","species__collection_rel__task"]
     list_display = (
         'species',
+        'phase',
         'long_seq_status',
         'short_seq_status',
         'hic_seq_status',
@@ -372,6 +383,15 @@ class SequencingAdmin(admin.ModelAdmin):
         'recipe',
         'note'
     )
+    search_fields = ['species__scientific_name']
+    # def queryset(self, request):
+    #     qs = super(SequencingAdmin, self).queryset(request)
+    #     seqteam_qs = SequencingTeam.objects.get(species=self.species)
+    #     seqteam_qs.members
+    #     if request.user.is_superuser:
+    #         return qs
+    #     else:
+    #         return qs.filter(species__gt_rel__sequencing_team = seqteam)
 
 admin.site.register(Reads)
 admin.site.register(AnnotationTeam)
@@ -467,6 +487,7 @@ class SampleAdmin(admin.ModelAdmin):
         'date_sent',
         'date_received'
     )
+    search_fields = ['species__scientific_name']
 admin.site.register(AssemblyPipeline)
 #admin.site.register(UserProfile)
 #admin.site.register(GenomeTeam)

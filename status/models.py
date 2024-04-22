@@ -67,6 +67,8 @@ ASSEMBLY_STATUS_CHOICES = (
     ('Scaffolds', 'Scaffolds'),
     ('Curating', 'Curating'),
     ('Done', 'Done'),
+    ('UnderReview', 'UnderReview'),
+    ('Approved', 'Approved'),
     ('Submitted', 'Submitted'),
     ('Issue', 'Issue')
 )
@@ -151,8 +153,19 @@ GOAT_SEQUENCING_STATUS_CHOICES = (
     ('data_generation', 'data_generation'),
     ('in_assembly', 'in_assembly'),
     ('insdc_open', 'insdc_open'),
-    ('publication_available', 'publication_available')
+    ('published', 'published')
 )
+
+gss_rank = {
+    'none':0,
+    'in_collection':1,
+    'sample_collected':2,
+    'sample_acquired':3,
+    'data_generation':4,
+    'in_assembly':5,
+    'insdc_open':6,
+    'published':7
+}
 
 class Role(models.Model):
     description = models.CharField(max_length=100)
@@ -264,7 +277,7 @@ class TargetSpecies(models.Model):
     # ncbi_taxon_id	species	subspecies	family	target_list_status	sequencing_status	synonym	publication_id
     listed_species = models.CharField(max_length=201, blank=True, null=True)
     scientific_name = models.CharField(max_length=201, blank=True, null=True, db_index=True)
-    tags = models.ManyToManyField(Tag,default='erga_long_list')
+    tags = models.ManyToManyField(Tag,default='erga_long_list',blank=True, null=True)
     tolid_prefix = models.CharField(max_length=12, blank=True, null=True, db_index=True)
     taxon_kingdom = models.ForeignKey(TaxonKingdom, blank=True, null=True, on_delete=models.SET_NULL, verbose_name="Kingdom")
     taxon_phylum = models.ForeignKey(TaxonPhylum, blank=True, null=True, on_delete=models.SET_NULL, verbose_name="Phylum")
@@ -296,8 +309,9 @@ class TargetSpecies(models.Model):
             #output = process.stdout
             #targetspecies = TargetSpecies.objects.get(taxon_id=self.taxon_id)
             tempfile = '/home/talioto/tmp/' + self.taxon_id + '.' + str(time.time()) + '.tsv'
-            process = subprocess.run('/home/www/resistome.cnag.cat/erga-dev/scripts/query_goat.pl -taxid '+ self.taxon_id +" > "+ tempfile + ";chmod -R 777 /home/talioto/tmp/;", shell=True,  universal_newlines=True)
-            #encoding = 'ascii'
+            process = subprocess.run('/home/www/resistome.cnag.cat/erga-dev/scripts/query_goat.pl -taxid '+ self.taxon_id +" > "+ tempfile + ";", shell=True,  universal_newlines=True)      
+            #process = subprocess.run('/home/www/resistome.cnag.cat/erga-dev/scripts/query_goat.pl -taxid '+ self.taxon_id +" > "+ tempfile + ";chmod -R 777 /home/talioto/tmp/;", shell=True,  universal_newlines=True)             process = subprocess.run('/home/www/resistome.cnag.cat/erga-dev/scripts/query_goat.pl -taxid '+ self.taxon_id +" > "+ tempfile + ";chmod -R 777 /home/talioto/tmp/;", shell=True,  universal_newlines=True)
+           #encoding = 'ascii'
             #output = process.stdout
             with open(tempfile) as csvfile:
                 csvreader = csv.DictReader(csvfile, delimiter='\t')
@@ -353,7 +367,8 @@ class TargetSpecies(models.Model):
 
                         self.listed_species = row['original_species'] or None
                         self.scientific_name = row['scientific_name'] or None
-                        self.tolid_prefix = row['tolid_prefix'] or None
+                        if self.tolid_prefix is None or len(self.tolid_prefix) == 0:
+                            self.tolid_prefix = row['tolid_prefix'] or None
                         self.chromosome_number = row['chromosome_number'] or None
                         self.haploid_number = row['haploid_number'] or None
                         self.ploidy = row['ploidy'] or None
@@ -363,10 +378,11 @@ class TargetSpecies(models.Model):
                         self.taxon_phylum = t_phylum or None
                         self.taxon_class = t_class or None
                         self.taxon_order = t_order or None
-                        self.taxon_family = t_family or None
+                        if self.taxon_family is None:
+                            self.taxon_family = t_family or None
                         self.taxon_genus = t_genus or None
                         #targetspecies.common_name = row['common_name'] or None
-                        self.synonym = row['synonym'] or None
+                        #self.synonym = row['synonym'] or None #do not update synonym from GoaT. this field is for providing a synonym TO GoaT if conflict with NCBI taxonomy
                         #self.goat_target_list_status = row['goat_target_list_status'] or None
                         #self.goat_sequencing_status = row['goat_sequencing_status'] or None
                         if row['tags'] or None:
@@ -387,7 +403,7 @@ class TargetSpecies(models.Model):
                             for cname in row['common_name'].split(','):
                                 species_cnames, created = CommonNames.objects.get_or_create(
                                     name=cname,
-                                    species=targetspecies
+                                    species=self
                                 )
 
                         collection_record, created = SampleCollection.objects.get_or_create(
@@ -507,18 +523,17 @@ class UserProfile(models.Model):
         )
 
 class Person(models.Model):
-    first_name = models.CharField(max_length=100, null=True, blank=True)
-    middle_name = models.CharField(max_length=100, null=True, blank=True)
-    last_name = models.CharField(max_length=100, null=True, blank=True)
+    name = models.CharField(max_length=100, null=True, blank=True)
     affiliation = models.ManyToManyField(Affiliation)
     orcid = models.CharField(max_length=40, null=True, blank=True)
     email = models.EmailField(max_length=40, null=True, blank=True)
 
     class Meta:
         verbose_name_plural = 'people'
-
+    def get_absolute_url(self):
+        return reverse('person_detail', args=[str(self.pk)])
     def __str__(self):
-        return self.first_name + " " + self.last_name  or str(self.id)
+        return self.name  or str(self.id)
 
 class AnnotationTeam(models.Model):
     name = models.CharField(max_length=100,unique=True)
@@ -799,11 +814,27 @@ class GenomeTeam(models.Model):
     def __str__(self):
         return self.species.scientific_name or str(self.id)
 
-class Task(models.Model):
-    name = models.CharField(max_length=100, unique=True)
+class Subproject(models.Model):
+    name = models.CharField(max_length=50, unique=True)
 
     class Meta:
+        verbose_name_plural = 'subprojects'
+
+    def get_absolute_url(self):
+        return reverse('subproject_detail', args=[str(self.pk)])
+
+    def __str__(self):
+        return self.name
+    
+class Task(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    subproject = models.ForeignKey(Subproject,on_delete=models.CASCADE, default=1, verbose_name="subproject", null=True, blank=True)
+    
+    class Meta:
         verbose_name_plural = 'tasks'
+
+    def get_absolute_url(self):
+        return reverse('task_detail', args=[str(self.pk)])
 
     def __str__(self):
         return self.name
@@ -813,6 +844,9 @@ class Country(models.Model):
 
     class Meta:
         verbose_name_plural = 'countries'
+    
+    def get_absolute_url(self):
+        return reverse('country_detail', args=[str(self.pk)])
 
     def __str__(self):
         return self.name
@@ -825,7 +859,7 @@ BARCODING_STATUS_CHOICES = (
 )
 
 class SampleCollection(models.Model):
-    species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species",unique=True)
+    species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species",unique=True,related_name='collection_rel')
     #team = models.ForeignKey(CollectionTeam, on_delete=models.SET_NULL, null=True, verbose_name="collection team", blank=True)
     copo_status = models.CharField(max_length=20, help_text='COPO status', choices=COPO_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
     #genomic_sample_status = models.CharField(max_length=20, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
@@ -833,6 +867,7 @@ class SampleCollection(models.Model):
     #hic_sample_status = models.CharField(max_length=12, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
     # ship_date = models.DateTimeField(verbose_name="Date shipped", editable=True, null=True, blank=True, default=None)
+    subproject = models.ManyToManyField(Subproject,default=1,blank=True,null=True)
     task = models.ForeignKey(Task, on_delete=models.SET_NULL, verbose_name="Task", null=True, blank=True)
     country = models.ForeignKey(Country, on_delete=models.SET_NULL, verbose_name="Country", null=True, blank=True)
     sample_provider_name = models.CharField(max_length=100, null=True, blank=True)
@@ -883,16 +918,17 @@ class SampleCollection(models.Model):
 
             if (self.__original_copo_status != 'Accepted'  and self.copo_status == 'Accepted'):
                 myurl = settings.DEFAULT_DOMAIN + 'collection/?species='+str(self.species.pk)
-                gteam = GenomeTeam.objects.get(species=self.species)
-                sequencing_team = SequencingTeam.objects.get(genometeam=gteam)
-                if sequencing_team.lead:
-                    send_mail(
-                        '[ERGA] Metadata for '+ self.species.scientific_name +' accepted in COPO.',
-                        'Dear '+ sequencing_team.lead.first_name+",\n\nMetadata for one or more specimens of "+ self.species.scientific_name +" have been submitted and accepted by COPO. More info can be found here:\n" +myurl,
-                        'denovo@cnag.eu',
-                        [sequencing_team.lead.user.email],
-                        fail_silently=True,
-                    )
+                gteam, created = GenomeTeam.objects.get_or_create(species=self.species)
+                sequencing_team = gteam.sequencing_team
+                if sequencing_team != None:
+                    if sequencing_team.lead:
+                        send_mail(
+                            '[ERGA] Metadata for '+ self.species.scientific_name +' accepted in COPO.',
+                            'Dear '+ sequencing_team.lead.first_name+",\n\nMetadata for one or more specimens of "+ self.species.scientific_name +" have been submitted and accepted by COPO. More info can be found here:\n" +myurl,
+                            'denovo@cnag.eu',
+                            [sequencing_team.lead.user.email],
+                            fail_silently=True,
+                        )
 
         super(SampleCollection, self).save(*args, **kwargs)
 
@@ -917,7 +953,11 @@ class Specimen(models.Model):
     tolid = models.CharField(max_length=20, help_text='Registered ToLID for the Specimen', null=True, blank=True)
     biosampleAccession = models.CharField(max_length=20, help_text='BioSample Accession', null=True, blank=True, verbose_name="Specimen BioSample")
     collection = models.ForeignKey(SampleCollection, on_delete=models.CASCADE, verbose_name="Collection")
-    sample_coordinator = models.CharField(max_length=120, help_text='Sample coordinator', null=True, blank=True)
+    sample_coordinator = models.CharField(max_length=120, help_text='Sample coordinator', null=True, blank=True) 
+    collector = models.ManyToManyField(Person, null=True, blank=True, related_name="collector_rel")
+    preserver = models.ManyToManyField(Person, null=True, blank=True, related_name="preserver_rel")
+    identifier = models.ManyToManyField(Person, null=True, blank=True, related_name="identifier_rel")
+    coordinator = models.ManyToManyField(Person, null=True, blank=True, related_name="coordinator_rel")
     tissue_removed_for_biobanking = models.BooleanField(default=False)
     tissue_voucher_id_for_biobanking = models.CharField(max_length=500, null=True, blank=True)
     proxy_tissue_voucher_id_for_biobanking = models.CharField(max_length=500, null=True, blank=True)
@@ -996,11 +1036,14 @@ class Phase(models.Model):
     class Meta:
         verbose_name_plural = 'phases'
 
+    def get_absolute_url(self):
+        return reverse('phase_detail', args=[str(self.pk)])
+    
     def __str__(self):
         return self.name
 
 class Sequencing(models.Model):
-    species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
+    species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, related_name='sequencing_rel', verbose_name="species")
     phase = models.ForeignKey(Phase, on_delete=models.SET_NULL, verbose_name="Phase", null=True)
     #team = models.ForeignKey(SequencingTeam, on_delete=models.SET_NULL, null=True, verbose_name="sequencing team")
     long_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
@@ -1008,11 +1051,6 @@ class Sequencing(models.Model):
     hic_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
     rna_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
-    # ont_target = models.BigIntegerField(null=True, blank=True, verbose_name="ONT target")
-    # hifi_target = models.BigIntegerField(null=True, blank=True, verbose_name="HiFi target")
-    # hic_target = models.BigIntegerField(null=True, blank=True, verbose_name="Hi-C target")
-    # short_target = models.BigIntegerField(null=True, blank=True, verbose_name="Short read target")
-    # rnaseq_numlibs_target = models.IntegerField(null=True, blank=True, default=3, verbose_name="RNAseq libs target")
     recipe = models.ForeignKey(Recipe, on_delete=models.SET_NULL, to_field='name', default='HiFi25', verbose_name="Recipe", null=True)
     
     __original_long_seq_status = None
@@ -1028,18 +1066,23 @@ class Sequencing(models.Model):
         self.__original_rna_seq_status = self.rna_seq_status
 
     def save(self, *args, **kwargs):
+        if self.long_seq_status != "Received" and self.long_seq_status != "Waiting":
+            #species = TargetSpecies.objects.get(species=self.species)
+            if gss_rank[self.species.goat_sequencing_status]<4:
+                self.species.goat_sequencing_status = "data_generation" 
+                self.species.save()
+        if self.short_seq_status != "Received" and self.short_seq_status != "Waiting":
+            #species = TargetSpecies.objects.get(species=self.species)
+            if gss_rank[self.species.goat_sequencing_status]<4:
+                self.species.goat_sequencing_status = "data_generation" 
+                self.species.save()
+        if self.hic_seq_status != "Received" and self.hic_seq_status != "Waiting":
+            #species = TargetSpecies.objects.get(species=self.species)
+            if gss_rank[self.species.goat_sequencing_status]<4:
+                self.species.goat_sequencing_status = "data_generation" 
+                self.species.save()
         if (self.__original_long_seq_status != self.long_seq_status):
             #get species and set goat_sequencing_status to "data_generation"
-            if self.long_seq_status != "Received" and self.long_seq_status != "Waiting":
-                #species = TargetSpecies.objects.get(species=self.species)
-                if not (
-                    self.species.goat_sequencing_status == "in_assmbly" or 
-                    self.species.goat_sequencing_status == "insdc_submitted" or
-                    self.species.goat_sequencing_status == "open" or
-                    self.species.goat_sequencing_status == "insdc_open" 
-                    ):
-                    self.species.goat_sequencing_status = "data_generation"
-                    #species.save()
             stat_g_records, created = StatusUpdate.objects.get_or_create(
                 species=self.species,
                 process='long_seq',
@@ -1049,12 +1092,7 @@ class Sequencing(models.Model):
             #get species and set goat_sequencing_status to "data_generation"
             if self.short_seq_status != "Received" and self.short_seq_status != "Waiting":
                 #species = TargetSpecies.objects.get(species=self.species)
-                if not (
-                    self.species.goat_sequencing_status == "in_assmbly" or 
-                    self.species.goat_sequencing_status == "insdc_submitted" or
-                    self.species.goat_sequencing_status == "open" or
-                    self.species.goat_sequencing_status == "insdc_open" 
-                    ):
+                if gss_rank[self.species.goat_sequencing_status]<4:
                     self.species.goat_sequencing_status = "data_generation" 
                     #species.save()
             stat_g_records, created = StatusUpdate.objects.get_or_create(
@@ -1066,12 +1104,7 @@ class Sequencing(models.Model):
             #get species and set goat_sequencing_status to "data_generation"
             if self.hic_seq_status != "Received" and self.hic_seq_status != "Waiting":
                 #species = TargetSpecies.objects.get(species=self.species)
-                if not (
-                    self.species.goat_sequencing_status == "in_assmbly" or 
-                    self.species.goat_sequencing_status == "insdc_submitted" or
-                    self.species.goat_sequencing_status == "open" or
-                    self.species.goat_sequencing_status == "insdc_open" 
-                    ):
+                if gss_rank[self.species.goat_sequencing_status]<4:
                     self.species.goat_sequencing_status = "data_generation" 
                     #species.save()
             stat_h_records, created = StatusUpdate.objects.get_or_create(
@@ -1343,9 +1376,10 @@ class Annotation(models.Model):
         return self.species.scientific_name """
 
 class AssemblyProject(models.Model):
-    species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
+    species = models.OneToOneField(TargetSpecies, related_name='assembly_rel', on_delete=models.CASCADE, verbose_name="species")
     #team = models.ForeignKey(AssemblyTeam, on_delete=models.SET_NULL, null=True, verbose_name="assembly team")
     status = models.CharField(max_length=12, help_text='Status', choices=ASSEMBLY_STATUS_CHOICES, default=ASSEMBLY_STATUS_CHOICES[0][0])
+    genome_size_estimate = models.BigIntegerField(null=True, blank=True, verbose_name="Genome Size Estimate")
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
 
     class Meta:
@@ -1358,6 +1392,15 @@ class AssemblyProject(models.Model):
         self.__status = self.status
 
     def save(self, *args, **kwargs):
+        if self.status != "Waiting":
+            #species = TargetSpecies.objects.get(species=self.species)
+            if gss_rank[self.species.goat_sequencing_status]<6:
+                if self.status == "Submitted":
+                    self.species.goat_sequencing_status = "insdc_open" 
+                    self.species.save()
+                else:
+                    self.species.goat_sequencing_status = "in_assembly" 
+                    self.species.save()
         if self.status != 'Waiting':
             gteam = GenomeTeam.objects.get(species=self.species)
             team = AssemblyTeam.objects.get(genometeam=gteam)
@@ -1373,6 +1416,10 @@ class AssemblyProject(models.Model):
                 process='assembly',
                 status=self.status
             )
+
+        if not self.genome_size_estimate:
+            self.genome_size_estimate = self.species.genome_size
+
         super(AssemblyProject, self).save(*args, **kwargs)
 
     def get_absolute_url(self):

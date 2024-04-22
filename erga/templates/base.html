@@ -86,12 +86,6 @@ body {
         <li class="nav-item">
           <a class="nav-link" id="assemblylink" href="{% url 'assembly_list' %}">Assemblies</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" id="teamslink" href="{% url 'genome_teams' %}">Teams</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" id="authorslink" href="{% url 'author_list' %}">Authors</a>
-        </li>
 
 <!--         <li class="nav-item">
           <a class="nav-link" id="overviewlink" href="{% url 'overview' %}"><i id=overviewspinner class="fas fa-cog fa-spin mr-1" style="display:none"></i>Status</a>
@@ -119,12 +113,23 @@ body {
         </li> -->
 
 
+        {% if user.is_authenticated %}
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'api-root' %}">API</a>
+          <a class="nav-link" id="teamslink" href="{% url 'genome_teams' %}">Teams</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="authorslink" href="{% url 'author_list' %}">Authors</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'add_species_list' %}">Load-Species</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'api-root' %}">API</a>
+        </li>
+        {% endif %}
         
       </ul>
       <ul class="navbar-nav ml-auto">

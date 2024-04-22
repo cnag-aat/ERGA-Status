@@ -5,6 +5,7 @@ use MIME::Base64;
 use JSON::PP;
 use Data::Dumper;
 use Getopt::Long;
+#use LWP::Protocol::http;
 $ENV{PERL_LWP_SSL_VERIFY_HOSTNAME}=0;
 
 my $goatclient = REST::Client->new();
@@ -19,7 +20,8 @@ GetOptions(
      'h|help' => \$printhelp
 	  );
 
-print join("\t",qw(original_species tags taxon_id kingdom phylum class order family genus scientific_name tolid_prefix chromosome_number haploid_number ploidy c_value genome_size common_name synonym goat_target_list_status goat_sequencing_status )),"\n";
+#print join("\t",qw(original_species tags taxon_id kingdom phylum class order family genus scientific_name tolid_prefix chromosome_number haploid_number ploidy c_value genome_size common_name synonym goat_target_list_status goat_sequencing_status )),"\n";
+print join("\t",qw(original_species tags taxon_id kingdom phylum class order family genus scientific_name tolid_prefix chromosome_number haploid_number ploidy c_value genome_size common_name synonym )),"\n";
 
   $goatclient->GET("$goat_url"."record?recordId=$taxid_query&result=taxon&taxonomy=ncbi");
   my $goatresponse2 = decode_json $goatclient->responseContent();
@@ -83,8 +85,8 @@ print join("\t",qw(original_species tags taxon_id kingdom phylum class order fam
       $out{'genome_size'},
       $out{'common_name'},
       $out{'synonym'},
-      $out{'goat_list_status'},
-      $out{'goat_sequencing_status'}
+      #$out{'goat_list_status'},
+      #$out{'goat_sequencing_status'}
       )
     ),"\n";
 

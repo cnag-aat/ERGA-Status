@@ -11,12 +11,40 @@
           facilitate the deposition of data into the ENA by keeping track of accession numbers. </p>
           <p>If you'd like to help develop or <a target="_blank" href="https://github.com/cnag-aat/ERGA-Status/issues">submit issues</a>,
           head on over to <a target="_blank" href="https://github.com/cnag-aat/ERGA-Status">https://github.com/cnag-aat/ERGA-Status</a>. 
-          You can also send feedback to <a href="mailto=denovo@cnag.crg.eu">denovo@cnag.crg.eu</a>.
+          You can also send feedback to <a href="mailto=denovo@cnag.crg.eu">denovo@cnag.eu</a>.
           </p>
           
       </div>
     </div>
   </div>
+</div>
+
+<div class="row">
+  <div class="col-md-2"></div>
+  <div class="col-md-8">
+    <div class="card mb-1">
+      <div class="card-body">
+        <div>
+          <canvas id="SeqProdChart"></canvas>
+        </div>
+      </div>
+    </div>
+  
+    <div class="col-md-2"></div>
+  </div>
+
+
+  <!-- <div class="col-md-6">
+    <div class="card mb-1">
+      <div class="card-body">
+        <h5 class="card-title">Assembly Production</h5>
+        <div>
+          <canvas id="AssProdChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div> -->
+
 </div>
 <div class="row">
   <div class="col-md-12">
@@ -45,5 +73,70 @@
     </div>
   </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+<script>
+  const ctx = document.getElementById('SeqProdChart');
 
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: {{ centers|safe }},
+      datasets: [
+        {
+        label: 'Assembly done',
+        data: {{ assembly_done|safe }},
+        borderWidth: 1
+        },
+        {
+        label: 'Assembling',
+        data: {{ assembling|safe }},
+        borderWidth: 1
+        },
+        {
+        label: 'Sequencing done',
+        data: {{ seq_done|safe }},
+        borderWidth: 1
+        },
+        {
+        label: 'Sequencing',
+        data: {{ sequencing|safe }},
+        borderWidth: 1
+        },
+        {
+        label: 'Collected',
+        data: {{ collected|safe }},
+        borderWidth: 1
+        },
+        {
+        label: 'Not collected',
+        data: {{ not_collected|safe }},
+        borderWidth: 1
+        }
+    ]
+    },
+    options: {
+      plugins: {
+        title: {
+          display: true,
+          text: 'Sequencing Production'
+        },
+      },
+      responsive: true,
+      scales: {
+        x: {
+          stacked: true,
+        },
+        y: {
+          stacked: true,
+          title: {
+            display: true,
+            text: "Genome Span (Gb)"
+          }
+        }
+      }
+    }
+  });
+
+</script>
 {% endblock %}

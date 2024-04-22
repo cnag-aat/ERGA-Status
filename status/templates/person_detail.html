@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load static %}
+{% load render_table from django_tables2 %}
+{% load bootstrap4 %}
+{% block page_content %}
+
+<p>
+<div class="row m-1">
+  <div class="col-md-12">
+    <div class="card mb-12">
+      <div class="card-body">
+        <h5 class="card-title">{{ person.name }}</h5>
+        <table >
+          <tr><td style="vertical-align: top; padding:10px">ORCID:</td><td style="vertical-align: top; padding:10px">{{ person.orcid }}</td></tr>
+          <tr><td style="vertical-align: top; padding:10px">Affiliation(s):</td><td style="vertical-align: top; padding:10px"><table>{% for aff in person.affiliation.all %} <tr><td style="vertical-align: top; padding-bottom:10px">{{ aff }}</td></tr> {% endfor %}</table></td></tr> 
+         </br>
+      </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

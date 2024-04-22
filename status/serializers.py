@@ -179,3 +179,28 @@ class UserProfileSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSer
     class Meta:
         model = UserProfile
         fields = '__all__'
+
+class PhaseSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Phase
+        fields = '__all__'
+
+class TaskSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Task
+        fields = '__all__'
+
+class CountrySerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Country
+        fields = '__all__'
+
+class SubprojectSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Subproject
+        fields = '__all__'
+
+class PersonSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Person
+        fields = '__all__'

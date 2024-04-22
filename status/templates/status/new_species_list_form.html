@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load static %}
+{% load bootstrap4 %}
+{% block page_content %}
+
+
+      <div class="card mx-auto">
+        <div class="card-header">
+          <h5>Add Species</h5>
+        </div>
+        <div class="card-body">
+          
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <table>
+            {{ form.as_table }}
+            </table>
+          </br>
+            <button type="submit">Submit</button>
+
+        </form>
+        <br>
+          </p>
+          <table>
+            <h5>Example input csv</h5>
+            <tr>
+              <th style="padding: 20px;">species_name,</th>
+              <th style="padding: 20px;">taxon_id,</th>
+              <th style="padding: 20px;">task,</th>
+              <th style="padding: 20px;">country,</th>
+              <th style="padding: 20px;">sample_provider_name,</th>
+              <th style="padding: 20px;">sample_provider_email,</th>
+              <th style="padding: 20px;">goat_target_list_status,</th>
+              <th style="padding: 20px;">goat_sequencing_status</th>
+            </tr>
+            <tr>
+              <td style="padding: 20px;">Actinia mediterranea,</td>
+              <td style="padding: 20px;">1960102,</td>
+              <td style="padding: 20px;">SSP Community Sampling,</td>
+              <td style="padding: 20px;">Portugal,</td>
+              <td style="padding: 20px;">A... ...ira,</td>
+              <td style="padding: 20px;">....@....pt,</td>
+              <td style="padding: 20px;">other_priority,</td>
+              <td style="padding: 20px;">sample_acquired</td>
+            </tr>
+
+          </table>
+      </div>
+
+
+
+{% endblock %}
