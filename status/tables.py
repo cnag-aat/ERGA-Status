@@ -288,14 +288,7 @@ class SampleCollectionTable(tables.Table):
     sample_handling_team = tables.Column(accessor='species__gt_rel__sample_handling_team',linkify=True, verbose_name="Sample Handling Team")
     #goat_sequencing_status = tables.Column(accessor='species__goat_sequencing_status', verbose_name="GoaT")
     goat_sequencing_status = tables.TemplateColumn('<span class="status {{record.species.goat_sequencing_status}}">{{record.species.goat_sequencing_status|cut:"sample_"}}</span>',empty_values=(), verbose_name='GoaT Status',orderable=False)
-    
     subproject = tables.ManyToManyColumn(verbose_name="subproject")
-    # def value_genomic_sample_status(self, value):
-    #     return value
-    # def value_hic_sample_status(self, value):
-    #     return value
-    # def value_rna_sample_status(self, value):
-    #     return value
 
     class Meta:
         model = SampleCollection
@@ -612,7 +605,7 @@ class SpecimenTable(tables.Table):
         model = Specimen
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        exclude = ['id']
+        exclude = ['id','sample_coordinator']
         sequence = ('specimen_id','species','tolid','biosampleAccession','samples','coordinator','collector','identifier','preserver','...')
 
 class SampleTable(tables.Table):

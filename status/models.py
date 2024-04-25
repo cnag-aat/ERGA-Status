@@ -524,7 +524,7 @@ class UserProfile(models.Model):
 
 class Person(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True)
-    affiliation = models.ManyToManyField(Affiliation)
+    affiliation = models.ManyToManyField(Affiliation,null=True, blank=True)
     orcid = models.CharField(max_length=40, null=True, blank=True)
     email = models.EmailField(max_length=40, null=True, blank=True)
 
@@ -929,6 +929,60 @@ class SampleCollection(models.Model):
                             [sequencing_team.lead.user.email],
                             fail_silently=True,
                         )
+            if self.copo_status == 'Accepted':
+                gteam = GenomeTeam.objects.get(species=self.species)
+                sh_team = SampleHandlingTeam.objects.filter(genometeam=gteam).first()
+                if sh_team:
+                    for m in sh_team.members.all():
+                        species_authors, created = Author.objects.get_or_create(
+                            species=self.species,
+                            author=m,
+                            role='sample handling'
+                        )
+                tax_team = TaxonomyTeam.objects.filter(genometeam=gteam).first()
+                if tax_team:
+                    for m in tax_team.members.all():
+                        species_authors, created = Author.objects.get_or_create(
+                            species=self.species,
+                            author=m,
+                            role='taxonomic identification'
+                        )
+                
+                col_team = CollectionTeam.objects.filter(genometeam=gteam).first()
+                if col_team:
+                    for m in col_team.members.all():
+                        species_authors, created = Author.objects.get_or_create(
+                            species=self.species,
+                            author=m,
+                            role='sample collection'
+                        )
+                
+                bb_team = BiobankingTeam.objects.filter(genometeam=gteam).first()
+                if bb_team:
+                    for m in bb_team.members.all():
+                        species_authors, created = Author.objects.get_or_create(
+                            species=self.species,
+                            author=m,
+                            role='biobanking'
+                        )
+                
+                v_team = VoucheringTeam.objects.filter(genometeam=gteam).first()
+                if v_team:
+                    for m in v_team.members.all():
+                        species_authors, created = Author.objects.get_or_create(
+                            species=self.species,
+                            author=m,
+                            role='vouchering'
+                        )
+                
+                bc_team = BarcodingTeam.objects.filter(genometeam=gteam).first()
+                if bc_team:
+                    for m in bc_team.members.all():
+                        species_authors, created = Author.objects.get_or_create(
+                            species=self.species,
+                            author=m,
+                            role='barcoding'
+                        )
 
         super(SampleCollection, self).save(*args, **kwargs)
 
@@ -944,12 +998,8 @@ def do_nothing(sender, *args, **kwargs):
     pass
 
 class Specimen(models.Model):
-    # TISSUE_REMOVED_FOR_BIOBANKING	TISSUE_VOUCHER_ID_FOR_BIOBANKING	TISSUE_FOR_BIOBANKING	
-    # DNA_REMOVED_FOR_BIOBANKING	DNA_VOUCHER_ID_FOR_BIOBANKING	
-    # VOUCHER_ID	 PROXY_VOUCHER_ID	VOUCHER_LINK	PROXY_VOUCHER_LINK	VOUCHER_INSTITUTION
     specimen_id = models.CharField(max_length=100, help_text='Internal Specimen ID')
-    species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species",null=True, blank=True)
-    #barcode = models.CharField(max_length=20, help_text='Tube barcode')
+    species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, related_name='specimen_rel', verbose_name="species",null=True, blank=True)
     tolid = models.CharField(max_length=20, help_text='Registered ToLID for the Specimen', null=True, blank=True)
     biosampleAccession = models.CharField(max_length=20, help_text='BioSample Accession', null=True, blank=True, verbose_name="Specimen BioSample")
     collection = models.ForeignKey(SampleCollection, on_delete=models.CASCADE, verbose_name="Collection")
@@ -997,6 +1047,7 @@ class Sample(models.Model):
     gal_sample_id = models.CharField(max_length=200, help_text='GAL Sample ID', null=True, blank=True)
     collector_sample_id = models.CharField(max_length=200, help_text='Collector Sample ID', null=True, blank=True)
     tube_or_well_id = models.CharField(max_length=200, help_text='Tube or Well ID', null=True, blank=True)
+    corrected_id = models.CharField(max_length=200, help_text='Corrected ID', null=True, blank=True)
     copo_date = models.CharField(max_length=30, help_text='COPO Time Updated', null=True, blank=True, verbose_name="date")
     #copo_update_date = models.CharField(max_length=30, help_text='COPO Time Updated', null=True, blank=True, verbose_name="date")
     copo_status = models.CharField(max_length=30, help_text='COPO Status', null=True, blank=True, verbose_name="Status")

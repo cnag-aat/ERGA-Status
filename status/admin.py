@@ -277,7 +277,7 @@ def update_teams(modeladmin, request, queryset):
 @register(GenomeTeam)
 class GenomeTeamAdmin(admin.ModelAdmin):
     save_as = True
-    list_filter = admin.ModelAdmin.list_filter + ('species__tags','sample_handling_team','sequencing_team','assembly_team')
+    list_filter = admin.ModelAdmin.list_filter + ('species__tags','sample_handling_team','sequencing_team','assembly_team','species__collection_rel__task')
     list_per_page = 10000
     list_display = (
         'species',
@@ -291,10 +291,10 @@ class GenomeTeamAdmin(admin.ModelAdmin):
     actions = [update_teams]
     def get_actions(self, request):
       actions = super(GenomeTeamAdmin, self).get_actions(request)
-    #   try:
-    #       del actions['delete_selected']
-    #   except KeyError:
-    #     pass
+      try:
+          del actions['delete_selected']
+      except KeyError:
+        pass
       return actions
     def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
         context.update({

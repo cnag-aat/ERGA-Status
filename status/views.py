@@ -52,6 +52,7 @@ from django.urls import reverse_lazy
 from status.filters import GenomeTeamFilter
 from status.filters import TargetSpeciesFilter
 from braces.views import GroupRequiredMixin
+from django.db.models import OuterRef, Subquery
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -380,7 +381,7 @@ class SampleCollectionListView(ExportMixin, SingleTableMixin, FilterView): #Logi
         context = super().get_context_data(**kwargs)
         context['build_page_title'] = 'ERGA-GTC Sample Collection'
         return context
-
+    
 class SpecimenListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
     # login_url = "access_denied"

@@ -51,7 +51,7 @@ class CustomSignupForm(SignupForm):
         profile.first_name = self.cleaned_data['first_name']
         profile.middle_name = self.cleaned_data['middle_name']
         profile.last_name = self.cleaned_data['last_name']
-        profile.orcid = self.cleaned_data['orcid']
+        profile.orcid = self.cleaned_data['orcid'].replace("https://orcid.org/",'')
         profile.lead = self.cleaned_data['lead']
         profile.save()
         profile.affiliation.set(self.cleaned_data['affiliation'])
