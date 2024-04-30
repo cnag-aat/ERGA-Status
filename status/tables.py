@@ -171,7 +171,9 @@ class OverviewTable(tables.Table):
 class TargetSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']
     scientific_name = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("pk")}, empty_values=())
-    #listed_species = tables.Column()
+    phase = tables.Column(accessor='sequencing_rel__phase',verbose_name="Phase")
+    task = tables.Column(accessor='collection_rel__task',verbose_name="Task")
+    country = tables.Column(accessor='collection_rel__country',verbose_name="Country")
     def render_scientific_name(self, value, record):
         url = reverse('species_detail',kwargs={'pk': record.pk})
         return format_html('<a href="{}">{}</a>',url, str(value))
@@ -187,7 +189,7 @@ class TargetSpeciesTable(tables.Table):
         template_name = "django_tables2/bootstrap4.html"
         #order_by = 'taxon_kingdom,taxon_phylum,taxon_class,taxon_order,taxon_family,taxon_genus,scientific_name' # use dash for descending order
         paginate = {"per_page": 100}
-        fields = ('scientific_name','tags','taxon_id','goat_target_list_status','goat_sequencing_status', 'genome_size', 'c_value','ploidy','haploid_number','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus')
+        fields = ('scientific_name','taxon_id','phase','task','country','goat_target_list_status','goat_sequencing_status', 'genome_size', 'c_value','ploidy','haploid_number','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus')
 
 class GoaTSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']

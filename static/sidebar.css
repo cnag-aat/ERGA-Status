@@ -71,3 +71,5 @@ body {
 .navbar {
  min-height: 74px;
 }
+
+a {text-decoration: none;}

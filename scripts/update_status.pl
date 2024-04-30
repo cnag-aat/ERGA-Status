@@ -169,7 +169,7 @@ sub update{
         #print STDERR "$seqinsert\n";
         print STDERR "Updating sequencing status for $species_string:$read_type at $project_url\n";
         $client->PATCH($project_url, $seqinsert);
-        #print STDERR $client->responseContent(),"\n";
+        print STDERR $client->responseContent(),"\n";
       }
     } else {
       print STDERR "Couldn't find project. Please add project for $scientific_name $tolid_prefix via the admin interface. Skipping for now.\n"; 

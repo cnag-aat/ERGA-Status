@@ -552,6 +552,9 @@ class CommunityAnnotationListView(ExportMixin, SingleTableMixin, FilterView): #L
         context = super().get_context_data(**kwargs)
         context['build_page_title'] = 'ERGA-GTC Community Annotations'
         return context
+    def get_queryset(self):
+        return CommunityAnnotation.objects.exclude(species__goat_target_list_status = None).exclude(species__goat_target_list_status = 'none').exclude(species__goat_target_list_status = '').exclude(species__goat_target_list_status = 'removed').exclude(species__goat_sequencing_status = 'none')
+
 
 class AccessDeniedView(TemplateView):
     def get_context_data(self, **kwargs):
@@ -573,6 +576,8 @@ class GenomeTeamsView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterV
         context = super().get_context_data(**kwargs)
         context['build_page_title'] = 'ERGA-GTC Genome Teams'
         return context
+    def get_queryset(self):
+        return GenomeTeam.objects.exclude(species__goat_target_list_status = None).exclude(species__goat_target_list_status = 'none').exclude(species__goat_target_list_status = '').exclude(species__goat_target_list_status = 'removed').exclude(species__goat_sequencing_status = 'none')
 
 @permission_required("status.user_profile", login_url='access_denied')
 def user_profile(request, pk=None):
