@@ -643,6 +643,7 @@ class GenomeTeamsTable(tables.Table):
     vouchering_team = tables.Column(verbose_name='Vouchering',linkify=True)
     biobanking_team = tables.Column(verbose_name='Biobanking',linkify=True)
     sequencing_team = tables.Column(verbose_name='Sequencing',linkify=True)
+    hic_team = tables.Column(verbose_name='Hi-C',linkify=True)
     assembly_team = tables.Column(verbose_name='Assembly',linkify=True)
     community_annotation_team = tables.Column(verbose_name='Community Annotation',linkify=True)
     annotation_team = tables.Column(verbose_name='Annotation',linkify=True)

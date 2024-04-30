@@ -21,8 +21,13 @@
   color: White;
 }
 .Waiting {
-  background-color: #C0C0C0;
-  color: White;
+  /* background-color: #C0C0C0; */
+  background-color: transparent;
+  outline-color: rgb(227, 227, 227);
+  outline-style: dotted;
+  /* color: White; */
+  color: transparent; /* make the text invisible */
+  user-select: none; /* prevent selection of the text */
 }
 .Long_Listed {
   background-color: #C0C0C0;
@@ -165,16 +170,31 @@
   color: White;
 }
 .NotCollected {
-  background-color: #C0C0C0;
-  color: White;
+  /* background-color: #C0C0C0; */
+  background-color: transparent;
+  outline-color: rgb(227, 227, 227);
+  outline-style: dotted;
+  /* color: White; */
+  color: transparent; /* make the text invisible */
+  user-select: none; /* prevent selection of the text */
 }
 .NotSubmitted {
-  background-color: #C0C0C0;
-  color: White;
+  /* background-color: #C0C0C0; */
+  background-color: transparent;
+  outline-color: rgb(227, 227, 227);
+  outline-style: dotted;
+  /* color: White; */
+  color: transparent; /* make the text invisible */
+  user-select: none; /* prevent selection of the text */
 }
 .Notsubmitted {
-  background-color: #C0C0C0;
-  color: White;
+  /* background-color: #C0C0C0; */
+  background-color: transparent;
+  outline-color: rgb(227, 227, 227);
+  outline-style: dotted;
+  /* color: White; */
+  color: transparent; /* make the text invisible */
+  user-select: none; /* prevent selection of the text */
 }
 .table td{
   /* padding: 0.1rem; */
@@ -260,3 +280,10 @@
   background-color: #f0f0f0;
   opacity: 1;
   }
+
+  a {text-decoration: none;}
+
+.fa-download {
+    color:  #0087a3;
+  }
+

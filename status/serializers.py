@@ -48,6 +48,11 @@ class AssemblyProjectSerializer(BulkSerializerMixin, serializers.HyperlinkedMode
         model = AssemblyProject
         fields = '__all__'
 
+class AssemblyPipelineSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = AssemblyPipeline
+        fields = '__all__'
+
 class AssemblySerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Assembly
@@ -128,6 +133,11 @@ class SequencingSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSeri
 class SequencingTeamSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = SequencingTeam
+        fields = '__all__'
+
+class HiCTeamSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = HiCTeam
         fields = '__all__'
 
 class BiobankingTeamSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):

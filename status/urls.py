@@ -1,6 +1,6 @@
 from django.urls import path
 from django.conf.urls import url
-
+from django.contrib import admin
 from . import views
 from status.views import TargetSpeciesListView
 from status.views import AssemblyListView
@@ -52,6 +52,7 @@ urlpatterns = [
     path("assembly_team/<int:pk>/", views.assembly_team_detail, name="assembly_team_detail"),
     path("collection_team/<int:pk>/", views.collection_team_detail, name="collection_team_detail"),
     path("sequencing_team/<int:pk>/", views.sequencing_team_detail, name="sequencing_team_detail"),
+    path("hic_team/<int:pk>/", views.hic_team_detail, name="hic_team_detail"),
     path("extraction_team/<int:pk>/", views.extraction_team_detail, name="extraction_team_detail"),
     path("assembly_team/<int:pk>/", views.assembly_team_detail, name="assembly_team_detail"),
     path("curation_team/<int:pk>/", views.curation_team_detail, name="curation_team_detail"),
@@ -94,3 +95,7 @@ urlpatterns = [
     path("recipe/<int:pk>/", views.recipe_detail, name="recipe_detail"),
 
 ]
+
+admin.site.site_header = "ERGA-GTC Admin"
+admin.site.site_title = "ERGA-GTC Admin Portal"
+admin.site.index_title = "Welcome to the ERGA Genome Tracking Console"

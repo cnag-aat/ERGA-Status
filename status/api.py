@@ -109,6 +109,14 @@ class AssemblyProjectViewSet(BulkModelViewSet):
     serializer_class = AssemblyProjectSerializer
     filter_fields = '__all__'
 
+class AssemblyPipelineViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows assemblies to be viewed or edited.
+    """
+    queryset = AssemblyPipeline.objects.all()
+    serializer_class = AssemblyPipelineSerializer
+    filter_fields = '__all__'
+
 class AssemblyViewSet(BulkModelViewSet):
     """
     API endpoint that allows assemblies to be viewed or edited.
@@ -213,6 +221,14 @@ class SequencingTeamViewSet(BulkModelViewSet):
     """
     queryset = SequencingTeam.objects.all()
     serializer_class = SequencingTeamSerializer
+    filter_fields = '__all__'
+
+class HiCTeamViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows Sequencing Team to be viewed or edited.
+    """
+    queryset = HiCTeam.objects.all()
+    serializer_class = HiCTeamSerializer
     filter_fields = '__all__'
 
 class BarcodingTeamViewSet(BulkModelViewSet):

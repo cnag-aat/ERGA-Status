@@ -165,7 +165,7 @@ class TargetSpeciesListView(ExportMixin, SingleTableMixin, FilterView): #LoginRe
         return context
     
     def get_queryset(self):
-        return TargetSpecies.objects.exclude(goat_target_list_status = None).exclude(goat_target_list_status = '')
+        return TargetSpecies.objects.exclude(goat_target_list_status = None).exclude(goat_target_list_status = '').exclude(goat_target_list_status = 'removed')
         #return TargetSpecies.objects.exclude(goat_sequencing_status = None).exclude(goat_sequencing_status = '')
 
     # def get_queryset(self):
@@ -212,7 +212,7 @@ class OverView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin,
         return data
     
     def get_queryset(self):
-        return TargetSpecies.objects.exclude(goat_target_list_status = None).exclude(goat_target_list_status = 'none').exclude(goat_target_list_status = '').exclude(goat_sequencing_status = 'none').order_by('goat_sequencing_status','collection_rel__copo_status','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus','scientific_name')
+        return TargetSpecies.objects.exclude(goat_target_list_status = None).exclude(goat_target_list_status = 'none').exclude(goat_target_list_status = '').exclude(goat_target_list_status = 'removed').exclude(goat_sequencing_status = 'none').order_by('goat_sequencing_status','collection_rel__copo_status','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus','scientific_name')
         #return TargetSpecies.objects.exclude(goat_sequencing_status = None).exclude(goat_sequencing_status = '')
 
 #@login_required
@@ -278,6 +278,14 @@ def barcoding_team_detail(request, pk=None):
 @permission_required("status.sequencing_team_detail", login_url='access_denied')
 def sequencing_team_detail(request, pk=None):
     team = SequencingTeam.objects.get(pk=pk)
+    context = {"team": team
+               }
+    response = render(request, "team_detail.html", context)
+    return response
+
+@permission_required("status.hic_team_detail", login_url='access_denied')
+def hic_team_detail(request, pk=None):
+    team = HiCTeam.objects.get(pk=pk)
     context = {"team": team
                }
     response = render(request, "team_detail.html", context)

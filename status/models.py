@@ -184,18 +184,6 @@ class Statement(models.Model):
     def __str__(self):
         return self.statement or str(self.id)
 
-# TAG_CHOICES = (
-#     ('erga_long_list', 'ERGA Long List'),
-#     ('bge', 'BGE short list'),
-#     ('cbp', 'CBP'),
-#     ('erga_pilot', 'ERGA_Pilot'),
-#     ('wp11', 'WP11'),
-#     ('dtol', 'DTOL'),
-#     ('greece_hsp', 'GreeceHSp'),
-#     ('slovenia_hsp', 'SloveniaHSp'),
-#     ('spain_hsp', 'SpainHsp')
-# )
-
 class Tag(models.Model):
     tag = models.CharField(max_length=50, default='erga_long_list')
     class Meta:
@@ -423,6 +411,9 @@ class TargetSpecies(models.Model):
                                 )
 
                         cannotation_record, created = CommunityAnnotation.objects.get_or_create(
+                                    species=self
+                                )
+                        genometeam_record, created = GenomeTeam.objects.get_or_create(
                                     species=self
                                 )
             os.remove(tempfile)
@@ -659,6 +650,28 @@ class SequencingTeam(models.Model):
     def __str__(self):
         return self.name or str(self.id)
 
+class HiCTeam(models.Model):
+    name = models.CharField(max_length=100,unique=True)
+    lead = models.ForeignKey(
+        UserProfile,null=True, blank=True,
+        on_delete=models.CASCADE, 
+        related_name='hic_team_lead'
+    )
+    members = models.ManyToManyField(UserProfile,null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+    gal_name = models.CharField(max_length=100,null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = 'hic teams'
+        ordering = ("name",)
+
+    def get_absolute_url(self):
+        return reverse('hic_team_detail', args=[str(self.pk)])
+
+    def __str__(self):
+        return self.name or str(self.id)
+    
 class ExtractionTeam(models.Model):
     name = models.CharField(max_length=100,unique=True)
     lead = models.ForeignKey(
@@ -804,6 +817,7 @@ class GenomeTeam(models.Model):
     biobanking_team = models.ForeignKey(BiobankingTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="biobanking team")
     extraction_team = models.ForeignKey(ExtractionTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="nucleic acid extraction team")
     sequencing_team = models.ForeignKey(SequencingTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="sequencing team")
+    hic_team = models.ForeignKey(HiCTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Hi-C team")
     assembly_team = models.ForeignKey(AssemblyTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="assembly team")
     community_annotation_team = models.ForeignKey(CommunityAnnotationTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="community annotation team")
     annotation_team = models.ForeignKey(AnnotationTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="annotation team")
@@ -1102,7 +1116,8 @@ class Sequencing(models.Model):
     hic_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
     rna_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
-    recipe = models.ForeignKey(Recipe, on_delete=models.SET_NULL, to_field='name', default='HiFi25', verbose_name="Recipe", null=True)
+    recipe = models.ForeignKey(Recipe, on_delete=models.SET_NULL, to_field='name', verbose_name="Recipe", null=True, blank=True)
+    #recipe = models.ForeignKey(Recipe, on_delete=models.SET_NULL, to_field='name', default='HiFi25', verbose_name="Recipe", null=True, blank=True)
     
     __original_long_seq_status = None
     __original_short_seq_status = None

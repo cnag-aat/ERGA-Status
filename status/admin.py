@@ -48,6 +48,19 @@ GOAT_SEQUENCING_STATUS_CHOICES = (
     ('publication_available', 'publication_available')
 )
 
+SEQUENCING_STATUS_CHOICES = (
+    ('Waiting', 'Waiting'),
+    ('Received', 'Received'),
+    ('Prep', 'Prep'),
+    ('Extracted', 'Extracted'),
+    ('Sequencing', 'Sequencing'),
+    ('TopUp', 'TopUp'),
+    ('External', 'External'),
+    ('Submitted', 'Submitted'),
+    ('Done', 'Done'),
+    ('Issue', 'Issue')
+)
+
 class UpdateSpeciesActionForm(ActionForm):
     tags = forms.ModelMultipleChoiceField(
         queryset=Tag.objects.all().order_by('tag'),
@@ -169,6 +182,7 @@ class MyUserAdmin(UserAdmin):
 
 @register(Author)
 class AuthorAdmin(admin.ModelAdmin):
+    search_fields = ['author__first_name','author__last_name','species__scientific_name']
     list_display = (
         'author',
         'species',
@@ -222,6 +236,10 @@ class UpdateActionForm(ActionForm):
         queryset=SequencingTeam.objects.all().order_by('name'),
         required=False
     )
+    hic_team = forms.ModelMultipleChoiceField(
+        queryset=HiCTeam.objects.all().order_by('name'),
+        required=False
+    )
     assembly_team = forms.ModelMultipleChoiceField(
         queryset=AssemblyTeam.objects.all().order_by('name'),
         required=False
@@ -263,6 +281,9 @@ def update_teams(modeladmin, request, queryset):
     if 'sequencing_team' in request.POST:
         sequencing_team = request.POST['sequencing_team']
         queryset.update(sequencing_team=sequencing_team)
+    if 'hic_team' in request.POST:
+        hic_team = request.POST['hic_team']
+        queryset.update(hic_team=hic_team)
     if 'assembly_team' in request.POST:
         assembly_team = request.POST['assembly_team']
         queryset.update(assembly_team=assembly_team)
@@ -277,12 +298,13 @@ def update_teams(modeladmin, request, queryset):
 @register(GenomeTeam)
 class GenomeTeamAdmin(admin.ModelAdmin):
     save_as = True
-    list_filter = admin.ModelAdmin.list_filter + ('species__tags','sample_handling_team','sequencing_team','assembly_team','species__collection_rel__task')
+    list_filter = admin.ModelAdmin.list_filter + ('sample_handling_team','sequencing_team','hic_team','assembly_team','species__collection_rel__task','species__sequencing_rel__phase','species__goat_target_list_status')
     list_per_page = 10000
     list_display = (
         'species',
         'sample_handling_team',
         'sequencing_team',
+        'hic_team',
         'assembly_team',
         'community_annotation_team'
     )
@@ -303,7 +325,10 @@ class GenomeTeamAdmin(admin.ModelAdmin):
             # 'show_save_and_continue': False,
         })
         return super().render_change_form(request, context, add, change, form_url, obj)
-
+    def get_queryset(self, request):
+        qs = super(GenomeTeamAdmin, self).get_queryset(request)
+        return qs.exclude(species__goat_target_list_status = 'removed')
+    
 def update_specimens(modeladmin, request, queryset):
     if 'nagoya_statement' in request.POST:
         nagoya_statement = request.POST['nagoya_statement']
@@ -336,7 +361,6 @@ admin.site.register(CommonNames)
 admin.site.register(Synonyms)
 admin.site.register(AssemblyTeam)
 admin.site.register(Statement)
-#admin.site.register(AssemblyProject)
 @register(AssemblyProject)
 class AssemblyProjectAdmin(admin.ModelAdmin):
     list_filter = ["species__gt_rel__assembly_team"]
@@ -346,6 +370,10 @@ class AssemblyProjectAdmin(admin.ModelAdmin):
         'note'
     )
     search_fields = ['species__scientific_name']
+    def get_queryset(self, request):
+        qs = super(AssemblyProjectAdmin, self).get_queryset(request)
+        return qs.exclude(species__goat_target_list_status = 'removed')
+    
 admin.site.register(Assembly)
 admin.site.register(CollectionTeam)
 admin.site.register(Subproject)
@@ -358,21 +386,71 @@ class SampleCollectionAdmin(admin.ModelAdmin):
     list_display = ('species','task','country','copo_status','sample_provider_name','mta1','mta2','barcoding_status','deadline_manifest_acceptance','note')
 admin.site.register(CurationTeam)
 admin.site.register(Curation)
-# admin.site.register(SubmissionTeam)
-# admin.site.register(Submission)
 admin.site.register(SequencingTeam)
+admin.site.register(HiCTeam)
 admin.site.register(VoucheringTeam)
 admin.site.register(BarcodingTeam)
 admin.site.register(TaxonomyTeam)
 admin.site.register(SampleHandlingTeam)
-admin.site.register(CommunityAnnotationTeam)
 admin.site.register(BiobankingTeam)
 admin.site.register(ExtractionTeam)
 admin.site.register(Phase)
-#admin.site.register(Sequencing)
+
+class UpdateSequencingActionForm(ActionForm):
+    phase = forms.ModelMultipleChoiceField(
+        queryset=Phase.objects.all().order_by('name'),
+        required=False
+    )
+    long_seq_status = forms.ChoiceField(
+        choices = SEQUENCING_STATUS_CHOICES,
+        required=False
+    )
+    short_seq_status = forms.ChoiceField(
+        choices = SEQUENCING_STATUS_CHOICES,
+        required=False
+    )
+    hic_seq_status = forms.ChoiceField(
+        choices = SEQUENCING_STATUS_CHOICES,
+        required=False
+    )
+    rna_seq_status = forms.ChoiceField(
+        choices = SEQUENCING_STATUS_CHOICES,
+        required=False
+    )
+    recipe = forms.ModelMultipleChoiceField(
+        queryset=Recipe.objects.all().order_by('name'),
+        required=False
+    )
+
+def update_sequencing(modeladmin, request, queryset):
+    if 'phase' in request.POST:
+        phase = request.POST['phase']
+        queryset.update(phase=phase)
+    if 'long_seq_status' in request.POST:
+        long_seq_status = request.POST['long_seq_status']
+        queryset.update(long_seq_status=long_seq_status)
+    if 'short_seq_status' in request.POST:
+        short_seq_status = request.POST['short_seq_status']
+        queryset.update(short_seq_status=short_seq_status)
+    if 'hic_seq_status' in request.POST:
+        hic_seq_status = request.POST['hic_seq_status']
+        queryset.update(hic_seq_status=hic_seq_status)
+    if 'rna_seq_status' in request.POST:
+        rna_seq_status = request.POST['rna_seq_status']
+        queryset.update(rna_seq_status=rna_seq_status)
+    if 'barcoding_team' in request.POST:
+        barcoding_team = request.POST['barcoding_team']
+        queryset.update(barcoding_team=barcoding_team)
+    if 'recipe' in request.POST:
+        recipe = request.POST['recipe']
+        rec = Recipe.objects.get(pk=recipe)
+        queryset.update(recipe=rec.name)
+    messages.add_message(request, messages.INFO, 'Successfully updated sequencing. ' + recipe)
+
+
 @register(Sequencing)
 class SequencingAdmin(admin.ModelAdmin):
-    list_filter = ["species__gt_rel__sequencing_team","species__tags","species__sequencing_rel__phase","species__collection_rel__country","species__collection_rel__task"]
+    list_filter = ["species__gt_rel__sequencing_team","species__gt_rel__hic_team","species__tags","species__sequencing_rel__phase","species__collection_rel__country","species__collection_rel__task"]
     list_display = (
         'species',
         'phase',
@@ -392,11 +470,53 @@ class SequencingAdmin(admin.ModelAdmin):
     #         return qs
     #     else:
     #         return qs.filter(species__gt_rel__sequencing_team = seqteam)
-
+    action_form = UpdateSequencingActionForm
+    actions = [update_sequencing]
+    def get_actions(self, request):
+      actions = super(SequencingAdmin, self).get_actions(request)
+      try:
+          del actions['delete_selected']
+      except KeyError:
+        pass
+      return actions
+    def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
+        context.update({
+            'show_delete': False, # Here
+            # 'show_save': False,
+            # 'show_save_and_continue': False,
+        })
+        return super().render_change_form(request, context, add, change, form_url, obj)
+    def get_queryset(self, request):
+        qs = super(SequencingAdmin, self).get_queryset(request)
+        return qs.exclude(species__goat_target_list_status = 'removed')
+    
 admin.site.register(Reads)
-admin.site.register(AnnotationTeam)
-admin.site.register(CommunityAnnotation)
-admin.site.register(Annotation)
+@register(CommunityAnnotation)
+class CommunityAnnotationAdmin(admin.ModelAdmin):
+    search_fields = ['species__scientific_name']
+    list_filter = ["species__gt_rel__community_annotation_team","species", "status"]
+    list_display = (
+        'species',
+        'status',
+        'note'
+    )
+    def get_queryset(self, request):
+        qs = super(CommunityAnnotationAdmin, self).get_queryset(request)
+        return qs.exclude(species__goat_target_list_status = 'removed')
+    
+@register(Annotation)
+class AnnotationAdmin(admin.ModelAdmin):
+    search_fields = ['species__scientific_name']
+    list_filter = ["species__gt_rel__annotation_team","species", "status"]
+    list_display = (
+        'species',
+        'status',
+        'note'
+    )
+    def get_queryset(self, request):
+        qs = super(AnnotationAdmin, self).get_queryset(request)
+        return qs.exclude(species__goat_target_list_status = 'removed')
+
 admin.site.register(BUSCOdb)
 admin.site.register(BUSCOversion)
 @register(Run)
@@ -411,7 +531,6 @@ class RunAdmin(admin.ModelAdmin):
         'forward_md5sum'
     )
 
-# admin.site.register(Specimen)
 LEFTOVER_CHOICES = (
     ('None', 'None'),
     ('DNA', 'DNA'),
@@ -489,10 +608,7 @@ class SampleAdmin(admin.ModelAdmin):
     )
     search_fields = ['species__scientific_name']
 admin.site.register(AssemblyPipeline)
-#admin.site.register(UserProfile)
-#admin.site.register(GenomeTeam)
 admin.site.register(Person)
-#admin.site.register(Author)
 admin.site.register(Affiliation)
 admin.site.register(Role)
 admin.site.register(Tag)
