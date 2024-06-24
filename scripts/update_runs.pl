@@ -69,7 +69,7 @@ usage: update_sequencing.pl [-h] [-c <ergastream.cnf>] -f <sequencing_runs_updat
     exp_attrlib_attr
     yield *
     forward_file_name *
-    forward_file_md5
+    forward_file_md5 *
     reverse_file_name
     reverse_file_md5
     native_file_name
