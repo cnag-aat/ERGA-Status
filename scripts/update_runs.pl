@@ -82,6 +82,7 @@ usage: update_sequencing.pl [-h] [-c <ergastream.cnf>] -f <sequencing_runs_updat
         library_strategy
         yield
         forward_file_name
+        forward_file_md5
         all other fields are optional (but recommended as they can be useful for submission of runs to the ENA)
 
   recipe choices: 
