@@ -11,16 +11,15 @@
           facilitate the deposition of data into the ENA by keeping track of accession numbers. </p>
           <p>If you'd like to help develop or <a target="_blank" href="https://github.com/cnag-aat/ERGA-Status/issues">submit issues</a>,
           head on over to <a target="_blank" href="https://github.com/cnag-aat/ERGA-Status">https://github.com/cnag-aat/ERGA-Status</a>. 
-          You can also send feedback to <a href="mailto=denovo@cnag.crg.eu">denovo@cnag.eu</a>.
+          You can also send feedback to <a href="mailto:denovo@cnag.eu">denovo@cnag.eu</a>.
           </p>
-          
+          <p>NOTICE: Log in is now required for most views.</p>
       </div>
     </div>
   </div>
 </div>
 
 <div class="row">
-  <div class="col-md-2"></div>
   <div class="col-md-8">
     <div class="card mb-1">
       <div class="card-body">
@@ -29,8 +28,15 @@
         </div>
       </div>
     </div>
-  
-    <div class="col-md-2"></div>
+  </div>
+  <div class="col-md-4">
+    <div class="card mb-1">
+       <div class="card-body">
+        <div>
+          <canvas id="TotalSeqProdChart"></canvas>
+        </div>
+      </div>
+    </div>
   </div>
 
 
@@ -46,33 +52,7 @@
   </div> -->
 
 </div>
-<div class="row">
-  <div class="col-md-12">
-    <div class="card mb-1">
-      <div class="card-body">
-        <h5 class="card-title">How to use this tool.</h5>
-          <p>All genome team members and project administrators are encouraged to <a href="{% url 'account_signup' %}">register</a> as soon as possible. 
-            During registration, you will be asked to enter your first, middle (optional) and last names, email, affiliation(s), ORCID (optional) and 
-            your expected role(s) in the project. The info collected will facilitate the compilation of author lists for the purpose of genome note
-            publication, so enter your information as you would like to see it appear. Registration will also allow you to see target species and monitor project 
-            progress (sample collection, sequencing, assembly, annotation status, etc.). Administrators and team leads will be given additional permissions
-            to see contact details, define and update genome teams or edit status. Once granted access, enter team member info using the appropriate link below:</p>
-            <ul>
-              <li><a target="_blank" href="https://genomes.cnag.cat/erga-stream/admin/status/genometeam/">Edit genome teams</a></li>
-              <li><a target="_blank" href="https://genomes.cnag.cat/erga-stream/admin/status/sequencingteam/">Edit sequencing teams</a></li>
-              <li><a target="_blank" href="https://genomes.cnag.cat/erga-stream/admin/status/assemblyteam/">Edit assembly teams</a></li>
-              <li><a target="_blank" href="https://genomes.cnag.cat/erga-stream/admin/status/annotationteam/">Edit annotation teams</a></li>
-            </ul>
-            <p>Analogous links exist for other roles, including Sample Handling, Sample Collection, Taxonomic Identification, Vouchering, Biobanking, Barcoding and Community Annotation (not Ensembl).
-              
-            </p>
-            <p>Scripts will be provided in the <a target="_blank" href="https://github.com/cnag-aat/ERGA-Status/tree/master/scripts">github repo</a> 
-              for updating the database with sample reception dates, seqeuncing runs and status, and assembly status. 
-              These will take as input tsv/csv text files with new or updated info. </p>
-      </div>
-    </div>
-  </div>
-</div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
 <script>
@@ -86,32 +66,51 @@
         {
         label: 'Assembly done',
         data: {{ assembly_done|safe }},
-        borderWidth: 1
+        borderWidth: 1,
+        backgroundColor: [
+          'rgb(0, 135, 163, 1)'
+          ],
         },
         {
         label: 'Assembling',
         data: {{ assembling|safe }},
-        borderWidth: 1
+        borderWidth: 1,
+        backgroundColor: [
+          'rgb(0, 159, 196, 1)'
+          ],
         },
         {
         label: 'Sequencing done',
         data: {{ seq_done|safe }},
-        borderWidth: 1
+        borderWidth: 1,
+        backgroundColor: [
+          'rgb(0, 159, 160, 1)'
+          ],
         },
         {
         label: 'Sequencing',
         data: {{ sequencing|safe }},
-        borderWidth: 1
+        borderWidth: 1,
+        backgroundColor: [
+          'rgb(0, 159, 131, 1)'
+
+          ],
         },
         {
         label: 'Collected',
         data: {{ collected|safe }},
-        borderWidth: 1
+        borderWidth: 1,
+        backgroundColor: [
+          'rgb(153, 152, 125, 1)'
+          ],
         },
         {
         label: 'Not collected',
         data: {{ not_collected|safe }},
-        borderWidth: 1
+        borderWidth: 1,
+        backgroundColor: [
+          'rgb(192, 192, 192, 1)'
+          ],
         }
     ]
     },
@@ -137,6 +136,117 @@
       }
     }
   });
+
+  const totalctx = document.getElementById('TotalSeqProdChart');
+  var tad = {{ total_assembly_done }};
+  var ta = {{ total_assembling }};
+  var tsd = {{ total_seq_done }};
+  var ts = {{ total_sequencing }};
+  var tc = {{ total_collected }};
+  var tnc = {{ total_not_collected }};
+  var cumsum1 = tad;
+  var cumsum2 = tad + ta;
+  var cumsum3 = tad + ta + tsd;
+  var cumsum4 = tad + ta + tsd + ts;
+  var cumsum5 = tad + ta + tsd + ts + tc;
+  var cumsum6 = tad + ta + tsd + ts + tc + tnc;
+  var sum_notstarted = tc + tnc;
+  var sum_notfinished = ts + tc + tnc;
+
+  new Chart(totalctx, {
+    type: 'doughnut',
+    data: {
+      labels: [
+        'Assembly done',
+        'Assembling',
+        'Sequencing done',
+        'Sequencing',
+        'Collected',
+        'Not collected',
+        'Sequencing Finished',
+        '',
+        'Sequencing Started',
+        ''
+      ],
+      datasets: [
+        {
+          data: [
+            0,0,0,0,0,0,cumsum3,sum_notfinished,0,0
+          ],
+          backgroundColor: [
+          'rgb(0, 135, 163, 1)',
+          'rgb(0, 159, 196, 1)',
+          'rgb(0, 159, 160, 1)',
+          'rgb(0, 159, 131, 1)',
+          'rgb(153, 152, 125, 1)',
+          'rgb(192, 192, 192, 1)',
+          'rgb(0, 159, 196, 1)',
+          'rgb(0, 159, 196, 0)',
+          'rgb(0, 159, 131, 1)',
+          'rgb(0, 159, 131, 0)',
+          ],
+          rotation: -90,
+          circumference: 180
+        },
+        {
+          data: [
+            0,0,0,0,0,0,0,0,cumsum4,sum_notstarted
+          ],
+          backgroundColor: [
+          'rgb(0, 135, 163, 1)',
+          'rgb(0, 159, 196, 1)',
+          'rgb(0, 159, 160, 1)',
+          'rgb(0, 159, 131, 1)',
+          'rgb(153, 152, 125, 1)',
+          'rgb(192, 192, 192, 1)',
+          'rgb(0, 159, 196, 1)',
+          'rgb(0, 159, 196, 0)',
+          'rgb(0, 159, 131, 1)',
+          'rgb(0, 159, 131, 0)',
+          ],
+          rotation: -90,
+          circumference: 180
+        },
+        {
+          data: [
+            {{ total_assembly_done }},
+            {{ total_assembling }},
+            {{ total_seq_done }},
+            {{ total_sequencing }},
+            {{ total_collected }},
+            {{ total_not_collected }}
+          ],
+          backgroundColor: [
+          'rgb(0, 135, 163, 1)',
+          'rgb(0, 159, 196, 1)',
+          'rgb(0, 159, 160, 1)',
+          'rgb(0, 159, 131, 1)',
+          'rgb(153, 152, 125, 1)',
+          'rgb(192, 192, 192, 1)',
+          'rgb(0, 159, 196, 1)',
+          'rgb(0, 159, 196, 0)',
+          'rgb(0, 159, 131, 1)',
+          'rgb(0, 159, 131, 0)',
+          ],
+          rotation: -90,
+          circumference: 180
+        }
+        
+    ]
+    },
+    options: {
+      plugins: {
+        title: {
+          display: true,
+          text: 'Total'
+        },
+      },
+      responsive: true,
+    }
+  });
+
+
+
 
 </script>
 {% endblock %}

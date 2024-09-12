@@ -150,6 +150,11 @@ class VoucheringTeamSerializer(BulkSerializerMixin, serializers.HyperlinkedModel
         model = VoucheringTeam
         fields = '__all__'
 
+class FromManifestSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = FromManifest
+        fields = '__all__'
+
 class GenomeTeamSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = GenomeTeam
@@ -165,15 +170,20 @@ class RunSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer)
         model = Run
         fields = '__all__'
 
+class EnaRunSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = EnaRun
+        fields = '__all__'
+
 class UserSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
 
-class TagSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Tag
-        fields = '__all__'
+# class TagSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+#     class Meta:
+#         model = Tag
+#         fields = '__all__'
 
 class RecipeSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:

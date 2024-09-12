@@ -27,8 +27,9 @@ from status.views import SuccessView
 from status.views import LogView
 from status.views import SpeciesLogView
 from status.views import GoaTListView
-from status.views import NewSpeciesView
+# from status.views import NewSpeciesView
 from status.views import NewSpeciesListView
+from status.views import HelpView
 
 
 urlpatterns = [
@@ -45,6 +46,8 @@ urlpatterns = [
     path("specimens/", SpecimenListView.as_view(), name="specimen_list"),
     path("specimens/?collection=<collection>", SpecimenListView.as_view(), name="specimen_list"),
     path("specimens/<int:id>/", SpecimenListView.as_view(), name="specimen_list"),
+    path("from_manifest/?specimen_id=<specimen_id>", views.from_manifest_detail, name="from_manifest_detail"),
+    path("from_manifest/<int:pk>/", views.from_manifest_detail, name="from_manifest_detail"),
     path("samples/", SampleListView.as_view(), name="sample_list"),
     path("samples/<int:pk>/", views.sample_detail, name="sample_detail"),
     path("projects/", AssemblyProjectListView.as_view(), name="assembly_project_list"),
@@ -90,10 +93,10 @@ urlpatterns = [
     path('authors/', AuthorsView.as_view(), name="author_list"),
     path('edit_profile/', EditProfileView.as_view(), name="edit_profile"),
     path('add_species_list/', NewSpeciesListView.as_view(), name="add_species_list"),
-    path('add_species/', NewSpeciesView.as_view(), name="add_species"),
+    # path('add_species/', NewSpeciesView.as_view(), name="add_species"),
     path('success/', SuccessView.as_view(), name="success"),
     path("recipe/<int:pk>/", views.recipe_detail, name="recipe_detail"),
-
+    path("help/", HelpView.as_view(), name="help"),
 ]
 
 admin.site.site_header = "ERGA-GTC Admin"

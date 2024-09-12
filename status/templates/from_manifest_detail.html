@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load static %}
+{% load render_table from django_tables2 %}
+{% load bootstrap4 %}
+{% block page_content %}
+
+<p>
+<div class="row m-1">
+  <div class="col-md-12">
+
+    <div class="card mb-12">
+      <div class="card-body">
+        <h5 class="card-title">{{ team.specimen.tolid }}</h5>
+        
+        <div class="card mb-12">
+          <div class="card-body">
+            <h5 class="card-title">Coordinator(s)</h5>
+            {% for person in team.coordinator.all %}
+            <table >
+              <tr><td style="vertical-align: top; padding:6px">Name:</td><td style="vertical-align: top; padding:6px">{{ person.name }}</td></tr>
+              <tr><td style="vertical-align: top; padding:6px">Affiliation(s):</td><td style="vertical-align: top; padding:6px"><table>{% for aff in person.affiliation.all %} <tr><td style="vertical-align: top; padding-bottom:6px">{{ aff }}</td></tr> {% endfor %}</table></td></tr> 
+             </br>
+          </table>
+          <p>{% endfor %}
+          </div>
+        </div>
+
+        <div class="card mb-12">
+          <div class="card-body">
+            <h5 class="card-title">Collector(s)</h5>
+            {% for person in team.collector.all %}
+            <table >
+              <tr><td style="vertical-align: top; padding:6px">Name:</td><td style="vertical-align: top; padding:6px">{{ person.name }}</td></tr>
+              <tr><td style="vertical-align: top; padding:6px">Affiliation(s):</td><td style="vertical-align: top; padding:6px"><table>{% for aff in person.affiliation.all %} <tr><td style="vertical-align: top; padding-bottom:6px">{{ aff }}</td></tr> {% endfor %}</table></td></tr> 
+             </br>
+          </table>
+          <p>{% endfor %}
+          </div>
+        </div>
+
+        <div class="card mb-12">
+          <div class="card-body">
+            <h5 class="card-title">Identifier(s)</h5>
+            {% for person in team.identifier.all %}
+            <table >
+              <tr><td style="vertical-align: top; padding:6px">Name:</td><td style="vertical-align: top; padding:6px">{{ person.name }}</td></tr>
+              <tr><td style="vertical-align: top; padding:6px">Affiliation(s):</td><td style="vertical-align: top; padding:6px"><table>{% for aff in person.affiliation.all %} <tr><td style="vertical-align: top; padding-bottom:6px">{{ aff }}</td></tr> {% endfor %}</table></td></tr> 
+             </br>
+          </table>
+          <p>{% endfor %}
+          </div>
+        </div>
+
+        <div class="card mb-12">
+          <div class="card-body">
+            <h5 class="card-title">Preserver(s)</h5>
+            {% for person in team.preserver.all %}
+            <table >
+              <tr><td style="vertical-align: top; padding:6px">Name:</td><td style="vertical-align: top; padding:6px">{{ person.name }}</td></tr>
+              <tr><td style="vertical-align: top; padding:6px">Affiliation(s):</td><td style="vertical-align: top; padding:6px"><table>{% for aff in person.affiliation.all %} <tr><td style="vertical-align: top; padding-bottom:6px">{{ aff }}</td></tr> {% endfor %}</table></td></tr> 
+             </br>
+          </table>
+          <p>{% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <i>last modified: {{ team.modified }}</i>
+  </div>
+</div>
+{% endblock %}

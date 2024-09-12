@@ -46,13 +46,14 @@ from django.shortcuts import get_object_or_404
 #from status.filters import SpecimenFilter
 #from status.forms import (EditProfileForm, ProfileForm)
 from status.forms import ProfileUpdateForm
-from status.forms import NewSpeciesForm
+# from status.forms import NewSpeciesForm
 from status.forms import NewSpeciesListForm
 from django.urls import reverse_lazy
 from status.filters import GenomeTeamFilter
 from status.filters import TargetSpeciesFilter
 from braces.views import GroupRequiredMixin
 from django.db.models import OuterRef, Subquery
+from django.core.cache import cache
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -68,6 +69,11 @@ def index(request):
 
 # class HomeView(TemplateView):
 #     template_name = 'index.html'
+# def help(request):
+#     return render(request, 'help.html')
+
+class HelpView(TemplateView):
+    template_name = 'help.html'
 
 def home(request):
     centerlabels = []
@@ -78,7 +84,13 @@ def home(request):
     seq_done = []
     assembling = []
     assembly_done = []
-    submitted = []
+    total_collected = []
+    total_not_collected = []
+    total_sequencing = []
+    total_seq_done = []
+    total_assembling = []
+    total_assembly_done = []
+    total_submitted = []
    # speciesdict = {}
     in_production_set = {'Received', 'Prep', 'Sequencing', 'TopUp', 'Extracted'}
     seq_done_set = {'Done', 'Submitted'}
@@ -136,6 +148,49 @@ def home(request):
             assembling.append(0)
             assembly_done.append(0)
 
+#### TOTALS
+
+
+    total_not_collected_span = 0
+    total_collected_span = 0
+    total_sequencing_span = 0
+    total_seq_done_span = 0
+    total_assembling_span = 0
+    total_assembly_done_span = 0
+        #.filter(sequencing_rel__long_seq_status='Done')
+    allqueryset = TargetSpecies.objects.all()
+    if (allqueryset):
+        for sp in allqueryset:
+            #assigned_span += sp.genome_size
+            if not sp.genome_size:
+                sp.genome_size = 0;
+            if (sp.assembly_rel and sp.assembly_rel.status in assembly_done_set):
+                    total_assembly_done_span += sp.genome_size
+            else:
+                if (sp.assembly_rel.status in in_assembly_set):
+                    total_assembling_span += sp.genome_size
+                else:
+                    if (sp.sequencing_rel.long_seq_status in seq_done_set and sp.sequencing_rel.hic_seq_status in seq_done_set):
+                        total_seq_done_span += sp.genome_size
+                    else: 
+                        if (sp.sequencing_rel.long_seq_status in in_production_set or sp.sequencing_rel.long_seq_status in seq_done_set):
+                            total_sequencing_span += sp.genome_size
+                        else:
+                            if (sp.goat_sequencing_status == 'sample_collected' or sp.goat_sequencing_status == 'sample_acquired'):
+                                total_collected_span += sp.genome_size
+                            else:
+                                total_not_collected_span += sp.genome_size
+
+                         
+    # goat_sequencing_status
+    total_not_collected_span = total_not_collected_span/1000000000
+    total_collected_span = total_collected_span/1000000000
+    total_sequencing_span = total_sequencing_span/1000000000
+    total_seq_done_span = total_seq_done_span/1000000000
+    total_assembling_span = total_assembling_span/1000000000
+    total_assembly_done_span = total_assembly_done_span/1000000000
+            
+
     return render(request, 'index.html', {
         'centers': centerlabels,
         'not_collected': not_collected,  
@@ -143,16 +198,22 @@ def home(request):
         'sequencing': sequencing,
         'seq_done': seq_done,
         'assembling': assembling,
-        'assembly_done': assembly_done
+        'assembly_done': assembly_done,
+        'total_not_collected': total_not_collected_span,  
+        'total_collected': total_collected_span,
+        'total_sequencing': total_sequencing_span,
+        'total_seq_done': total_seq_done_span,
+        'total_assembling': total_assembling_span,
+        'total_assembly_done': total_assembly_done_span,
     })
 
 class SuccessView(TemplateView):
     template_name = 'success.html'
 
 # Create your views here.
-class TargetSpeciesListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
+class TargetSpeciesListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    #login_url = "access_denied"
+    login_url = "access_denied"
     model = TargetSpecies
     table_class = TargetSpeciesTable
     template_name = 'targetspecies.html'
@@ -196,26 +257,26 @@ class GoaTListView(ExportMixin, SingleTableMixin, FilterView):
         else:
             return TargetSpecies.objects.exclude(goat_target_list_status = 'none').exclude(goat_target_list_status = 'waiting_list').exclude(goat_target_list_status = 'removed')
 
-class OverView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
+class OverView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    #login_url = "access_denied"
+    login_url = "access_denied"
     model = TargetSpecies
     table_class = OverviewTable
     template_name = 'overview.html'
     filterset_class = TargetSpeciesFilter
     export_formats = ['csv', 'tsv','xlsx','json']
     #filterset_class = SpeciesFilter
-    table_pagination = {"per_page": 1000}
+    table_pagination = {"per_page": 100}
     def get_context_data(self, *args, **kwargs):
         data = super(OverView, self).get_context_data(*args, **kwargs)
         data['build_page_title'] = 'ERGA-GTC OverView'
         return data
     
     def get_queryset(self):
-        return TargetSpecies.objects.exclude(goat_target_list_status = None).exclude(goat_target_list_status = 'none').exclude(goat_target_list_status = '').exclude(goat_target_list_status = 'removed').exclude(goat_sequencing_status = 'none').order_by('goat_sequencing_status','collection_rel__copo_status','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus','scientific_name')
+        return TargetSpecies.objects.exclude(goat_target_list_status = None).exclude(goat_target_list_status = 'none').exclude(goat_target_list_status = '').exclude(goat_target_list_status = 'removed').exclude(goat_sequencing_status = 'none').order_by('-gss_rank','-assembly_rel__assembly_rank','collection_rel__copo_status','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus','scientific_name')
         #return TargetSpecies.objects.exclude(goat_sequencing_status = None).exclude(goat_sequencing_status = '')
 
-#@login_required
+@login_required
 def species_detail(request, pk=None, scientific_name=None):
     if pk:
         sp = TargetSpecies.objects.get(pk=pk)
@@ -339,8 +400,8 @@ def person_detail(request, pk=None):
     response = render(request, "person_detail.html", context)
     return response
 
-class AssemblyProjectListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
-    #login_url = "access_denied"
+class AssemblyProjectListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
+    login_url = "access_denied"
     model = AssemblyProject
     table_class = AssemblyProjectTable
     template_name = 'assemblyproject.html'
@@ -356,9 +417,12 @@ class AssemblyProjectListView(ExportMixin, SingleTableMixin, FilterView): #Login
         if 'project' in self.request.GET:
             queryset = queryset.filter(pk=self.request.GET['project'])
             return queryset
+        else:
+            return AssemblyProject.objects.exclude(species__goat_target_list_status = None).exclude(species__goat_target_list_status = 'none').exclude(species__goat_target_list_status = '').exclude(species__goat_target_list_status = 'removed').exclude(species__goat_sequencing_status = 'none')
 
-class AssemblyListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
-    #login_url = "access_denied"
+
+class AssemblyListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
+    login_url = "access_denied"
     model = Assembly
     table_class = AssemblyTable
     template_name = 'assembly.html'
@@ -369,7 +433,7 @@ class AssemblyListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequire
         context['build_page_title'] = 'ERGA-GTC Assemblies'
         return context
 
-#@login_required
+@login_required
 def assembly_pipeline_detail(request, pk=None):
     pipeline = AssemblyPipeline.objects.get(pk=pk)
     context = {"pipeline": pipeline
@@ -377,9 +441,9 @@ def assembly_pipeline_detail(request, pk=None):
     response = render(request, "assembly_pipeline_detail.html", context)
     return response
 
-class SampleCollectionListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
+class SampleCollectionListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    #login_url = "access_denied"
+    login_url = "access_denied"
     model = SampleCollection
     table_class = SampleCollectionTable
     template_name = 'collection.html'
@@ -389,10 +453,12 @@ class SampleCollectionListView(ExportMixin, SingleTableMixin, FilterView): #Logi
         context = super().get_context_data(**kwargs)
         context['build_page_title'] = 'ERGA-GTC Sample Collection'
         return context
-    
-class SpecimenListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
+    def get_queryset(self):
+        return SampleCollection.objects.exclude(species__goat_target_list_status = None).exclude(species__goat_target_list_status = 'none').exclude(species__goat_target_list_status = '').exclude(species__goat_target_list_status = 'removed').exclude(species__goat_sequencing_status = 'none')
+
+class SpecimenListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    # login_url = "access_denied"
+    login_url = "access_denied"
     model = Specimen
     table_class = SpecimenTable
     #filterset_class = SpecimenFilter
@@ -405,15 +471,29 @@ class SpecimenListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequire
         return context
     
     def get_queryset(self):
+        #specimens = cache.get('all_specimens')
+        #if not specimens:
+        #    specimens = Specimen.objects.select_related('species').select_related('collection').select_related('biobanking_team').select_related('nagoya_statement').prefetch_related('collector').prefetch_related('preserver').prefetch_related('identifier').prefetch_related('coordinator')
+            #cache.set('all_specimens', specimens)
         #self.id = get_object_or_404(Specimen, pk=self.kwargs['id'])
         if 'id' in self.kwargs:
             return Specimen.objects.filter(pk=self.kwargs['id'])
         if 'collection' in self.kwargs:
             return Specimen.objects.filter(collection=self.kwargs['collection'])
+        return Specimen.objects.all()
+        
+@permission_required("status.from_manifest_detail", login_url='access_denied')
+def from_manifest_detail(request, specimen_id=None):
+    team = FromManifest.objects.get(specimen_id=specimen_id)
+    context = {"team": team
+               }
+    response = render(request, "from_manifest_detail.html", context)
+    return response
+        
     
-class SampleListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
+class SampleListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    # login_url = "access_denied"
+    login_url = "access_denied"
     model = Sample
     table_class = SampleTable
     template_name = 'samples.html'
@@ -439,9 +519,9 @@ def copo_record(request, copoid):
     #return HttpResponse(output, content_type="application/json")
     return render(request,'copo.html',{'response':resp})
     
-class SequencingListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
+class SequencingListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    # login_url = "access_denied"
+    login_url = "access_denied"
     model = Sequencing
     table_class = SequencingTable
     template_name = 'sequencing.html'
@@ -458,10 +538,13 @@ class SequencingListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequi
         if 'project' in self.request.GET:
             queryset = queryset.filter(pk=self.request.GET['project'])
             return queryset
+        else:
+            return Sequencing.objects.exclude(species__goat_target_list_status = None).exclude(species__goat_target_list_status = 'none').exclude(species__goat_target_list_status = '').exclude(species__goat_target_list_status = 'removed').exclude(species__goat_sequencing_status = 'none')
 
-class SequencingDetailView(DetailView): #LoginRequiredMixin, 
+
+class SequencingDetailView(LoginRequiredMixin, DetailView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    # login_url = "access_denied"
+    login_url = "access_denied"
     model = Sequencing
     table_class = SequencingTable
     queryset = Sequencing.objects.all()
@@ -473,9 +556,9 @@ class SequencingDetailView(DetailView): #LoginRequiredMixin,
         context['build_page_title'] = 'ERGA-GTC Sequencing'
         return context
 
-class RunListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
+class RunListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    # login_url = "access_denied"
+    login_url = "access_denied"
     model = Run
     table_class = RunTable
     template_name = 'runs.html'
@@ -487,9 +570,9 @@ class RunListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixi
         context['build_page_title'] = 'ERGA-GTC Runs'
         return context
     
-class ReadsListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
+class ReadsListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    #login_url = "access_denied"
+    login_url = "access_denied"
     model = Reads
     table_class = ReadsTable
     template_name = 'reads.html'
@@ -512,12 +595,21 @@ class ReadsListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMi
                                      hic_yield=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='HiC')),
                                      hic_cov=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='HiC'))/(F("project__species__genome_size")),
                                      rnaseq_pe=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='RNA')),
+                                     ena_ont_yield=Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='ONT')),
+                                     ena_ont_cov=Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='ONT'))/(F("project__species__genome_size")),
+                                     ena_hifi_yield=Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='HiFi')),
+                                     ena_hifi_cov=Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='HiFi'))/(F("project__species__genome_size")),
+                                     ena_short_yield=Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='Illumina')),
+                                     ena_short_cov=Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='Illumina'))/(F("project__species__genome_size")),
+                                     ena_hic_yield=Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='HiC')),
+                                     ena_hic_cov=Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='HiC'))/(F("project__species__genome_size")),
+                                     ena_rnaseq_pe=Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='RNA')),
                                      )
         return queryset
     
-class CurationListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
+class CurationListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    #login_url = "access_denied"
+    login_url = "access_denied"
     model = Curation
     table_class = CurationTable
     template_name = 'curation.html'
@@ -525,9 +617,9 @@ class CurationListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequire
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
 
-class AnnotationListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
+class AnnotationListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    #login_url = "access_denied"
+    login_url = "access_denied"
     model = Annotation
     table_class = AnnotationTable
     template_name = 'annotation.html'
@@ -538,10 +630,12 @@ class AnnotationListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequi
         context = super().get_context_data(**kwargs)
         context['build_page_title'] = 'ERGA-GTC Annotations'
         return context
-
-class CommunityAnnotationListView(ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
+    def get_queryset(self):
+        return Annotation.objects.exclude(species__goat_target_list_status = None).exclude(species__goat_target_list_status = 'none').exclude(species__goat_target_list_status = '').exclude(species__goat_target_list_status = 'removed').exclude(species__goat_sequencing_status = 'none')
+   
+class CommunityAnnotationListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
-    # login_url = "access_denied"
+    login_url = "access_denied"
     model = CommunityAnnotation
     table_class = CommunityAnnotationTable
     template_name = 'community_annotation.html'
@@ -577,7 +671,7 @@ class GenomeTeamsView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterV
         context['build_page_title'] = 'ERGA-GTC Genome Teams'
         return context
     def get_queryset(self):
-        return GenomeTeam.objects.exclude(species__goat_target_list_status = None).exclude(species__goat_target_list_status = 'none').exclude(species__goat_target_list_status = '').exclude(species__goat_target_list_status = 'removed').exclude(species__goat_sequencing_status = 'none')
+        return GenomeTeam.objects.exclude(species__goat_target_list_status = None).exclude(species__goat_target_list_status = 'none').exclude(species__goat_target_list_status = '').exclude(species__goat_target_list_status = 'removed') #.exclude(species__goat_sequencing_status = 'none')
 
 @permission_required("status.user_profile", login_url='access_denied')
 def user_profile(request, pk=None):
@@ -670,24 +764,24 @@ class SpeciesLogView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterVi
         queryset = queryset.filter(species=self.request.GET['id'])
         return queryset
 
-class NewSpeciesView(LoginRequiredMixin, FormView):
-    login_url = "access_denied"
-    model = TargetSpecies
-    fields = ['taxon_ids']
-    template_name = 'status/new_species_form.html'
-    form_class = NewSpeciesForm
-    success_url = reverse_lazy("add_species") #reverse_lazy('success')
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Add Species'
-        return context
+# class NewSpeciesView(LoginRequiredMixin, FormView):
+#     login_url = "access_denied"
+#     model = TargetSpecies
+#     fields = ['taxon_ids']
+#     template_name = 'status/new_species_form.html'
+#     form_class = NewSpeciesForm
+#     success_url = reverse_lazy("add_species") #reverse_lazy('success')
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['build_page_title'] = 'ERGA-GTC Add Species'
+#         return context
     
-    def form_valid(self, form):
-        # form.instance.tag = "bge"
-        form.save()
-        messages.success(self.request, 'Species added successfully. Add another?')  
-        #return HttpResponseRedirect(self.request.path_info)
-        return super(NewSpeciesView, self).form_valid(form)
+#     def form_valid(self, form):
+#         # form.instance.tag = "bge"
+#         form.save()
+#         messages.success(self.request, 'Species added successfully. Add another?')  
+#         #return HttpResponseRedirect(self.request.path_info)
+#         return super(NewSpeciesView, self).form_valid(form)
 
 class NewSpeciesListView(GroupRequiredMixin, LoginRequiredMixin, FormView):#GroupRequiredMixin, 
     group_required = "manager"
@@ -722,49 +816,73 @@ class NewSpeciesListView(GroupRequiredMixin, LoginRequiredMixin, FormView):#Grou
                     if re.search(r'\d+', taxid):
                     #if taxid:
                         messages.info(self.request, "Adding taxon: " + taxid) 
-                        try:
-                            targetspecies = TargetSpecies.objects.get(taxon_id=taxid)
-                        except TargetSpecies.DoesNotExist:
-                            targetspecies, _ = TargetSpecies.objects.get_or_create(
-                                taxon_id=taxid
-                            )
-                        #messages.info(self.request, 'taxon_id: ' + row['taxon_id'])
-                        if 'original_species' in row:
-                            targetspecies.listed_species = row['original_species'] or None
-                        if 'scientific_name' in row:
-                            targetspecies.scientific_name = row['scientific_name'] or None
-                        if 'tolid_prefix' in row:
+                        # try:
+                        #     targetspecies = TargetSpecies.objects.get(taxon_id=taxid)
+                        # except TargetSpecies.DoesNotExist:
+                        #     targetspecies, _ = TargetSpecies.objects.get_or_create(
+                        #         taxon_id=taxid
+                        #     )
+                        targetspecies, created = TargetSpecies.objects.get_or_create(
+                            taxon_id=taxid
+                        )
+                        if (created):     
+                            messages.info(self.request, 'added')
+                        else:
+                            messages.info(self.request,  "updating " + str(targetspecies.listed_species))
+                        
+                        changed = 0
+                        if 'species_name' in row and targetspecies.listed_species is not row['species_name']:
+                            targetspecies.listed_species = row['species_name'] or None
+                            messages.info(self.request, str(row['species_name']))
+                            changed = 1
+                        if 'tolid_prefix' in row and targetspecies.tolid_prefix is not row['tolid_prefix']:
                             targetspecies.tolid_prefix = row['tolid_prefix'] or None
-                        if 'chromosome_number' in row:
+                            changed = 1
+                        if 'chromosome_number' in row and targetspecies.chromosome_number is not row['chromosome_number']:
                             targetspecies.chromosome_number = row['chromosome_number'] or None
-                        if 'haploid_number' in row:
+                            changed = 1
+                        if 'haploid_number' in row and targetspecies.haploid_number is not row['haploid_number']:
                             targetspecies.haploid_number = row['haploid_number'] or None
-                        if 'ploidy' in row:
+                            changed = 1
+                        if 'ploidy' in row and targetspecies.ploidy is not row['ploidy']:
                             targetspecies.ploidy = row['ploidy'] or None
-                        if 'c_value' in row:
+                        if 'c_value' in row and targetspecies.c_value is not row['c_value']:
                             targetspecies.c_value = row['c_value'] or None
-                        if 'genome_size' in row:
+                            changed = 1
+                        if 'genome_size' in row and targetspecies.genome_size is not round(float(row['genome_size'])):
                             targetspecies.genome_size = round(float(row['genome_size'])) or None
-                        if 'synonym' in row:
+                            changed = 1
+                        if 'synonym' in row and targetspecies.synonym is not row['synonym']:
                             targetspecies.synonym = row['synonym'] or None
-                        if 'goat_target_list_status' in row:
+                            changed = 1
+                        if 'goat_target_list_status' in row and targetspecies.goat_target_list_status is not row['goat_target_list_status']:
                             #messages.info(self.request, 'gtls: ' + row['goat_target_list_status'])
-                            if (row['goat_target_list_status'] not in gtls_options):
-                                messages.info(self.request, "Value " + row['goat_target_list_status'] + " not allowed for goat_target_list_status: please fix and try again.")
-                            targetspecies.goat_target_list_status = row['goat_target_list_status'] or None
+                            gtls = row['goat_sequencing_status']
+                            if gtls and gtls.strip().lower():
+                                if (row['goat_target_list_status'] not in gtls_options):
+                                    messages.info(self.request, "Value " + row['goat_target_list_status'] + " not allowed for goat_target_list_status: please fix and try again.")
+                                else:
+                                    targetspecies.goat_target_list_status = row['goat_target_list_status'] or None
+                                    changed = 1
                         else:
                             messages.info(self.request, "No goat_target_list_status field found: please fix and try again.")
-                        if 'goat_sequencing_status' in row:
+                        if 'goat_sequencing_status' in row and targetspecies.goat_sequencing_status is not row['goat_sequencing_status']:
                             #messages.info(self.request, 'gss: ' + row['goat_sequencing_status'])
                             gss = row['goat_sequencing_status']
-                            if gss and gss.strip():
+                            if gss and gss.strip().lower():
                                 if (gss not in gss_options):
                                     messages.info(self.request, "Value " + gss + " not allowed for goat_sequencing_status: please fix and try again.")
                                     break
                                 if ( gss == "remove" or (targetspecies.goat_sequencing_status == 'none' or targetspecies.goat_sequencing_status == 'in_collection' or targetspecies.goat_sequencing_status == 'sample_collected')):
                                     #messages.info(self.request, gss)
                                     targetspecies.goat_sequencing_status = gss or None
-                        targetspecies.save()
+                                    changed = 1
+                        if changed:
+                            #messages.info(self.request, "saving...")
+                            targetspecies.save()
+                            changed = 0
+                            #messages.info(self.request, "saved")
+                        
                         if 'synonym' in row:
                             for syn in row['synonym'].split(','):
                                 species_synonyms, created = Synonyms.objects.get_or_create(
@@ -778,31 +896,38 @@ class NewSpeciesListView(GroupRequiredMixin, LoginRequiredMixin, FormView):#Grou
                                     species=targetspecies
                                 )
 
-                        if 'tags' in row:
-                            for t in row['tags'].split(' '):
-                                species_tag, created = Tag.objects.get_or_create(
-                                    tag=t
-                                )
-                                targetspecies.tags.add(species_tag)
-
-                        genometeam_record, created = GenomeTeam.objects.get_or_create(
-                                    species=targetspecies
-                                )
+                        # if 'tags' in row:
+                        #     for t in row['tags'].split(' '):
+                        #         species_tag, created = Tag.objects.get_or_create(
+                        #             tag=t
+                        #         )
+                        #         targetspecies.tags.add(species_tag)
+                        #         changed = 1
+                        if changed:
+                            #messages.info(self.request, "saving...")
+                            targetspecies.save()
+                            changed = 0
+                            #messages.info(self.request, "saved")
+                        
+                        # genometeam_record, created = GenomeTeam.objects.get_or_create(
+                        #             species=targetspecies
+                        #         )
                         collection_record, created = SampleCollection.objects.get_or_create(
                                     species=targetspecies
                                 )
-                        sequencing_record, created = Sequencing.objects.get_or_create(
-                                    species=targetspecies
-                                )
-                        assemblyproject_record, created = AssemblyProject.objects.get_or_create(
-                                    species=targetspecies
-                                )
-                        annotation_record, created = Annotation.objects.get_or_create(
-                                    species=targetspecies
-                                )
-                        cannotation_record, created = CommunityAnnotation.objects.get_or_create(
-                                    species=targetspecies
-                                )
+                        
+                        # sequencing_record, created = Sequencing.objects.get_or_create(
+                        #             species=targetspecies
+                        #         )
+                        # assemblyproject_record, created = AssemblyProject.objects.get_or_create(
+                        #             species=targetspecies
+                        #         )
+                        # annotation_record, created = Annotation.objects.get_or_create(
+                        #             species=targetspecies
+                        #         )
+                        # cannotation_record, created = CommunityAnnotation.objects.get_or_create(
+                        #             species=targetspecies
+                        #         )
                         #Task (= contributing_project_lab on GOAT)	Country	Sample_Provider_Name	Sample_Provider_Email
                         
                         
@@ -832,16 +957,67 @@ class NewSpeciesListView(GroupRequiredMixin, LoginRequiredMixin, FormView):#Grou
                                     collection_record.sample_provider_email = spemail or None
                                 else:
                                     messages.info(self.request, "Value " + spemail + " not a valid email address: please fix and try again.")
-                                    break
+                                    break                   
+                        
+                        # mta1 =  models.BooleanField(default=False, verbose_name="MTA 1: Seq Centers")
+                        # mta2 =  models.BooleanField(default=False, verbose_name="MTA 2: LIB leftovers")
+                        # barcoding_status = models.CharField(max_length=30, help_text='Barcoding Status', choices=BARCODING_STATUS_CHOICES, default=BARCODING_STATUS_CHOICES[0][0])
+                        # barcoding_results = models.CharField(max_length=200, null=True, blank=True)
+                        # collection_forecast = models.DateField(blank=True,null=True)
+                        # deadline_sampling = models.DateField(blank=True,null=True)
+                        # deadline_manifest_sharing = models.DateField(blank=True,null=True)
+                        # deadline_manifest_acceptance = models.DateField(blank=True,null=True)
+                        # deadline_sample_shipment = models.DateField(blank=True,null=True)
+                        # sampling_delay = models.BooleanField(default=False, verbose_name="Delayed sample")
+                        if 'mta1' in row:
+                            mta1 = row['mta1']
+                            if mta1 and mta1.strip():
+                                if re.search(r'True',mta1,re.IGNORECASE):
+                                #if mta1 == 'True':
+                                    collection_record.mta1 = True
+                                elif re.search(r'False',mta1,re.IGNORECASE):
+                                    collection_record.mta1 = False
+                        
+                        if 'mta2' in row:
+                            mta2 = row['mta2']
+                            if mta2 and mta2.strip():
+                                if re.search(r'True',mta2,re.IGNORECASE):
+                                    collection_record.mta2 = True
+                                if re.search(r'False',mta2,re.IGNORECASE):
+                                    collection_record.mta2 = False                   
+
+                        if 'sampling_delay' in row:
+                            delay = row['sampling_delay']
+                            if delay and delay.strip():
+                                if re.search(r'True',delay,re.IGNORECASE):
+                                    collection_record.sampling_delay = True
+                                if re.search(r'False',delay,re.IGNORECASE):
+                                    collection_record.sampling_delay = False 
+                        
+                        if 'collection_forecast' in row and collection_record.collection_forecast is not row['collection_forecast']:
+                            collection_record.collection_forecast = row['collection_forecast'] or None
+
+                        if 'deadline_sampling' in row and collection_record.deadline_sampling is not row['deadline_sampling']:
+                            collection_record.deadline_sampling = row['deadline_sampling'] or None
+
+                        if 'deadline_manifest_sharing' in row and collection_record.deadline_manifest_sharing is not row['deadline_manifest_sharing']:
+                            collection_record.deadline_manifest_sharing = row['deadline_manifest_sharing'] or None
+
+                        if 'deadline_manifest_acceptance' in row and collection_record.deadline_manifest_acceptance is not row['deadline_manifest_acceptance']:
+                            collection_record.deadline_manifest_acceptance = row['deadline_manifest_acceptance'] or None
+
+                        if 'deadline_sample_shipment' in row and collection_record.deadline_sample_shipment is not row['deadline_sample_shipment']:
+                            collection_record.deadline_sample_shipment = row['deadline_sample_shipment'] or None
 
                         collection_record.save()
-                        
+                         
+            messages.success(self.request, 'Finished processing uploaded list.')               
             
-        messages.success(self.request, 'Species in list added successfully. Add more?')  
+         
         #return HttpResponseRedirect(self.request.path_info)
         return super(NewSpeciesListView, self).form_valid(form)
  
-#@login_required
+@login_required
 def recipe_detail(request, pk=None):
     recipe = Recipe.objects.get(pk=pk)
     context = {"recipe": recipe,
@@ -850,7 +1026,7 @@ def recipe_detail(request, pk=None):
     response = render(request, "recipe_detail.html", context)
     return response
 
-#@login_required
+@login_required
 def sample_detail(request, pk=None):
     sample = Sample.objects.get(pk=pk)
     site_url = settings.DEFAULT_DOMAIN

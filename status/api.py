@@ -271,6 +271,15 @@ class TaxonomyTeamViewSet(BulkModelViewSet):
     serializer_class = TaxonomyTeamSerializer
     filter_fields = '__all__'
 
+class FromManifestViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows Info from manifest to be viewed or edited.
+    """
+    queryset = FromManifest.objects.all()
+    serializer_class = FromManifestSerializer
+    filter_fields = '__all__'
+
+
 class GenomeTeamViewSet(BulkModelViewSet):
     """
     API endpoint that allows GenomeTeam Team to be viewed or edited.
@@ -292,15 +301,20 @@ class RunViewSet(BulkModelViewSet):
     serializer_class = RunSerializer
     filter_fields = '__all__'
 
+class EnaRunViewSet(BulkModelViewSet):
+    queryset = Run.objects.all()
+    serializer_class = EnaRunSerializer
+    filter_fields = '__all__'
+
 class UserViewSet(BulkModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     filter_fields = '__all__'
 
-class TagViewSet(BulkModelViewSet):
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
-    filter_fields = '__all__'
+# class TagViewSet(BulkModelViewSet):
+#     queryset = Tag.objects.all()
+#     serializer_class = TagSerializer
+#     filter_fields = '__all__'
 
 class RecipeViewSet(BulkModelViewSet):
     queryset = Recipe.objects.all()

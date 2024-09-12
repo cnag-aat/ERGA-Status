@@ -11,6 +11,24 @@ from django.forms.widgets import DateInput
 from django.contrib.admin.widgets import AdminDateWidget
 from dateutil.parser import parse
 
+class ExportCsvMixin:
+    def export_as_csv(self, request, queryset):
+
+        meta = self.model._meta
+        field_names = [field.name for field in meta.fields]
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename={}.csv'.format(meta)
+        writer = csv.writer(response)
+
+        writer.writerow(field_names)
+        for obj in queryset:
+            row = writer.writerow([getattr(obj, field) for field in field_names])
+
+        return response
+
+    export_as_csv.short_description = "Export Selected"
+
 def export_csv(modeladmin, request, queryset):
     import csv
     from django.utils.encoding import smart_str
@@ -62,10 +80,10 @@ SEQUENCING_STATUS_CHOICES = (
 )
 
 class UpdateSpeciesActionForm(ActionForm):
-    tags = forms.ModelMultipleChoiceField(
-        queryset=Tag.objects.all().order_by('tag'),
-        required=False
-    )
+    # tags = forms.ModelMultipleChoiceField(
+    #     queryset=Tag.objects.all().order_by('tag'),
+    #     required=False
+    # )
     goat_target_list_status = forms.ChoiceField(
         choices = GOAT_TARGET_LIST_STATUS_CHOICES,
         required=False
@@ -76,27 +94,27 @@ class UpdateSpeciesActionForm(ActionForm):
         required=False
     )
 
-def add_tags(modeladmin, request, queryset):
-    if 'tags' in request.POST:
-        tags = request.POST.getlist('tags')
-        try:
-            for obj in queryset:
-                for t in tags:
-                    obj.tags.add(t)
-        except ValueError:
-             pass
-    messages.add_message(request, messages.INFO, "Added tags successfully")
+# def add_tags(modeladmin, request, queryset):
+#     if 'tags' in request.POST:
+#         tags = request.POST.getlist('tags')
+#         try:
+#             for obj in queryset:
+#                 for t in tags:
+#                     obj.tags.add(t)
+#         except ValueError:
+#              pass
+#     messages.add_message(request, messages.INFO, "Added tags successfully")
 
-def remove_tags(modeladmin, request, queryset):
-    if 'tags' in request.POST:
-        tags = request.POST.getlist('tags')
-        try:
-            for obj in queryset:
-                for t in tags:
-                    obj.tags.remove(t)
-        except ValueError:
-             pass
-    messages.add_message(request, messages.INFO, "Removed tags successfully")
+# def remove_tags(modeladmin, request, queryset):
+#     if 'tags' in request.POST:
+#         tags = request.POST.getlist('tags')
+#         try:
+#             for obj in queryset:
+#                 for t in tags:
+#                     obj.tags.remove(t)
+#         except ValueError:
+#              pass
+#     messages.add_message(request, messages.INFO, "Removed tags successfully")
 
 def update_goat_list_status(modeladmin, request, queryset):
     if 'goat_target_list_status' in request.POST:
@@ -109,11 +127,17 @@ def update_goat_seq_status(modeladmin, request, queryset):
         queryset.update(goat_sequencing_status=goat_sequencing_status)
     messages.add_message(request, messages.INFO, "GoaT status updated successfully")
 
+class SampleCollectionInlineAdmin(admin.TabularInline):
+    model = SampleCollection
+
 @register(TargetSpecies)
 class TargetSpeciesAdmin(admin.ModelAdmin):
-    list_filter = ["sequencing_rel__phase","collection_rel__country","collection_rel__task","tags",'goat_target_list_status','goat_sequencing_status']
+    list_filter = ["sequencing_rel__phase","collection_rel__country","collection_rel__task",'goat_target_list_status','goat_sequencing_status']
+    #list_filter = ["sequencing_rel__phase","collection_rel__country","collection_rel__task","tags",'goat_target_list_status','goat_sequencing_status']
     action_form = UpdateSpeciesActionForm
-    actions = [add_tags,remove_tags,update_goat_list_status,update_goat_seq_status]
+    actions = [update_goat_list_status,update_goat_seq_status]
+    # actions = [add_tags,remove_tags,update_goat_list_status,update_goat_seq_status]
+    inlines = [SampleCollectionInlineAdmin]
     def get_actions(self, request):
         actions = super(TargetSpeciesAdmin, self).get_actions(request)
         # try:
@@ -130,28 +154,53 @@ class TargetSpeciesAdmin(admin.ModelAdmin):
         return super().render_change_form(request, context, add, change, form_url, obj)
     list_per_page = 10000
     list_display = (
+        'listed_species',
         'scientific_name',
         'tolid_prefix',
-        'subspecies',
-        'synonym',
+        # 'subspecies',
+        # 'synonym',
         'taxon_id',
         'goat_target_list_status',
         'goat_sequencing_status',
-        'publication_id',
-        'get_tags',
+        # 'publication_id',
+        # 'get_tags',
+        # 'taxon_kingdom',
+        'taxon_phylum',
+        # 'taxon_class',
+        # 'taxon_order',
+        'taxon_family',
+        # 'chromosome_number',
+        'haploid_number',
+        # 'ploidy',
+        # 'c_value',
+        'genome_size',
+        'date_updated'
+    )
+    search_fields = ['scientific_name']
+    readonly_fields=(
+        'scientific_name',
+        'tolid_prefix',
+        # 'subspecies',
+        # 'synonym',
+        # 'taxon_id',
+        # 'goat_target_list_status',
+        # 'goat_sequencing_status',
+        # 'publication_id',
+        # 'get_tags',
         'taxon_kingdom',
         'taxon_phylum',
         'taxon_class',
         'taxon_order',
         'taxon_family',
+        'taxon_genus',
         'chromosome_number',
         'haploid_number',
         'ploidy',
         'c_value',
         'genome_size',
+        'gss_rank',
         'date_updated'
     )
-    search_fields = ['scientific_name']
 
 @register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
@@ -308,6 +357,9 @@ class GenomeTeamAdmin(admin.ModelAdmin):
         'assembly_team',
         'community_annotation_team'
     )
+    readonly_fields=(
+        'species',
+    )
     search_fields = ['species__scientific_name']
     action_form = UpdateActionForm
     actions = [update_teams]
@@ -338,7 +390,7 @@ def update_specimens(modeladmin, request, queryset):
 @register(Specimen)
 class SpecimenAdmin(admin.ModelAdmin):
     save_as = True
-    list_filter = admin.ModelAdmin.list_filter + ('species__tags',)
+    list_filter = admin.ModelAdmin.list_filter #+ ('species__tags',)
     search_fields = ['species__scientific_name']
     action_form = SpecimenUpdateActionForm
     actions = [update_specimens]
@@ -359,6 +411,8 @@ class SpecimenAdmin(admin.ModelAdmin):
 
 admin.site.register(CommonNames)
 admin.site.register(Synonyms)
+admin.site.register(AnnotationTeam)
+admin.site.register(CommunityAnnotationTeam)
 admin.site.register(AssemblyTeam)
 admin.site.register(Statement)
 @register(AssemblyProject)
@@ -369,21 +423,43 @@ class AssemblyProjectAdmin(admin.ModelAdmin):
         'status',
         'note'
     )
+    readonly_fields=(
+        'species',
+    )
     search_fields = ['species__scientific_name']
     def get_queryset(self, request):
         qs = super(AssemblyProjectAdmin, self).get_queryset(request)
         return qs.exclude(species__goat_target_list_status = 'removed')
     
-admin.site.register(Assembly)
+@register(Assembly)
+class AssemblyAdmin(admin.ModelAdmin):
+    list_filter = ["project__species__gt_rel__sequencing_team","project__species__collection_rel__country","project__species__collection_rel__task"]
+    #list_filter = ["species__gt_rel__sequencing_team","species__gt_rel__hic_team","species__tags","species__sequencing_rel__phase","species__collection_rel__country","species__collection_rel__task"]
+    list_display = (
+        'project',
+        'description',
+        'pipeline',
+        'type',
+        'contig_n50',
+        'scaffold_n50',
+        'qv'
+    )
+
+    # readonly_fields=(
+    #     'project',
+    # )
+    search_fields = ['project__species__scientific_name']
 admin.site.register(CollectionTeam)
 admin.site.register(Subproject)
 admin.site.register(Task)
 admin.site.register(Country)
 @register(SampleCollection)
-class SampleCollectionAdmin(admin.ModelAdmin):
+class SampleCollectionAdmin(admin.ModelAdmin, ExportCsvMixin):
     search_fields = ['species__scientific_name']
-    list_filter = ["task__name","country__name","species__goat_sequencing_status","species__gt_rel__sample_handling_team","species__gt_rel__sequencing_team"]
-    list_display = ('species','task','country','copo_status','sample_provider_name','mta1','mta2','barcoding_status','deadline_manifest_acceptance','note')
+    list_filter = ["task__name","country__name","species__goat_sequencing_status","species__gt_rel__sample_handling_team","species__gt_rel__sequencing_team","sampling_delay"]
+    list_display = ('species','task','country','copo_status','sample_provider_name','sample_provider_email','mta1','mta2','barcoding_status','sampling_delay','deadline_manifest_acceptance','note')
+    actions = ["export_as_csv"]
+    
 admin.site.register(CurationTeam)
 admin.site.register(Curation)
 admin.site.register(SequencingTeam)
@@ -394,6 +470,7 @@ admin.site.register(TaxonomyTeam)
 admin.site.register(SampleHandlingTeam)
 admin.site.register(BiobankingTeam)
 admin.site.register(ExtractionTeam)
+admin.site.register(FromManifest)
 admin.site.register(Phase)
 
 class UpdateSequencingActionForm(ActionForm):
@@ -450,7 +527,8 @@ def update_sequencing(modeladmin, request, queryset):
 
 @register(Sequencing)
 class SequencingAdmin(admin.ModelAdmin):
-    list_filter = ["species__gt_rel__sequencing_team","species__gt_rel__hic_team","species__tags","species__sequencing_rel__phase","species__collection_rel__country","species__collection_rel__task"]
+    list_filter = ["species__gt_rel__sequencing_team","species__gt_rel__hic_team","species__sequencing_rel__phase","species__collection_rel__country","species__collection_rel__task"]
+    #list_filter = ["species__gt_rel__sequencing_team","species__gt_rel__hic_team","species__tags","species__sequencing_rel__phase","species__collection_rel__country","species__collection_rel__task"]
     list_display = (
         'species',
         'phase',
@@ -460,6 +538,9 @@ class SequencingAdmin(admin.ModelAdmin):
         'rna_seq_status',
         'recipe',
         'note'
+    )
+    readonly_fields=(
+        'species',
     )
     search_fields = ['species__scientific_name']
     # def queryset(self, request):
@@ -511,7 +592,11 @@ class AnnotationAdmin(admin.ModelAdmin):
     list_display = (
         'species',
         'status',
+        'ensembl',
         'note'
+    )
+    readonly_fields=(
+        'species',
     )
     def get_queryset(self, request):
         qs = super(AnnotationAdmin, self).get_queryset(request)
@@ -519,6 +604,7 @@ class AnnotationAdmin(admin.ModelAdmin):
 
 admin.site.register(BUSCOdb)
 admin.site.register(BUSCOversion)
+admin.site.register(EnaRun)
 @register(Run)
 class RunAdmin(admin.ModelAdmin):
     list_filter = ["project__species__gt_rel__sequencing_team","project", "read_type"]
@@ -529,6 +615,9 @@ class RunAdmin(admin.ModelAdmin):
         'tube_or_well_id',
         'forward_filename',
         'forward_md5sum'
+    )
+    readonly_fields=(
+        'project',
     )
 
 LEFTOVER_CHOICES = (
@@ -606,12 +695,15 @@ class SampleAdmin(admin.ModelAdmin):
         'date_sent',
         'date_received'
     )
+    readonly_fields=(
+        'specimen',
+    )
     search_fields = ['species__scientific_name']
 admin.site.register(AssemblyPipeline)
 admin.site.register(Person)
 admin.site.register(Affiliation)
 admin.site.register(Role)
-admin.site.register(Tag)
+# admin.site.register(Tag)
 admin.site.register(Recipe)
 @register(StatusUpdate)
 class StatusUpdateAdmin(admin.ModelAdmin):

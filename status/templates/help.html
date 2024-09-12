@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load static %}
+{% load bootstrap4 %}
+{% block page_content %}
+<div class="row">
+  <div class="col-md-12">
+    <div class="card mb-1">
+      <div class="card-body">
+        <h5 class="card-title">How to use this tool.</h5>
+          <p>All genome team members and project administrators are encouraged to <a href="{% url 'account_signup' %}">register</a> as soon as possible. 
+            During registration, you will be asked to enter your first, middle (optional) and last names, email, affiliation(s), ORCID (optional) and 
+            your expected role(s) in the project. The info collected will facilitate the compilation of author lists for the purpose of genome note
+            publication, so enter your information as you would like to see it appear. Registration will also allow you to see target species and monitor project 
+            progress (sample collection, sequencing, assembly, annotation status, etc.). Administrators and team leads will be given additional permissions
+            to see contact details, define and update genome teams or edit status. Once granted access, enter team member info using the appropriate link below:</p>
+            <ul>
+              <li><a target="_blank" href="https://genomes.cnag.cat/erga-stream/admin/status/genometeam/">Edit genome teams</a></li>
+              <li><a target="_blank" href="https://genomes.cnag.cat/erga-stream/admin/status/sequencingteam/">Edit sequencing teams</a></li>
+              <li><a target="_blank" href="https://genomes.cnag.cat/erga-stream/admin/status/assemblyteam/">Edit assembly teams</a></li>
+              <li><a target="_blank" href="https://genomes.cnag.cat/erga-stream/admin/status/annotationteam/">Edit annotation teams</a></li>
+            </ul>
+            <p>Analogous links exist for other roles, including Sample Handling, Sample Collection, Taxonomic Identification, Vouchering, Biobanking, Barcoding and Community Annotation (not Ensembl).
+              
+            </p>
+            <p>Scripts will be provided in the <a target="_blank" href="https://github.com/cnag-aat/ERGA-Status/tree/master/scripts">github repo</a> 
+              for updating the database with sample reception dates, seqeuncing runs and status, and assembly status. 
+              These will take as input tsv/csv text files with new or updated info. </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}

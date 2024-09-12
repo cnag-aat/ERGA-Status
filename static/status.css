@@ -25,6 +25,7 @@
   background-color: transparent;
   outline-color: rgb(227, 227, 227);
   outline-style: dotted;
+  outline-width: thin;
   /* color: White; */
   color: transparent; /* make the text invisible */
   user-select: none; /* prevent selection of the text */
@@ -174,6 +175,7 @@
   background-color: transparent;
   outline-color: rgb(227, 227, 227);
   outline-style: dotted;
+  outline-width: thin;
   /* color: White; */
   color: transparent; /* make the text invisible */
   user-select: none; /* prevent selection of the text */
@@ -183,6 +185,7 @@
   background-color: transparent;
   outline-color: rgb(227, 227, 227);
   outline-style: dotted;
+  outline-width: thin;
   /* color: White; */
   color: transparent; /* make the text invisible */
   user-select: none; /* prevent selection of the text */
@@ -281,7 +284,7 @@
   opacity: 1;
   }
 
-  a {text-decoration: none;}
+a {text-decoration: none;}
 
 .fa-download {
     color:  #0087a3;
