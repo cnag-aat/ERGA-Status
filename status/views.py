@@ -51,6 +51,7 @@ from status.forms import NewSpeciesListForm
 from django.urls import reverse_lazy
 from status.filters import GenomeTeamFilter
 from status.filters import TargetSpeciesFilter
+from status.filters import SpeciesFilter
 from braces.views import GroupRequiredMixin
 from django.db.models import OuterRef, Subquery
 from django.core.cache import cache
@@ -118,7 +119,7 @@ def home(request):
                 if (sp.assembly_rel.status in assembly_done_set):
                         assembly_done_span += sp.genome_size
                 else:
-                    if (sp.assembly_rel.status in in_assembly_set):
+                    if (sp.assembly_rel.status in in_assembly_set and sp.sequencing_rel.hic_seq_status in seq_done_set):
                         assembling_span += sp.genome_size
                     else:
                         if (sp.sequencing_rel.long_seq_status in seq_done_set and sp.sequencing_rel.hic_seq_status in seq_done_set):
@@ -217,7 +218,7 @@ class TargetSpeciesListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, F
     model = TargetSpecies
     table_class = TargetSpeciesTable
     template_name = 'targetspecies.html'
-    #filterset_class = SpeciesFilter
+    filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
@@ -273,7 +274,7 @@ class OverView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #
         return data
     
     def get_queryset(self):
-        return TargetSpecies.objects.exclude(goat_target_list_status = None).exclude(goat_target_list_status = 'none').exclude(goat_target_list_status = '').exclude(goat_target_list_status = 'removed').exclude(goat_sequencing_status = 'none').order_by('-gss_rank','-assembly_rel__assembly_rank','collection_rel__copo_status','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus','scientific_name')
+        return TargetSpecies.objects.exclude(goat_target_list_status = None).exclude(goat_target_list_status = 'none').exclude(goat_target_list_status = '').exclude(goat_target_list_status = 'removed').exclude(goat_sequencing_status = 'none').exclude(genome_size = None).order_by('-gss_rank','-assembly_rel__assembly_rank','collection_rel__copo_status','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus','scientific_name')
         #return TargetSpecies.objects.exclude(goat_sequencing_status = None).exclude(goat_sequencing_status = '')
 
 @login_required
@@ -432,6 +433,14 @@ class AssemblyListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, Filter
         context = super().get_context_data(**kwargs)
         context['build_page_title'] = 'ERGA-GTC Assemblies'
         return context
+    # def get_queryset(self):
+    #     queryset = super(AssemblyListView, self).get_queryset()
+    #     if 'gca' in self.request.GET:
+    #         queryset = queryset.filter(gca=self.request.GET['gca'])
+    #         return queryset
+    #     else:
+    #         return AssemblyProject.objects.all()
+
 
 @login_required
 def assembly_pipeline_detail(request, pk=None):
@@ -895,6 +904,9 @@ class NewSpeciesListView(GroupRequiredMixin, LoginRequiredMixin, FormView):#Grou
                                     name=cname,
                                     species=targetspecies
                                 )
+                        if 'ranking' in row and targetspecies.ranking is not row['ranking']:
+                            targetspecies.ranking = row['ranking'] or None
+                            changed = 1
 
                         # if 'tags' in row:
                         #     for t in row['tags'].split(' '):
@@ -994,11 +1006,8 @@ class NewSpeciesListView(GroupRequiredMixin, LoginRequiredMixin, FormView):#Grou
                                 if re.search(r'False',delay,re.IGNORECASE):
                                     collection_record.sampling_delay = False 
                         
-                        if 'collection_forecast' in row and collection_record.collection_forecast is not row['collection_forecast']:
-                            collection_record.collection_forecast = row['collection_forecast'] or None
-
-                        if 'deadline_sampling' in row and collection_record.deadline_sampling is not row['deadline_sampling']:
-                            collection_record.deadline_sampling = row['deadline_sampling'] or None
+                        if 'sampling_month' in row and collection_record.sampling_month is not row['sampling_month']:
+                            collection_record.sampling_month = row['sampling_month'] or None
 
                         if 'deadline_manifest_sharing' in row and collection_record.deadline_manifest_sharing is not row['deadline_manifest_sharing']:
                             collection_record.deadline_manifest_sharing = row['deadline_manifest_sharing'] or None

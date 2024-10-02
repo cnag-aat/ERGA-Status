@@ -11,7 +11,7 @@
           facilitate the deposition of data into the ENA by keeping track of accession numbers. </p>
           <p>If you'd like to help develop or <a target="_blank" href="https://github.com/cnag-aat/ERGA-Status/issues">submit issues</a>,
           head on over to <a target="_blank" href="https://github.com/cnag-aat/ERGA-Status">https://github.com/cnag-aat/ERGA-Status</a>. 
-          You can also send feedback to <a href="mailto:denovo@cnag.eu">denovo@cnag.eu</a>.
+          You can also send feedback to <a href="mailto:erga.gtc@gmail.com">erga.gtc@gmail.com</a>.
           </p>
           <p>NOTICE: Log in is now required for most views.</p>
       </div>
@@ -152,6 +152,7 @@
   var cumsum6 = tad + ta + tsd + ts + tc + tnc;
   var sum_notstarted = tc + tnc;
   var sum_notfinished = ts + tc + tnc;
+  var excess = cumsum6 -450;
 
   new Chart(totalctx, {
     type: 'doughnut',
@@ -166,13 +167,18 @@
         'Sequencing Finished',
         '',
         'Sequencing Started',
+        '',
+        'MS9.3a Oct 31, 2024',
+        'MS9.3b Feb 28, 2025',
+        'MS9.3c Oct 31, 2025',
         ''
       ],
       datasets: [
         {
           data: [
-            0,0,0,0,0,0,cumsum3,sum_notfinished,0,0
+            0,0,0,0,0,0,cumsum3,sum_notfinished,0,0,0,0,0,0
           ],
+          weight:5,
           backgroundColor: [
           'rgb(0, 135, 163, 1)',
           'rgb(0, 159, 196, 1)',
@@ -184,14 +190,19 @@
           'rgb(0, 159, 196, 0)',
           'rgb(0, 159, 131, 1)',
           'rgb(0, 159, 131, 0)',
+          'rgb(50, 50, 50, 0.9)',
+          'rgb(50, 50, 50, 0.7)',
+          'rgb(50, 50, 50, 0.5)',
+          'rgb(50, 50, 50, 0.1)',
           ],
           rotation: -90,
           circumference: 180
         },
         {
           data: [
-            0,0,0,0,0,0,0,0,cumsum4,sum_notstarted
+            0,0,0,0,0,0,0,0,cumsum4,sum_notstarted,0,0,0,0
           ],
+          weight:5,
           backgroundColor: [
           'rgb(0, 135, 163, 1)',
           'rgb(0, 159, 196, 1)',
@@ -203,6 +214,10 @@
           'rgb(0, 159, 196, 0)',
           'rgb(0, 159, 131, 1)',
           'rgb(0, 159, 131, 0)',
+          'rgb(192, 192, 192, 1)',
+          'rgb(192, 192, 192, 1)',
+          'rgb(192, 192, 192, 1)',
+          'rgb(0, 0, 0, 0)',
           ],
           rotation: -90,
           circumference: 180
@@ -216,6 +231,7 @@
             {{ total_collected }},
             {{ total_not_collected }}
           ],
+          weight:5,
           backgroundColor: [
           'rgb(0, 135, 163, 1)',
           'rgb(0, 159, 196, 1)',
@@ -227,11 +243,35 @@
           'rgb(0, 159, 196, 0)',
           'rgb(0, 159, 131, 1)',
           'rgb(0, 159, 131, 0)',
+          'rgb(0, 0, 0, 0)',
+          ],
+          rotation: -90,
+          circumference: 180
+        },
+        {
+          data: [
+            0,0,0,0,0,0,0,0,0,0,90,140,220,excess
+          ],
+          weight:1,
+          backgroundColor: [
+          'rgb(0, 135, 163, 1)',
+          'rgb(0, 159, 196, 1)',
+          'rgb(0, 159, 160, 1)',
+          'rgb(0, 159, 131, 1)',
+          'rgb(153, 152, 125, 1)',
+          'rgb(192, 192, 192, 1)',
+          'rgb(0, 159, 196, 1)',
+          'rgb(0, 159, 196, 0)',
+          'rgb(0, 159, 131, 1)',
+          'rgb(0, 159, 131, 0)',
+          'rgb(50, 50, 50, 0.9)',
+          'rgb(50, 50, 50, 0.7)',
+          'rgb(50, 50, 50, 0.5)',
+          'rgb(50, 50, 50, 0.1)',
           ],
           rotation: -90,
           circumference: 180
         }
-        
     ]
     },
     options: {

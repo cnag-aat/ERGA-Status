@@ -10,6 +10,7 @@ from django.contrib import messages
 from django.forms.widgets import DateInput
 from django.contrib.admin.widgets import AdminDateWidget
 from dateutil.parser import parse
+from status.widgets import CustomDatePickerWidget
 
 class ExportCsvMixin:
     def export_as_csv(self, request, queryset):
@@ -162,6 +163,7 @@ class TargetSpeciesAdmin(admin.ModelAdmin):
         'taxon_id',
         'goat_target_list_status',
         'goat_sequencing_status',
+        'ranking',
         # 'publication_id',
         # 'get_tags',
         # 'taxon_kingdom',
@@ -179,7 +181,7 @@ class TargetSpeciesAdmin(admin.ModelAdmin):
     search_fields = ['scientific_name']
     readonly_fields=(
         'scientific_name',
-        'tolid_prefix',
+        # 'tolid_prefix',
         # 'subspecies',
         # 'synonym',
         # 'taxon_id',
@@ -459,6 +461,9 @@ class SampleCollectionAdmin(admin.ModelAdmin, ExportCsvMixin):
     list_filter = ["task__name","country__name","species__goat_sequencing_status","species__gt_rel__sample_handling_team","species__gt_rel__sequencing_team","sampling_delay"]
     list_display = ('species','task','country','copo_status','sample_provider_name','sample_provider_email','mta1','mta2','barcoding_status','sampling_delay','deadline_manifest_acceptance','note')
     actions = ["export_as_csv"]
+    # formfield_overrides = {
+    #     models.DateField: {'widget': CustomDatePickerWidget}
+    # }
     
 admin.site.register(CurationTeam)
 admin.site.register(Curation)

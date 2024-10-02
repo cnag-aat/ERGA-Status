@@ -64,16 +64,19 @@ usage: update_sequencing.pl [-h] [-c <ergastream.cnf>] -f <sequencing_runs_updat
     alt_assembly
     alt_annotation
     instrument *
+    library_name
     library_selection 
     library_strategy *
     exp_attrlib_attr
     yield *
     forward_file_name *
-    forward_file_md5 *
+    forward_file_md5
     reverse_file_name
     reverse_file_md5
     native_file_name
     native_file_md5
+    read_n50
+    read_quality
   
     - For the ERGA-Stream update only the following fields are required to be filled:
         scientific_name or tolid_prefix
@@ -82,7 +85,6 @@ usage: update_sequencing.pl [-h] [-c <ergastream.cnf>] -f <sequencing_runs_updat
         library_strategy
         yield
         forward_file_name
-        forward_file_md5
         all other fields are optional (but recommended as they can be useful for submission of runs to the ENA)
 
   recipe choices: 
@@ -114,7 +116,7 @@ if(exists $config{'URL'}){
 die "please provide username in conf file" if (! exists($config{'username'}));
 die "please provide password in conf file" if (!exists($config{'password'}));
 die "No seq data!\n" unless $seq_data=(loadTbl($sequencing_tsv_file,$seq_data));
-print STDERR "Parsed data files... now updating ERGA-GTC.\n";
+print STDERR "Parsed data files... now updating ERGA-GTC runs.\n";
 my $client = REST::Client->new();
 $client->addHeader('Content-Type', 'application/json');
 $client->addHeader('charset', 'UTF-8');
@@ -138,7 +140,8 @@ sub update{
         locus_tag 
         alt_assembly 
         alt_annotation 
-        instrument 
+        instrument
+        library_name 
         library_selection 
         library_strategy 
         exp_attr 
@@ -150,6 +153,8 @@ sub update{
         reverse_file_md5 
         native_file_name 
         native_file_md5
+        read_n50
+        read_quality
         );
   print OUT join("\t",@fields),"\n"; #print header of returned output table, with retrieved biosample accession added.
   for (my $i = 0;$i<@$sequpdate; $i++){
@@ -290,6 +295,8 @@ sub update{
         $read_insert_data{reverse_md5sum}=$sequpdate->[$i]->{'reverse_file_md5'};
         $read_insert_data{native_filename}=$sequpdate->[$i]->{'native_file_name'};
         $read_insert_data{native_md5sum}=$sequpdate->[$i]->{'native_file_md5'};
+        $read_insert_data{read_n50}=$sequpdate->[$i]->{'read_n50'};
+        $read_insert_data{read_quality}=$sequpdate->[$i]->{'read_quality'};
         $read_insert_data{reads}=$reads_url;
         $read_insert_data{sample}=$sequpdate->[$i]->{'biosample_accession'}; #$sample_url;
         my $readinsert = encode_json \%read_insert_data;

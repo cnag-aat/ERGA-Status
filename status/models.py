@@ -13,6 +13,8 @@ import subprocess
 import csv
 import time
 from django.contrib import messages
+from django.forms import ModelForm
+from django.core.exceptions import ValidationError
 #from tagging.registry import register
 
 
@@ -117,8 +119,8 @@ SUBMISSION_DATATYPE_CHOICES = (
 )
 
 ASSEMBLY_TYPE_CHOICES = (
-    ('Primary', 'Pseudohaploid Primary'),
-    ('Alternate', 'Pseudohaploid Alternate'),
+    ('Primary', 'Primary'),
+    ('Alternate', 'Alternate'),
     ('Hap1', 'Phased Haplotype 1'),
     ('Hap2', 'Phased Haplotype 2'),
     ('Maternal', 'Trio-phased Maternal'),
@@ -303,7 +305,8 @@ class TargetSpecies(models.Model):
     iucn_code = models.CharField(max_length=10, verbose_name="IUCN Assessment", blank=True, null=True)
     iucn_url = models.URLField(max_length = 400, null=True, blank=True, verbose_name="IUCN Page")
     date_updated = models.DateTimeField(auto_now=True)
-    goat = models.BooleanField(default=False)  
+    goat = models.BooleanField(default=False)
+    ranking = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True,  default=0.0, verbose_name="Ranking")
 
     def save(self, *args, **kwargs):
         if not self.goat_target_list_status:
@@ -420,9 +423,9 @@ class TargetSpecies(models.Model):
                                     species=self
                                 )
                     else:
-                       self.taxon_id = "" 
+                       self.genome_size = 0 
             if not (found_in_goat):
-                self.taxon_id = "" 
+                self.genome_size = 0 
             os.remove(tempfile)
 
         super(TargetSpecies, self).save(*args, **kwargs)
@@ -901,6 +904,19 @@ BARCODING_STATUS_CHOICES = (
     ('DNA_BARCODING_FAILED', 'DNA_BARCODING_FAILED')
 )
 
+class MonthDateField(models.DateField):
+    """Month date field. Assumes that the incoming value is of the form 'YYYY-MM'."""
+
+    def to_python(self, value):
+        """Try to parse the incoming value and keep only the month part."""
+        if isinstance(value, str):
+            try:
+                year, month = map(int, value.split("-"))
+                return super().to_python(f"{year}-{month:02d}-01")
+            except (ValueError, IndexError) as err:
+                raise ValidationError("Invalid date format. Use 'YYYY-MM'.") from err
+        return super().to_python(value)
+    
 class SampleCollection(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species",unique=True,related_name='collection_rel')
     #team = models.ForeignKey(CollectionTeam, on_delete=models.SET_NULL, null=True, verbose_name="collection team", blank=True)
@@ -919,8 +935,8 @@ class SampleCollection(models.Model):
     mta2 =  models.BooleanField(default=False, verbose_name="MTA 2: LIB leftovers")
     barcoding_status = models.CharField(max_length=30, help_text='Barcoding Status', choices=BARCODING_STATUS_CHOICES, default=BARCODING_STATUS_CHOICES[0][0])
     barcoding_results = models.CharField(max_length=200, null=True, blank=True)
-    collection_forecast = models.DateField(blank=True,null=True)
-    deadline_sampling = models.DateField(blank=True,null=True)
+    # collection_forecast = models.DateField(blank=True,null=True)
+    sampling_month = MonthDateField(blank=True,null=True)
     deadline_manifest_sharing = models.DateField(blank=True,null=True)
     deadline_manifest_acceptance = models.DateField(blank=True,null=True)
     deadline_sample_shipment = models.DateField(blank=True,null=True)
@@ -1051,14 +1067,14 @@ class Specimen(models.Model):
     sample_coordinator = models.CharField(max_length=120, help_text='Sample coordinator', null=True, blank=True)
     tissue_removed_for_biobanking = models.BooleanField(default=False)
     tissue_voucher_id_for_biobanking = models.CharField(max_length=500, null=True, blank=True)
-    proxy_tissue_voucher_id_for_biobanking = models.CharField(max_length=500, null=True, blank=True)
+    proxy_tissue_voucher_id_for_biobanking = models.CharField(max_length=2000, null=True, blank=True)
     tissue_for_biobanking = models.CharField(max_length=100, null=True, blank=True)
     dna_removed_for_biobanking = models.BooleanField(default=False)
     dna_voucher_id_for_biobanking = models.CharField(max_length=200, null=True, blank=True)
-    voucher_id = models.CharField(max_length=200, help_text='Voucher ID', null=True, blank=True)
-    proxy_voucher_id = models.CharField(max_length=200, help_text='Proxy voucher ID', null=True, blank=True)
-    voucher_link = models.CharField(max_length=200, null=True, blank=True)
-    proxy_voucher_link = models.CharField(max_length=200, null=True, blank=True)
+    voucher_id = models.CharField(max_length=2000, help_text='Voucher ID', null=True, blank=True)
+    proxy_voucher_id = models.CharField(max_length=2000, help_text='Proxy voucher ID', null=True, blank=True)
+    voucher_link = models.CharField(max_length=2000, null=True, blank=True)
+    proxy_voucher_link = models.CharField(max_length=2000, null=True, blank=True)
     voucher_institution = models.CharField(max_length=200, null=True, blank=True)
     biobanking_team = models.ForeignKey(BiobankingTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="biobanking team")
     nagoya_statement = models.ForeignKey(Statement, on_delete=models.SET_NULL, verbose_name="legal statement",null=True, blank=True)
@@ -1374,6 +1390,8 @@ class Run(models.Model):
     project = models.ForeignKey(Sequencing, on_delete=models.CASCADE, verbose_name="Sequencing project")
     read_type = models.CharField(max_length=15, help_text='Read type', choices=READ_TYPES, default=READ_TYPES[0][0])
     seq_yield = models.BigIntegerField(null=True, blank=True, verbose_name="yield")
+    read_n50 = models.BigIntegerField(null=True, blank=True, verbose_name="n50")
+    read_quality = models.DecimalField(max_digits=4, decimal_places=2,null=True, blank=True, verbose_name="read quality")
     forward_filename = models.CharField(max_length=200, default='', help_text='Forward read filename')
     forward_md5sum = models.CharField(max_length=32, null=True, blank=True, help_text='Forward read md5sum')
     reverse_filename = models.CharField(max_length=200, null=True, blank=True, help_text='Forward read filename')
@@ -1489,20 +1507,6 @@ class Annotation(models.Model):
     def __str__(self):
         return self.species.scientific_name or str(self.id)
 
-""" class Submission(models.Model):
-    species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
-    team = models.ForeignKey(SubmissionTeam, on_delete=models.SET_NULL, null=True, verbose_name="submission team")
-    status = models.CharField(max_length=12, help_text='Status', choices=SUBMISSION_STATUS_CHOICES, default='Waiting')
-    datatype = models.CharField(max_length=12, help_text='Data Type', choices=SUBMISSION_DATATYPE_CHOICES, default=SUBMISSION_DATATYPE_CHOICES[0][0])
-    accession = models.CharField(max_length=20, help_text='ENA Accession Number', null=True, blank=True)
-    note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
-
-    class Meta:
-        verbose_name_plural = 'submission'
-
-    def __str__(self):
-        return self.species.scientific_name """
-
 class AssemblyProject(models.Model):
     species = models.OneToOneField(TargetSpecies, related_name='assembly_rel', on_delete=models.CASCADE, verbose_name="species")
     #team = models.ForeignKey(AssemblyTeam, on_delete=models.SET_NULL, null=True, verbose_name="assembly team")
@@ -1609,6 +1613,8 @@ class Assembly(models.Model):
     report = models.URLField(max_length = 400, null=True, blank=True)
     accession = models.CharField(max_length=12,null=True, blank=True, verbose_name="Project Accession")
     gca = models.CharField(max_length=20,null=True, blank=True, verbose_name="GCA")
+    last_updated = models.DateField(null=True, blank=True)
+    version = models.IntegerField(default=1)
     #pretext = models.FileField(upload_to=user_directory_path, max_length = 400, null=True, blank=True)
 
     class Meta:

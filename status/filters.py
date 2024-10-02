@@ -1,6 +1,8 @@
 import django_filters
 from django_filters  import FilterSet
 from django_filters  import ChoiceFilter
+from django_filters  import RangeFilter
+from django_filters  import CharFilter
 from status.models import GenomeTeam
 from status.models import TargetSpecies
 from status.models import SequencingTeam
@@ -69,6 +71,9 @@ class TargetSpeciesFilter(django_filters.FilterSet):
     assembly_status = django_filters.ChoiceFilter(field_name='assembly_rel__status',label='Assembly Status',choices=ASSEMBLY_STATUS_CHOICES,null_label=None)
     annotation_status = django_filters.ChoiceFilter(field_name='annotation__status',label='Annotation Status',choices=ANNOTATION_STATUS_CHOICES,null_label=None)
     community_annotation_status = django_filters.ChoiceFilter(field_name='communityannotation__status',label='Community Annotation Status',choices=ANNOTATION_STATUS_CHOICES,null_label=None)
+    assembly_rank = django_filters.RangeFilter(field_name='assembly_rel__assembly_rank',label='Assembly level')
+    scientific_name = django_filters.CharFilter(field_name='scientific_name',lookup_expr='icontains',label='Species')
+    tolid_prefix = django_filters.CharFilter(field_name='tolid_prefix',lookup_expr='icontains',label='ToLID Prefix')
 
     class Meta:
         model = TargetSpecies
@@ -92,3 +97,44 @@ class TargetSpeciesFilter(django_filters.FilterSet):
             'taxon_family',
             'taxon_genus'
             ]
+
+class SpeciesFilter(django_filters.FilterSet):
+	GOAT_TARGET_LIST_STATUS_CHOICES = (
+		('waiting_list', 'waiting_list'), #not shared with goat
+		('none', 'none'),
+		('long_list', 'long_list'),
+		('other_priority', 'other_priority'),
+		('family_representative', 'family_representative'),
+		('removed', 'removed') #not shared with goat
+	)
+	GOAT_SEQUENCING_STATUS_CHOICES = (
+		('none', 'none'),
+		('in_collection','in_collection'), #not shared with goat
+		('sample_collected', 'sample_collected'),
+		('sample_acquired', 'sample_acquired'),
+		('data_generation', 'data_generation'),
+		('in_assembly', 'in_assembly'),
+		('insdc_open', 'insdc_open'),
+		('published', 'published')
+	)
+	listed_name = django_filters.CharFilter(field_name='listed_name',lookup_expr='icontains',label='Listed Species')
+	scientific_name = django_filters.CharFilter(field_name='scientific_name',lookup_expr='icontains',label='Species')
+	tolid_prefix = django_filters.CharFilter(field_name='tolid_prefix',lookup_expr='icontains',label='ToLID Prefix')
+	goat_target_list_status = django_filters.ChoiceFilter(field_name='goat_target_list_status',label='GoaT Target Status',choices=GOAT_TARGET_LIST_STATUS_CHOICES,null_label=None)
+	goat_sequencing_status = django_filters.ChoiceFilter(field_name='goat_sequencing_status',label='GoaT Sequencing Status',choices=GOAT_SEQUENCING_STATUS_CHOICES,null_label=None)
+	class Meta:
+		model = TargetSpecies
+		exclude = ['gss_rank']
+		# fields = [
+        #     'listed_species',
+        #     'scientific_name',
+        #     'tolid_prefix',
+        # 	'goat_target_list_status',
+        # 	'goat_sequencing_status',
+        #     # 'taxon_kingdom',
+        #     # 'taxon_phylum',
+        #     # 'taxon_class',
+        #     # 'taxon_order',
+        #     # 'taxon_family',
+        #     # 'taxon_genus'
+        #     ]

@@ -10,13 +10,19 @@ from django.urls import reverse
 from status.models import *
 from django.conf import settings
 
-
+class SummingColumn(tables.Column):
+    def render_footer(self, bound_column, table):
+        return sum(bound_column.accessor.resolve(row) for row in table.data)
+    
 class OverviewTable(tables.Table):
     export_formats = ['csv', 'tsv','xls']
+    genome_size = SummingColumn(
+        #footer=lambda table: sum(x["genome_size"] for x in table.data)
+    )
     seq_center = tables.Column(accessor='gt_rel__sequencing_team__name',verbose_name='Center')
     copo_status = tables.Column(accessor='collection_rel__copo_status',verbose_name='COPO',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
-    long_seq_status = tables.Column(accessor='sequencing_rel.long_seq_status',verbose_name='Long-read',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
-    short_seq_status = tables.Column(accessor='sequencing_rel.short_seq_status',verbose_name='Short-read',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
+    long_seq_status = tables.Column(accessor='sequencing_rel.long_seq_status',verbose_name='ONT/HiFi WGS',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
+    short_seq_status = tables.Column(accessor='sequencing_rel.short_seq_status',verbose_name='Illumina WGS',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
     hic_seq_status = tables.Column(accessor='sequencing_rel.hic_seq_status',verbose_name='Hi-C',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
     rna_seq_status = tables.Column(accessor='sequencing_rel.rna_seq_status',verbose_name='RNA-Seq',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
     assembly_status = tables.Column(accessor='assembly_rel__status',verbose_name='Assembly',attrs={"td": {"class": "analysis_col"},"th": {"class": "analysis_col"}})
@@ -150,10 +156,13 @@ class OverviewTable(tables.Table):
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
         # fields = ('tolid_prefix', 'scientific_name','genomic_sample_status','hic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','curation_status','annotation_status','submission_status')
-        fields = ('scientific_name','taxon_phylum','tolid_prefix','seq_center','goat_sequencing_status','copo_status','long_seq_status','short_seq_status','hic_seq_status','rna_seq_status','assembly_status','annotation_status','community_annotation_status','log')
+        fields = ('scientific_name','taxon_phylum','tolid_prefix','genome_size','seq_center','goat_sequencing_status','copo_status','long_seq_status','short_seq_status','hic_seq_status','rna_seq_status','assembly_status','annotation_status','community_annotation_status','log')
 
 class TargetSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']
+    genome_size = SummingColumn(
+        #footer=lambda table: sum(x["genome_size"] for x in table.data)
+    )
     scientific_name = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("pk")}, empty_values=())
     phase = tables.Column(accessor='sequencing_rel__phase',verbose_name="Phase")
     task = tables.Column(accessor='collection_rel__task',verbose_name="Task")
@@ -173,7 +182,7 @@ class TargetSpeciesTable(tables.Table):
         template_name = "django_tables2/bootstrap4.html"
         #order_by = 'taxon_kingdom,taxon_phylum,taxon_class,taxon_order,taxon_family,taxon_genus,scientific_name' # use dash for descending order
         paginate = {"per_page": 100}
-        fields = ('listed_species','scientific_name','taxon_id','phase','task','country','goat_target_list_status','goat_sequencing_status', 'iucn_code', 'iucn_url', 'genome_size', 'c_value','ploidy','haploid_number','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus')
+        fields = ('listed_species','scientific_name','taxon_id','genome_size', 'phase','task','country','goat_target_list_status','goat_sequencing_status','ranking', 'iucn_code', 'iucn_url', 'c_value','ploidy','haploid_number','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus')
 
 class GoaTSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']
@@ -214,7 +223,10 @@ class AssemblyTable(tables.Table):
     export_formats = ['csv', 'tsv']
     project = tables.LinkColumn('assembly_project_list')
     pipeline = tables.Column(linkify=True)
-    span = tables.Column(verbose_name="Span (Gb)")
+    #span = tables.Column(verbose_name="Span (Gb)")
+    span = SummingColumn(verbose_name="Span (Gb)"
+        #footer=lambda table: sum(x["genome_size"] for x in table.data)
+    )
     contig_n50 = tables.Column(verbose_name="Contig N50 (Mb)")
     scaffold_n50 = tables.Column(verbose_name="Scaffold N50 (Mb)")
     accession = tables.Column(verbose_name="ENA Study")

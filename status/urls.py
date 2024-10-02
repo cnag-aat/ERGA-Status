@@ -43,6 +43,7 @@ urlpatterns = [
     path("species/<int:pk>/", views.species_detail, name="species_detail"),
     path("species/?scientific_name=<scientific_name>", views.species_detail, name="species_detail"),
     path("assemblies/", AssemblyListView.as_view(), name="assembly_list"),
+    # path("assemblies/?gca=<gca>", AssemblyListView.as_view(), name="assembly_list"),
     path("specimens/", SpecimenListView.as_view(), name="specimen_list"),
     path("specimens/?collection=<collection>", SpecimenListView.as_view(), name="specimen_list"),
     path("specimens/<int:id>/", SpecimenListView.as_view(), name="specimen_list"),
