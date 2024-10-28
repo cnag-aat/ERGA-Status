@@ -17,3 +17,7 @@ sc = SampleCollection.objects.all()
 for s in sc:
     s.subproject.add(sp)
     s.save()
+
+species = TargetSpecies.objects.all()
+for sp in species:
+    sp.save()

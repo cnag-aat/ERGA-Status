@@ -54,7 +54,8 @@ GOAT_TARGET_LIST_STATUS_CHOICES = (
     ('none', 'none'),
     ('long_list', 'long_list'),
     ('other_priority', 'other_priority'),
-    ('family_representative', 'family_representative')
+    ('family_representative', 'family_representative'),
+    ('removed', 'removed')
 )
 
 GOAT_SEQUENCING_STATUS_CHOICES = (
@@ -133,7 +134,7 @@ class SampleCollectionInlineAdmin(admin.TabularInline):
 
 @register(TargetSpecies)
 class TargetSpeciesAdmin(admin.ModelAdmin):
-    list_filter = ["sequencing_rel__phase","collection_rel__country","collection_rel__task",'goat_target_list_status','goat_sequencing_status']
+    list_filter = ["gt_rel__sequencing_team","sequencing_rel__phase","collection_rel__country","collection_rel__task",'goat_target_list_status','goat_sequencing_status']
     #list_filter = ["sequencing_rel__phase","collection_rel__country","collection_rel__task","tags",'goat_target_list_status','goat_sequencing_status']
     action_form = UpdateSpeciesActionForm
     actions = [update_goat_list_status,update_goat_seq_status]
@@ -176,6 +177,7 @@ class TargetSpeciesAdmin(admin.ModelAdmin):
         # 'ploidy',
         # 'c_value',
         'genome_size',
+        'genome_size_update',
         'date_updated'
     )
     search_fields = ['scientific_name']
@@ -576,7 +578,23 @@ class SequencingAdmin(admin.ModelAdmin):
         qs = super(SequencingAdmin, self).get_queryset(request)
         return qs.exclude(species__goat_target_list_status = 'removed')
     
-admin.site.register(Reads)
+#admin.site.register(Reads)
+
+@register(Reads)
+class ReadsAdmin(admin.ModelAdmin, ExportCsvMixin):
+    search_fields = ['project__species__scientific_name','ont_ena','hic_ena','hifi_ena','short_ena','rnaseq_ena','study_accession']
+    #list_filter = ["task__name","country__name","species__goat_sequencing_status","species__gt_rel__sample_handling_team","species__gt_rel__sequencing_team","sampling_delay"]
+    list_filter = ["project__species__gt_rel__sequencing_team"]
+    list_display = ('project','ont_ena','hifi_ena','hic_ena','short_ena','rnaseq_ena','study_accession')
+    actions = ["export_as_csv"]
+    # ont_ena = models.CharField(max_length=12, null=True, blank=True, verbose_name="ONT Accession")
+    # hifi_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="HiFi Accession")
+    # hic_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="Hi-C Accession")
+    # short_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="Short read Accession")
+    # rnaseq_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="RNAseq Accession")
+    # study_accession = models.CharField(max_length=12, null=True, blank=True, verbose_name="Study")
+    
+
 @register(CommunityAnnotation)
 class CommunityAnnotationAdmin(admin.ModelAdmin):
     search_fields = ['species__scientific_name']
@@ -609,7 +627,32 @@ class AnnotationAdmin(admin.ModelAdmin):
 
 admin.site.register(BUSCOdb)
 admin.site.register(BUSCOversion)
-admin.site.register(EnaRun)
+#admin.site.register(EnaRun)
+@register(EnaRun)
+class EnaRunAdmin(admin.ModelAdmin):
+    list_filter = ["project__species__gt_rel__sequencing_team","project", "read_type"]
+    list_display = (
+        'project',
+        'read_type',
+        'seq_yield',
+        'num_reads',
+        'biosample_accession',
+        'run_accession',
+        'experiment_accession',
+        'study_accession'
+    )
+    readonly_fields=(
+        'project',
+        'read_type',
+        'seq_yield',
+        'num_reads',
+        'biosample_accession',
+        'run_accession',
+        'experiment_accession',
+        'study_accession',
+        'reads'
+    )
+
 @register(Run)
 class RunAdmin(admin.ModelAdmin):
     list_filter = ["project__species__gt_rel__sequencing_team","project", "read_type"]

@@ -52,9 +52,12 @@ from django.urls import reverse_lazy
 from status.filters import GenomeTeamFilter
 from status.filters import TargetSpeciesFilter
 from status.filters import SpeciesFilter
+from status.filters import ReadsFilter
+from status.filters import AssemblyFilter
 from braces.views import GroupRequiredMixin
 from django.db.models import OuterRef, Subquery
 from django.core.cache import cache
+from django.db.models.functions import Coalesce
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -95,8 +98,8 @@ def home(request):
    # speciesdict = {}
     in_production_set = {'Received', 'Prep', 'Sequencing', 'TopUp', 'Extracted'}
     seq_done_set = {'Done', 'Submitted'}
-    in_assembly_set = {'Issue','Assembling', 'Contigs','Scaffolding','Scaffolds','Curating','Done','UnderReview'}
-    assembly_done_set = {'Approved','Submitted'}
+    in_assembly_set = {'Issue','Assembling', 'Contigs','Scaffolding','Scaffolds','Curating','Done'}
+    assembly_done_set = {'Approved','Submitted','UnderReview'}
 
     #seq_centers = SequencingTeam.objects.annotate(gspan=Sum("genometeam__species__genome_size"))
     seq_centers = SequencingTeam.objects.all()
@@ -117,21 +120,21 @@ def home(request):
             for sp in queryset:
                 #assigned_span += sp.genome_size
                 if (sp.assembly_rel.status in assembly_done_set):
-                        assembly_done_span += sp.genome_size
+                        assembly_done_span += sp.genome_size_update
                 else:
-                    if (sp.assembly_rel.status in in_assembly_set and sp.sequencing_rel.hic_seq_status in seq_done_set):
-                        assembling_span += sp.genome_size
+                    if ((sp.assembly_rel.status in in_assembly_set) and (sp.sequencing_rel.long_seq_status in seq_done_set) and (sp.sequencing_rel.hic_seq_status in seq_done_set)):
+                        assembling_span += sp.genome_size_update
                     else:
-                        if (sp.sequencing_rel.long_seq_status in seq_done_set and sp.sequencing_rel.hic_seq_status in seq_done_set):
-                            seq_done_span += sp.genome_size
+                        if ((sp.sequencing_rel.long_seq_status in seq_done_set) and (sp.sequencing_rel.hic_seq_status in seq_done_set)):
+                            seq_done_span += sp.genome_size_update
                         else: 
-                            if (sp.sequencing_rel.long_seq_status in in_production_set or sp.sequencing_rel.long_seq_status in seq_done_set):
-                                sequencing_span += sp.genome_size
+                            if ((sp.sequencing_rel.long_seq_status in in_production_set) or (sp.sequencing_rel.hic_seq_status in in_production_set) or (sp.sequencing_rel.long_seq_status in seq_done_set) or (sp.sequencing_rel.hic_seq_status in seq_done_set)):
+                                sequencing_span += sp.genome_size_update
                             else:
-                                if (sp.goat_sequencing_status == 'sample_collected' or sp.goat_sequencing_status == 'sample_acquired'):
-                                    collected_span += sp.genome_size
+                                if ((sp.goat_sequencing_status == 'sample_collected') or (sp.goat_sequencing_status == 'sample_acquired')):
+                                    collected_span += sp.genome_size_update
                                 else:
-                                    not_collected_span += sp.genome_size
+                                    not_collected_span += sp.genome_size_update
 
                          
             # goat_sequencing_status
@@ -163,24 +166,24 @@ def home(request):
     if (allqueryset):
         for sp in allqueryset:
             #assigned_span += sp.genome_size
-            if not sp.genome_size:
-                sp.genome_size = 0;
+            if not sp.genome_size_update:
+                sp.genome_size_update = 0;
             if (sp.assembly_rel and sp.assembly_rel.status in assembly_done_set):
-                    total_assembly_done_span += sp.genome_size
+                    total_assembly_done_span += sp.genome_size_update
             else:
-                if (sp.assembly_rel.status in in_assembly_set):
-                    total_assembling_span += sp.genome_size
+                if ((sp.assembly_rel.status in in_assembly_set) and (sp.sequencing_rel.long_seq_status in seq_done_set) and (sp.sequencing_rel.hic_seq_status in seq_done_set)):
+                    total_assembling_span += sp.genome_size_update
                 else:
-                    if (sp.sequencing_rel.long_seq_status in seq_done_set and sp.sequencing_rel.hic_seq_status in seq_done_set):
-                        total_seq_done_span += sp.genome_size
+                    if ((sp.sequencing_rel.long_seq_status in seq_done_set) and (sp.sequencing_rel.hic_seq_status in seq_done_set)):
+                        total_seq_done_span += sp.genome_size_update
                     else: 
-                        if (sp.sequencing_rel.long_seq_status in in_production_set or sp.sequencing_rel.long_seq_status in seq_done_set):
-                            total_sequencing_span += sp.genome_size
+                        if ((sp.sequencing_rel.long_seq_status in in_production_set) or (sp.sequencing_rel.hic_seq_status in in_production_set) or (sp.sequencing_rel.long_seq_status in seq_done_set) or (sp.sequencing_rel.hic_seq_status in seq_done_set)):
+                            total_sequencing_span += sp.genome_size_update
                         else:
-                            if (sp.goat_sequencing_status == 'sample_collected' or sp.goat_sequencing_status == 'sample_acquired'):
-                                total_collected_span += sp.genome_size
+                            if ((sp.goat_sequencing_status == 'sample_collected') or (sp.goat_sequencing_status == 'sample_acquired')):
+                                total_collected_span += sp.genome_size_update
                             else:
-                                total_not_collected_span += sp.genome_size
+                                total_not_collected_span += sp.genome_size_update
 
                          
     # goat_sequencing_status
@@ -426,6 +429,7 @@ class AssemblyListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, Filter
     login_url = "access_denied"
     model = Assembly
     table_class = AssemblyTable
+    filterset_class = AssemblyFilter
     template_name = 'assembly.html'
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
@@ -574,18 +578,44 @@ class RunListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView)
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
+    def get_queryset(self):
+        queryset = super(RunListView, self).get_queryset()
+        if 'project' in self.request.GET:
+            queryset = queryset.filter(project=self.request.GET['project'])
+        return queryset
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['build_page_title'] = 'ERGA-GTC Runs'
         return context
-    
+
+class EnaRunListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
+    # permission_required = "resistome.view_sample"
+    login_url = "access_denied"
+    model = EnaRun
+    table_class = EnaRunTable
+    template_name = 'enaruns.html'
+    #filterset_class = SpeciesFilter
+    table_pagination = {"per_page": 100}
+    export_formats = ['csv', 'tsv','xlsx','json']
+    def get_queryset(self):
+        queryset = super(EnaRunListView, self).get_queryset()
+        if 'project' in self.request.GET:
+            queryset = queryset.filter(project=self.request.GET['project'])
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['build_page_title'] = 'ERGA-GTC ENA Runs'
+        return context
+       
 class ReadsListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
     login_url = "access_denied"
     model = Reads
     table_class = ReadsTable
     template_name = 'reads.html'
-    #filterset_class = SpeciesFilter
+    filterset_class = ReadsFilter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
@@ -596,26 +626,52 @@ class ReadsListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterVie
     def get_queryset(self):
         queryset = super(ReadsListView, self).get_queryset()
         queryset = queryset.annotate(ont_yield=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='ONT')),
-                                     ont_cov=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='ONT'))/(F("project__species__genome_size")),
+                                     ont_cov=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='ONT'))/(F("project__species__genome_size_update")),
                                      hifi_yield=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='HiFi')),
-                                     hifi_cov=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='HiFi'))/(F("project__species__genome_size")),
+                                     hifi_cov=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='HiFi'))/(F("project__species__genome_size_update")),
                                      short_yield=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='Illumina')),
-                                     short_cov=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='Illumina'))/(F("project__species__genome_size")),
+                                     short_cov=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='Illumina'))/(F("project__species__genome_size_update")),
                                      hic_yield=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='HiC')),
-                                     hic_cov=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='HiC'))/(F("project__species__genome_size")),
+                                     hic_cov=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='HiC'))/(F("project__species__genome_size_update")),
                                      rnaseq_pe=Sum("run_set__seq_yield",filter=Q(run_set__read_type__startswith='RNA')),
-                                     ena_ont_yield=Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='ONT')),
-                                     ena_ont_cov=Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='ONT'))/(F("project__species__genome_size")),
-                                     ena_hifi_yield=Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='HiFi')),
-                                     ena_hifi_cov=Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='HiFi'))/(F("project__species__genome_size")),
-                                     ena_short_yield=Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='Illumina')),
-                                     ena_short_cov=Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='Illumina'))/(F("project__species__genome_size")),
-                                     ena_hic_yield=Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='HiC')),
-                                     ena_hic_cov=Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='HiC'))/(F("project__species__genome_size")),
-                                     ena_rnaseq_pe=Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='RNA')),
                                      )
+        if 'project' in self.request.GET:
+            queryset = queryset.filter(project=self.request.GET['project'])
         return queryset
+
+class EnaReadsListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
+    # permission_required = "resistome.view_sample"
+    login_url = "access_denied"
+    model = EnaReads
+    table_class = EnaReadsTable
+    template_name = 'enareads.html'
+    filterset_class = ReadsFilter
+    table_pagination = {"per_page": 100}
+    export_formats = ['csv', 'tsv','xlsx','json']
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['build_page_title'] = 'ERGA-GTC Read Data'
+        return context
     
+    def get_queryset(self):
+        #return TargetSpecies.objects.exclude(goat_target_list_status = None).exclude(goat_target_list_status = 'none').exclude(goat_target_list_status = '').exclude(goat_target_list_status = 'removed').exclude(goat_sequencing_status = 'none').exclude(genome_size = None).order_by('-gss_rank','-assembly_rel__assembly_rank','collection_rel__copo_status','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus','scientific_name')
+  
+        queryset = super(EnaReadsListView, self).get_queryset().exclude(project__species__goat_target_list_status = None).exclude(project__species__goat_target_list_status = 'none').exclude(project__species__goat_target_list_status = '').exclude(project__species__goat_target_list_status = 'removed')
+        queryset = queryset.annotate(ena_ont_yield=Coalesce(Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='ONT')),0),
+                                     ena_ont_cov=Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='ONT'))/(F("project__species__genome_size_update")),
+                                     ena_hifi_yield=Coalesce(Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='HiFi')),0),
+                                     ena_hifi_cov=Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='HiFi'))/(F("project__species__genome_size_update")),
+                                     ena_short_yield=Coalesce(Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='Illumina')),0),
+                                     ena_short_cov=Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='Illumina'))/(F("project__species__genome_size_update")),
+                                     ena_hic_yield=Coalesce(Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='HiC')),0),
+                                     ena_hic_cov=Sum("ena_run_set__seq_yield",filter=Q(ena_run_set__read_type__startswith='HiC'))/(F("project__species__genome_size_update")),
+                                     ena_rnaseq_pe=Coalesce(Sum("ena_run_set__num_reads",filter=Q(ena_run_set__read_type__startswith='RNA')),0),
+                                     #data_project=F('ont_ena') if F('ont_ena') else (F('hifi_ena') if F('hifi_ena') else (F('hic_ena') if F('hic_ena') else "")),
+                                     )
+        if 'project' in self.request.GET:
+            queryset = queryset.filter(project=self.request.GET['project'])
+        return queryset
+        
 class CurationListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
     login_url = "access_denied"
@@ -860,6 +916,9 @@ class NewSpeciesListView(GroupRequiredMixin, LoginRequiredMixin, FormView):#Grou
                             changed = 1
                         if 'genome_size' in row and targetspecies.genome_size is not round(float(row['genome_size'])):
                             targetspecies.genome_size = round(float(row['genome_size'])) or None
+                            changed = 1
+                        if 'genome_size_update' in row and targetspecies.genome_size_update is not round(float(row['genome_size_update'])):
+                            targetspecies.genome_size_update = round(float(row['genome_size_update'])) or None
                             changed = 1
                         if 'synonym' in row and targetspecies.synonym is not row['synonym']:
                             targetspecies.synonym = row['synonym'] or None

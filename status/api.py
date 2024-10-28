@@ -296,15 +296,23 @@ class ReadsViewSet(BulkModelViewSet):
     serializer_class = ReadsSerializer
     filter_fields = '__all__'
 
+class EnaReadsViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows Reads to be viewed or edited.
+    """
+    queryset = EnaReads.objects.all()
+    serializer_class = EnaReadsSerializer
+    filter_fields = '__all__'
+
 class RunViewSet(BulkModelViewSet):
     queryset = Run.objects.all()
     serializer_class = RunSerializer
     filter_fields = '__all__'
 
 class EnaRunViewSet(BulkModelViewSet):
-    queryset = Run.objects.all()
+    queryset = EnaRun.objects.all()
     serializer_class = EnaRunSerializer
-    filter_fields = '__all__'
+    filterset_fields = '__all__'
 
 class UserViewSet(BulkModelViewSet):
     queryset = User.objects.all()

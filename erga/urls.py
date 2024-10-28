@@ -24,6 +24,7 @@ from status import api
 from django.conf.urls import url
 import debug_toolbar
 from dal import autocomplete
+
 # API Endpoints
 router = routers.DefaultRouter()
 router.register(r'kindom', api.TaxonKingdomViewSet)
@@ -61,7 +62,9 @@ router.register(r'annotation_team', api.AnnotationTeamViewSet)
 router.register(r'genome_team', api.GenomeTeamViewSet)
 router.register(r'from_manifest', api.FromManifestViewSet)
 router.register(r'reads', api.ReadsViewSet)
+router.register(r'enareads', api.EnaReadsViewSet)
 router.register(r'run', api.RunViewSet)
+router.register(r'ena_run', api.EnaRunViewSet, basename='enarun')
 router.register(r'collection_team', api.CollectionTeamViewSet)
 # router.register(r'tag', api.TagViewSet)
 router.register(r'recipe', api.RecipeViewSet)

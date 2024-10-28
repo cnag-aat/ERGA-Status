@@ -295,7 +295,9 @@ class TargetSpecies(models.Model):
     ploidy = models.IntegerField(null=True, blank=True)
     taxon_id = models.CharField(max_length=20,unique=True, null=True, blank=True, db_index=True)
     c_value = models.DecimalField(max_digits=8, decimal_places=3, null=True, blank=True, verbose_name="C-value")
-    genome_size = models.BigIntegerField(null=True, blank=True)
+    genome_size = models.BigIntegerField(null=True, blank=True, verbose_name="GoaT Size Estimate",default=0)
+    genome_size_update = models.BigIntegerField(null=True, blank=True,verbose_name="Updated Genome Size",default=0)
+    genome_size_update_evidence = models.CharField(max_length=100, null=True, blank=True,verbose_name="Evidence for Estimated Size")
     subspecies = models.CharField(max_length=100, verbose_name="Subspecies", blank=True, null=True)
     goat_target_list_status = models.CharField(max_length=30, verbose_name="target_list_status", help_text='Target List Status', choices=GOAT_TARGET_LIST_STATUS_CHOICES, default=GOAT_TARGET_LIST_STATUS_CHOICES[0][0])
     goat_sequencing_status = models.CharField(max_length=30, blank=True, null=True, verbose_name="GoaT Sequencing Status", help_text='Sequencing Status', choices=GOAT_SEQUENCING_STATUS_CHOICES, default=GOAT_SEQUENCING_STATUS_CHOICES[0][0])
@@ -391,6 +393,9 @@ class TargetSpecies(models.Model):
                         self.ploidy = row['ploidy'] or None
                         self.c_value = row['c_value'] or None
                         self.genome_size = round(float(row['genome_size'])) or None
+                        if self.genome_size_update == 0 or self.genome_size_update is None:
+                            if self.genome_size is not None:
+                                self.genome_size_update = self.genome_size
                         self.taxon_kingdom = t_kingdom or None
                         self.taxon_phylum = t_phylum or None
                         self.taxon_class = t_class or None
@@ -874,6 +879,7 @@ class Subproject(models.Model):
     
 class Task(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    short_name = models.CharField(max_length=100, unique=True, null=True, blank=True)
     subproject = models.ForeignKey(Subproject,on_delete=models.CASCADE, default=1, verbose_name="subproject", null=True, blank=True)
     
     class Meta:
@@ -1169,14 +1175,14 @@ class Phase(models.Model):
 
 class Sequencing(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, related_name='sequencing_rel', verbose_name="species")
-    phase = models.ForeignKey(Phase, on_delete=models.SET_NULL, verbose_name="Phase", null=True)
+    phase = models.ForeignKey(Phase, on_delete=models.SET_NULL, verbose_name="Phase", null=True, blank=True)
     #team = models.ForeignKey(SequencingTeam, on_delete=models.SET_NULL, null=True, verbose_name="sequencing team")
     long_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
     short_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
     hic_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
     rna_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
-    recipe = models.ForeignKey(Recipe, on_delete=models.SET_NULL, to_field='name', verbose_name="Recipe", null=True, blank=True)
+    recipe = models.ForeignKey(Recipe, on_delete=models.SET_NULL, to_field='name', verbose_name="Recipe", null=True)
     #recipe = models.ForeignKey(Recipe, on_delete=models.SET_NULL, to_field='name', default='HiFi25', verbose_name="Recipe", null=True, blank=True)
     
     __original_long_seq_status = None
@@ -1384,6 +1390,28 @@ class Reads(models.Model):
 
     def __str__(self):
         return self.project.species.scientific_name or str(self.id)
+class EnaReads(models.Model):
+    project = models.ForeignKey(Sequencing, on_delete=models.CASCADE, verbose_name="Sequencing project")
+    #ont_yield = models.BigIntegerField(null=True, blank=True, verbose_name="ONT yield")
+    #hifi_yield = models.BigIntegerField(null=True, blank=True, verbose_name="HiFi yield")
+    #hic_yield = models.BigIntegerField(null=True, blank=True, verbose_name="Hi-C yield")
+    #short_yield = models.BigIntegerField(null=True, blank=True, verbose_name="Short read yield")
+    #rnaseq_pe = models.BigIntegerField(null=True, blank=True, verbose_name="RNA-seq yield (PE)")
+    ont_ena = models.CharField(max_length=12, null=True, blank=True, verbose_name="ONT Accession")
+    hifi_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="HiFi Accession")
+    hic_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="Hi-C Accession")
+    short_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="Short read Accession")
+    rnaseq_ena = models.CharField(max_length=12,null=True, blank=True, verbose_name="RNAseq Accession")
+    study_accession = models.CharField(max_length=12, null=True, blank=True, verbose_name="Study")
+    
+    def get_absolute_url(self):
+        return reverse('ena_reads_list', args=[str(self.project)])
+
+    class Meta:
+        verbose_name_plural = 'ena_reads'
+
+    def __str__(self):
+        return self.project.species.scientific_name or str(self.id)
 
 #center scientific_name tolid_prefix recipe read_type  status notes sample_tube_or_well_id instrument_model yield forward_file_name forward_file_md5 reverse_file_name reverse_file_md5 native native_md5sum experiment_attributes run_attributes nominal_length nominal_sdev library_construction_protocol	      
 class Run(models.Model):
@@ -1412,18 +1440,22 @@ class Run(models.Model):
 class EnaRun(models.Model):
     project = models.ForeignKey(Sequencing, on_delete=models.CASCADE, verbose_name="Sequencing project")
     read_type = models.CharField(max_length=15, help_text='Read type', choices=READ_TYPES, default=READ_TYPES[0][0])
-    seq_yield = models.BigIntegerField(null=True, blank=True, verbose_name="yield")
-    biosample_accession = models.CharField(max_length=12, null=True, blank=True, verbose_name='Biosample Accession')
-    run_accesssion = models.CharField(max_length=12, null=True, blank=True, verbose_name='Run Accession')
-    experiment_accesssion = models.CharField(max_length=12, null=True, blank=True, verbose_name='Experiment Accession')
-    study_accesssion = models.CharField(max_length=12, null=True, blank=True, verbose_name='Study Accession')
-    reads = models.ForeignKey(Reads, related_name="ena_run_set", related_query_name="ena_run_set", null=True, blank=True, on_delete=models.CASCADE, verbose_name="Reads aggregate view")
+    seq_yield = models.BigIntegerField(default=0, verbose_name="yield")
+    num_reads = models.BigIntegerField(default=0, verbose_name="Num reads")
+    biosample_accession = models.CharField(max_length=16, blank=True, verbose_name='Biosample Accession')
+    run_accession = models.CharField(max_length=16, unique=True, verbose_name='Run Accession')
+    experiment_accession = models.CharField(max_length=16, verbose_name='Experiment Accession')
+    study_accession = models.CharField(max_length=16, verbose_name='Study Accession')
+    library_construction_protocol = models.CharField(max_length=1000, verbose_name='Library Protocol',null=True, blank=True)
+    submitted_md5 = models.CharField(max_length=70, verbose_name='md5',null=True, blank=True)
+    last_updated = models.DateField(null=True, blank=True)
+    reads = models.ForeignKey(EnaReads, related_name="ena_run_set", related_query_name="ena_run_set", null=True, blank=True, on_delete=models.CASCADE, verbose_name="Reads aggregate view")
 
     class Meta:
         verbose_name_plural = 'ena_runs'
 
     def __str__(self):
-        return self.project.species.scientific_name + " " + self.read_type + " " + self.run_accesssion or str(self.id)
+        return self.project.species.scientific_name + " " + self.read_type + " " + self.run_accession or str(self.id)
 
 class Curation(models.Model):
     species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species")
@@ -1600,6 +1632,7 @@ class Assembly(models.Model):
     project = models.ForeignKey(AssemblyProject, on_delete=models.CASCADE, verbose_name="Assembly project")
     description = models.CharField(null=True, blank=True, max_length=100)
     pipeline = models.ForeignKey(AssemblyPipeline, on_delete=models.SET_NULL, null=True, verbose_name="Assembly pipeline", blank=True )
+    options = models.TextField(max_length=1000,blank=True, null=True, verbose_name="Main options if not default")
     type = models.CharField(max_length=20, help_text='Type of assembly', choices=ASSEMBLY_TYPE_CHOICES, default='Primary')
     span = models.BigIntegerField(null=True, blank=True, verbose_name="Assembly span")
     contig_n50 = models.BigIntegerField(null=True, blank=True, verbose_name="Contig N50")

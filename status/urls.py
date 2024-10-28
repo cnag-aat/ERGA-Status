@@ -8,7 +8,9 @@ from status.views import SampleCollectionListView
 from status.views import SequencingListView
 from status.views import SequencingDetailView
 from status.views import RunListView
+from status.views import EnaRunListView
 from status.views import ReadsListView
+from status.views import EnaReadsListView
 from status.views import AssemblyProjectListView
 from status.views import CurationListView
 from status.views import AnnotationListView
@@ -78,9 +80,14 @@ urlpatterns = [
     path("collection/", SampleCollectionListView.as_view(), name="collection_list"),
     path("sequencing/", SequencingListView.as_view(), name="sequencing_list"),
     path("sequencing/?species=<scientific_name>", SequencingListView.as_view(), name="sequencing_list"),
+    path("enareads/", EnaReadsListView.as_view(), name="ena_reads_list"),
+    path("enareads/?project=<project>", EnaReadsListView.as_view(), name="ena_reads_list"),
     path("reads/", ReadsListView.as_view(), name="reads_list"),
     path("reads/?project=<project>", ReadsListView.as_view(), name="reads_list"),
     path("runs/", RunListView.as_view(), name="runs_list"),
+    path("runs/?project=<project>", RunListView.as_view(), name="runs_list"),
+    path("ena_runs/", EnaRunListView.as_view(), name="ena_runs_list"),
+    path("ena_runs/?project=<project>", EnaRunListView.as_view(), name="ena_runs_list"),
     path("curation/", CurationListView.as_view(), name="curation_list"),
     path("annotation/", AnnotationListView.as_view(), name="annotation_list"),
     path("community_annotation/", CommunityAnnotationListView.as_view(), name="community_annotation_list"),

@@ -18,6 +18,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'deployment', 'data') # 'data' is my media folder
 MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR),'deployment', 'static')
+STATIC_ROOT = '/home/www/resistome.cnag.cat/incredible/deployment/static'
 STATIC_URL = '/static/'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
@@ -26,7 +27,7 @@ STATIC_URL = '/static/'
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['resistome.cnag.cat','resistome.cnag.es','resistome.cnag.eu','genomes.cnag.cat','genomes.cnag.es','genomes.cnag.eu','localhost','10.73.4.1']
 
@@ -34,8 +35,6 @@ ALLOWED_HOSTS = ['resistome.cnag.cat','resistome.cnag.es','resistome.cnag.eu','g
 # Application definition
 
 INSTALLED_APPS = [
-    'dal',
-    'dal_select2',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -44,9 +43,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django_extensions',
+    #'maintenance_mode',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'dal',
+    'dal_select2',
     #'allauth.socialaccount.providers.google',
     'erga',
     'django_registration',
@@ -74,6 +76,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    #'maintenance_mode.middleware.MaintenanceModeMiddleware',
 ]
 
 ROOT_URLCONF = 'erga.urls'
@@ -165,9 +168,9 @@ USE_TZ = True
 
 #STATIC_URL = '/static/'
 #STATIC_ROOT = '/home/www/denovo.cnag.cat/incredible/static/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-]
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, "static"),
+# ]
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
@@ -198,18 +201,28 @@ LOGIN_REDIRECT_URL = 'home'
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS=7
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_AUTHENTICATION_METHOD = "username_email"
 EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = "https://genomes.cnag.cat/erga-stream-dev/accounts/login/"
 LOGIN_URL="/erga-stream-dev/accounts/login/"
 
 
-EMAIL_BACKEND = 'django_o365mail.EmailBackend'
+# EMAIL_BACKEND = 'django_o365mail.EmailBackend'
+# EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+# EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+# DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+# O365_MAIL_CLIENT_ID = config('O365_MAIL_CLIENT_ID')
+# O365_MAIL_CLIENT_SECRET = config('O365_MAIL_CLIENT_SECRET')
+# O365_MAIL_TENANT_ID = config('O365_MAIL_TENANT_ID')
+# O365_MAIL_ACCOUNT_KWARGS = {'token_backend': 'O365.utils.token.EnvTokenBackend'}
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+#EMAIL_USE_TLS = False
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS=True
+EMAIL_PORT=587
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
-O365_MAIL_CLIENT_ID = config('O365_MAIL_CLIENT_ID')
-O365_MAIL_CLIENT_SECRET = config('O365_MAIL_CLIENT_SECRET')
-O365_MAIL_TENANT_ID = config('O365_MAIL_TENANT_ID')
-O365_MAIL_ACCOUNT_KWARGS = {'token_backend': 'O365.utils.token.EnvTokenBackend'}
 
 #EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 #EMAIL_USE_TLS = False
@@ -250,3 +263,12 @@ LOGGING = {
     }
 }
 USE_THOUSAND_SEPARATOR = True
+DATE_INPUT_FORMATS = [
+    '%Y-%m-%d', '%m/%d/%Y', '%m/%d/%y', # '2006-10-25', '10/25/2006', '10/25/06'
+    '%Y-%m',  # '2006-10'
+    '%b %d %Y', '%b %d, %Y',            # 'Oct 25 2006', 'Oct 25, 2006'
+    '%d %b %Y', '%d %b, %Y',            # '25 Oct 2006', '25 Oct, 2006'
+    '%B %d %Y', '%B %d, %Y',            # 'October 25 2006', 'October 25, 2006'
+    '%d %B %Y', '%d %B, %Y',            # '25 October 2006', '25 October, 2006'
+]
+#MAINTENANCE_MODE_IGNORE_SUPERUSER = True

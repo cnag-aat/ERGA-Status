@@ -3,18 +3,23 @@ from django_filters  import FilterSet
 from django_filters  import ChoiceFilter
 from django_filters  import RangeFilter
 from django_filters  import CharFilter
+from status.models import Reads
 from status.models import GenomeTeam
 from status.models import TargetSpecies
 from status.models import SequencingTeam
+from status.models import AssemblyTeam
+from status.models import Task
+from status.models import Assembly
 # from status.models import Tag
 from django import forms
 from django.db.models import Q
 
 class GenomeTeamFilter(django_filters.FilterSet):
-    # species__tags__tag = django_filters.ModelChoiceFilter(label='tags',queryset=Tag.objects.all())
-    class Meta:
-        model = GenomeTeam
-        fields = [
+    # species__tags__tag = django_filters.ModelChoiceFilter(label='tags',queryset=Tag.objects.all())	
+	species = django_filters.CharFilter(field_name='species',lookup_expr='icontains',label='Species')
+	class Meta:
+		model = GenomeTeam
+		fields = [
             # 'species__tags__tag',
             'species',
         	'sample_handling_team',
@@ -31,7 +36,9 @@ class GenomeTeamFilter(django_filters.FilterSet):
             ]
 
 class TargetSpeciesFilter(django_filters.FilterSet):
+    collection_rel__task = django_filters.ModelChoiceFilter(label='Task',queryset=Task.objects.all())
     gt_rel__sequencing_team = django_filters.ModelChoiceFilter(label='Center',queryset=SequencingTeam.objects.all())
+
     SEQSTATUS_CHOICES = (
         ('Waiting', 'Waiting'),
     	('Received', 'Received'),
@@ -52,6 +59,8 @@ class TargetSpeciesFilter(django_filters.FilterSet):
 		('Scaffolds', 'Scaffolds'),
 		('Curating', 'Curating'),
 		('Done', 'Done'),
+		('UnderReview', 'UnderReview'),
+		('Approved', 'Approved'),
 		('Submitted', 'Submitted'),
 		('Issue', 'Issue')
 	)
@@ -80,13 +89,14 @@ class TargetSpeciesFilter(django_filters.FilterSet):
         fields = [
             'scientific_name',
             'tolid_prefix',
+            'collection_rel__task',
         	'gt_rel__sequencing_team',
         	'goat_sequencing_status',
             # 'tags',
-        	'sequencing_rel__long_seq_status',
-        	'sequencing_rel__short_seq_status', 
-        	'sequencing_rel__hic_seq_status', 
-       		'sequencing_rel__rna_seq_status', 
+        	# 'sequencing_rel__long_seq_status',
+        	# 'sequencing_rel__short_seq_status', 
+        	# 'sequencing_rel__hic_seq_status', 
+       		# 'sequencing_rel__rna_seq_status', 
     		'assembly_status',
         	'annotation_status',
         	'community_annotation_status',
@@ -117,7 +127,7 @@ class SpeciesFilter(django_filters.FilterSet):
 		('insdc_open', 'insdc_open'),
 		('published', 'published')
 	)
-	listed_name = django_filters.CharFilter(field_name='listed_name',lookup_expr='icontains',label='Listed Species')
+	listed_species = django_filters.CharFilter(field_name='listed_species',lookup_expr='icontains',label='Listed Species')
 	scientific_name = django_filters.CharFilter(field_name='scientific_name',lookup_expr='icontains',label='Species')
 	tolid_prefix = django_filters.CharFilter(field_name='tolid_prefix',lookup_expr='icontains',label='ToLID Prefix')
 	goat_target_list_status = django_filters.ChoiceFilter(field_name='goat_target_list_status',label='GoaT Target Status',choices=GOAT_TARGET_LIST_STATUS_CHOICES,null_label=None)
@@ -138,3 +148,16 @@ class SpeciesFilter(django_filters.FilterSet):
         #     # 'taxon_family',
         #     # 'taxon_genus'
         #     ]
+
+class ReadsFilter(django_filters.FilterSet):
+	project__species__gt_rel__sequencing_team = django_filters.ModelChoiceFilter(label='Center',queryset=SequencingTeam.objects.all())
+	class Meta:
+		model = Reads
+		fields = ['project__species__gt_rel__sequencing_team',]
+
+class AssemblyFilter(django_filters.FilterSet):
+	project__species__gt_rel__assembly_team = django_filters.ModelChoiceFilter(label='Assembly Team',queryset=AssemblyTeam.objects.all())
+	class Meta:
+		model = Assembly
+		fields = ['project__species__gt_rel__assembly_team','pipeline','type','chromosome_level','accession','gca']
+

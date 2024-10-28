@@ -165,6 +165,11 @@ class ReadsSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerialize
         model = Reads
         fields = '__all__'
 
+class EnaReadsSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = EnaReads
+        fields = '__all__'
+
 class RunSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Run
