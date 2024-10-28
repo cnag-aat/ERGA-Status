@@ -91,7 +91,10 @@ body {
           <a class="nav-link" id="runslink" href="{% url 'runs_list' %}">Runs</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" id="readslink" href="{% url 'reads_list' %}">Reads</a>
+          <a class="nav-link" id="runslink" href="{% url 'ena_runs_list' %}">Submitted runs</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="readslink" href="{% url 'ena_reads_list' %}">Data Summary</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" id="assemblylink" href="{% url 'assembly_list' %}">Assemblies</a>
