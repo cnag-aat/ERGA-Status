@@ -38,6 +38,11 @@ class TargetSpeciesSerializer(BulkSerializerMixin, serializers.HyperlinkedModelS
         model = TargetSpecies
         fields = '__all__'
 
+class SubSpeciesSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = SubSpecies
+        fields = '__all__'
+
 class AssemblyTeamSerializer(BulkSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = AssemblyTeam

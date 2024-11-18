@@ -298,10 +298,12 @@ class TargetSpecies(models.Model):
     genome_size = models.BigIntegerField(null=True, blank=True, verbose_name="GoaT Size Estimate",default=0)
     genome_size_update = models.BigIntegerField(null=True, blank=True,verbose_name="Updated Genome Size",default=0)
     genome_size_update_evidence = models.CharField(max_length=100, null=True, blank=True,verbose_name="Evidence for Estimated Size")
-    subspecies = models.CharField(max_length=100, verbose_name="Subspecies", blank=True, null=True)
+    subspecies_name = models.CharField(max_length=100, verbose_name="Subspecies", blank=True, null=True)
+    #subspecies_taxon_id = models.CharField(max_length=20,unique=True, null=True, blank=True, db_index=True)
     goat_target_list_status = models.CharField(max_length=30, verbose_name="target_list_status", help_text='Target List Status', choices=GOAT_TARGET_LIST_STATUS_CHOICES, default=GOAT_TARGET_LIST_STATUS_CHOICES[0][0])
     goat_sequencing_status = models.CharField(max_length=30, blank=True, null=True, verbose_name="GoaT Sequencing Status", help_text='Sequencing Status', choices=GOAT_SEQUENCING_STATUS_CHOICES, default=GOAT_SEQUENCING_STATUS_CHOICES[0][0])
     gss_rank = models.IntegerField(null=True, blank=True, default=0)
+    copo_status = models.CharField(max_length=20, help_text='COPO status', choices=COPO_STATUS_CHOICES, default=COPO_STATUS_CHOICES[0][0])
     synonym = models.CharField(max_length=100, verbose_name="Synonym", blank=True, null=True)
     publication_id = models.CharField(max_length=50, verbose_name="Publication ID", blank=True, null=True)
     iucn_code = models.CharField(max_length=10, verbose_name="IUCN Assessment", blank=True, null=True)
@@ -493,6 +495,17 @@ class Synonyms(models.Model):
 
     def __str__(self):
         return self.name
+
+class SubSpecies(models.Model):
+    species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="Genus/species", related_name='subspecies_rel')
+    scientific_name = models.CharField(max_length=150, blank=True, null=True)
+    taxon_id = models.CharField(max_length=20,unique=True, db_index=True)
+
+    class Meta:
+        verbose_name_plural = 'subspecies'
+
+    def __str__(self):
+        return self.scientific_name or self.taxon_id
 
 class Affiliation(models.Model):
     affiliation = models.CharField(max_length=500, null=True, blank=True, unique=True)
@@ -924,7 +937,7 @@ class MonthDateField(models.DateField):
         return super().to_python(value)
     
 class SampleCollection(models.Model):
-    species = models.OneToOneField(TargetSpecies, on_delete=models.CASCADE, verbose_name="species",unique=True,related_name='collection_rel')
+    species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, verbose_name="species",related_name='collection_rel')
     #team = models.ForeignKey(CollectionTeam, on_delete=models.SET_NULL, null=True, verbose_name="collection team", blank=True)
     copo_status = models.CharField(max_length=20, help_text='COPO status', choices=COPO_STATUS_CHOICES, default=COPO_STATUS_CHOICES[0][0])
     #genomic_sample_status = models.CharField(max_length=20, help_text='Status', choices=COLLECTION_STATUS_CHOICES, default=COLLECTION_STATUS_CHOICES[0][0])
@@ -1069,7 +1082,7 @@ class Specimen(models.Model):
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, related_name='specimen_rel', verbose_name="species",null=True, blank=True, db_index=True)
     tolid = models.CharField(max_length=20, help_text='Registered ToLID for the Specimen', null=True, blank=True)
     biosampleAccession = models.CharField(max_length=20, help_text='BioSample Accession', null=True, blank=True, verbose_name="Specimen BioSample")
-    collection = models.ForeignKey(SampleCollection, on_delete=models.CASCADE, verbose_name="Collection", db_index=True)
+    collection = models.ForeignKey(SampleCollection, on_delete=models.CASCADE, verbose_name="Collection", db_index=True, null=True, blank=True)
     sample_coordinator = models.CharField(max_length=120, help_text='Sample coordinator', null=True, blank=True)
     tissue_removed_for_biobanking = models.BooleanField(default=False)
     tissue_voucher_id_for_biobanking = models.CharField(max_length=500, null=True, blank=True)
@@ -1097,6 +1110,16 @@ class FromManifest(models.Model):
     preserver = models.ManyToManyField(Person, null=True, blank=True, related_name="preserver_rel")
     identifier = models.ManyToManyField(Person, null=True, blank=True, related_name="identifier_rel")
     coordinator = models.ManyToManyField(Person, null=True, blank=True, related_name="coordinator_rel")
+    sample_collectors = models.CharField(max_length=120, help_text='Collectors', null=True, blank=True)
+    sample_collector_affiliations = models.CharField(max_length=120, help_text='Collector affiliations', null=True, blank=True)
+    sample_collector_orcids = models.CharField(max_length=120, help_text='Collector ORCIDs', null=True, blank=True)
+    sample_identifiers = models.CharField(max_length=120, help_text='Identifiers', null=True, blank=True)
+    sample_identifier_affiliations = models.CharField(max_length=120, help_text='Identifier affiliations', null=True, blank=True)
+    sample_preservers = models.CharField(max_length=120, help_text='Preservers', null=True, blank=True)
+    sample_preserver_affiliations = models.CharField(max_length=120, help_text='Preserver affiliations', null=True, blank=True)
+    sample_coordinators = models.CharField(max_length=120, help_text='Sample coordinators', null=True, blank=True)
+    sample_coordinators_affiliations = models.CharField(max_length=120, help_text='Sample coordinator affiliations', null=True, blank=True)
+    sample_coordinators_orcids = models.CharField(max_length=120, help_text='Sample coordinator ORCIDs', null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
@@ -1116,7 +1139,7 @@ LEFTOVER_CHOICES = (
     ('Both', 'Both')
 ) 
 class Sample(models.Model):
-    copo_id = models.CharField(max_length=30, help_text='COPO ID', null=True, blank=True, verbose_name="CopoID")
+    copo_id = models.CharField(max_length=30, help_text='COPO ID', null=True, blank=True, verbose_name="CopoID") # should make this unique and not nullable
     biosampleAccession = models.CharField(max_length=20, help_text='BioSample Accession', null=True, blank=True, verbose_name="BioSample")
     sampleDerivedFrom = models.CharField(max_length=20, help_text='BioSample Derived From', null=True, blank=True, verbose_name="SampleDerivedFrom")
     sampleSameAs = models.CharField(max_length=20, help_text='BioSample Same As', null=True, blank=True, verbose_name="SampleSameAs")

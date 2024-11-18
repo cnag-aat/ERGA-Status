@@ -65,7 +65,8 @@ INSTALLED_APPS = [
     'modelclone',
     'django_addanother',
     'django_popup_view_field',
-    'tagging'
+    'tagging',
+    "django_cron",
 ]
 
 MIDDLEWARE = [
@@ -77,6 +78,13 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     #'maintenance_mode.middleware.MaintenanceModeMiddleware',
+]
+
+CRON_CLASSES = [
+    "status.views.SpeciesSaveCronJob",
+    "status.views.UpdateSamplesCronJob",
+    "status.views.FetchEARsCronJob",
+    # ...
 ]
 
 ROOT_URLCONF = 'erga.urls'
@@ -272,3 +280,4 @@ DATE_INPUT_FORMATS = [
     '%d %B %Y', '%d %B, %Y',            # '25 October 2006', '25 October, 2006'
 ]
 #MAINTENANCE_MODE_IGNORE_SUPERUSER = True
+GITHUB_TOKEN = config('GITHUB_TOKEN')

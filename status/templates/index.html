@@ -138,12 +138,12 @@
   });
 
   const totalctx = document.getElementById('TotalSeqProdChart');
-  var tad = {{ total_assembly_done }};
-  var ta = {{ total_assembling }};
-  var tsd = {{ total_seq_done }};
-  var ts = {{ total_sequencing }};
-  var tc = {{ total_collected }};
-  var tnc = {{ total_not_collected }};
+  var tad = {{ total_assembly_done|safe }};
+  var ta = {{ total_assembling|safe }};
+  var tsd = {{ total_seq_done|safe }};
+  var ts = {{ total_sequencing|safe }};
+  var tc = {{ total_collected|safe }};
+  var tnc = {{ total_not_collected|safe }};
   var cumsum1 = tad;
   var cumsum2 = tad + ta;
   var cumsum3 = tad + ta + tsd;
@@ -224,12 +224,12 @@
         },
         {
           data: [
-            {{ total_assembly_done }},
-            {{ total_assembling }},
-            {{ total_seq_done }},
-            {{ total_sequencing }},
-            {{ total_collected }},
-            {{ total_not_collected }}
+            {{ total_assembly_done|safe }},
+            {{ total_assembling|safe }},
+            {{ total_seq_done|safe }},
+            {{ total_sequencing|safe }},
+            {{ total_collected|safe }},
+            {{ total_not_collected|safe }}
           ],
           weight:5,
           backgroundColor: [

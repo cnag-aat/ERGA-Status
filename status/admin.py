@@ -132,6 +132,9 @@ def update_goat_seq_status(modeladmin, request, queryset):
 class SampleCollectionInlineAdmin(admin.TabularInline):
     model = SampleCollection
 
+class SubSpeciesInlineAdmin(admin.TabularInline):
+    model = SubSpecies
+
 @register(TargetSpecies)
 class TargetSpeciesAdmin(admin.ModelAdmin):
     list_filter = ["gt_rel__sequencing_team","sequencing_rel__phase","collection_rel__country","collection_rel__task",'goat_target_list_status','goat_sequencing_status']
@@ -139,7 +142,8 @@ class TargetSpeciesAdmin(admin.ModelAdmin):
     action_form = UpdateSpeciesActionForm
     actions = [update_goat_list_status,update_goat_seq_status]
     # actions = [add_tags,remove_tags,update_goat_list_status,update_goat_seq_status]
-    inlines = [SampleCollectionInlineAdmin]
+    # inlines = [SampleCollectionInlineAdmin]
+    inlines = [SubSpeciesInlineAdmin]
     def get_actions(self, request):
         actions = super(TargetSpeciesAdmin, self).get_actions(request)
         # try:
@@ -205,6 +209,8 @@ class TargetSpeciesAdmin(admin.ModelAdmin):
         'gss_rank',
         'date_updated'
     )
+
+admin.site.register(SubSpecies)
 
 @register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
@@ -460,7 +466,7 @@ admin.site.register(Country)
 @register(SampleCollection)
 class SampleCollectionAdmin(admin.ModelAdmin, ExportCsvMixin):
     search_fields = ['species__scientific_name']
-    list_filter = ["task__name","country__name","species__goat_sequencing_status","species__gt_rel__sample_handling_team","species__gt_rel__sequencing_team","sampling_delay"]
+    list_filter = ["task",'subproject',"country__name","species__goat_sequencing_status","species__gt_rel__sample_handling_team","species__gt_rel__sequencing_team","sampling_delay"]
     list_display = ('species','task','country','copo_status','sample_provider_name','sample_provider_email','mta1','mta2','barcoding_status','sampling_delay','deadline_manifest_acceptance','note')
     actions = ["export_as_csv"]
     # formfield_overrides = {
@@ -479,6 +485,7 @@ admin.site.register(BiobankingTeam)
 admin.site.register(ExtractionTeam)
 admin.site.register(FromManifest)
 admin.site.register(Phase)
+
 
 class UpdateSequencingActionForm(ActionForm):
     phase = forms.ModelMultipleChoiceField(

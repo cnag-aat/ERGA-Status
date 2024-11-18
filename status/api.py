@@ -93,6 +93,14 @@ class TargetSpeciesViewSet(BulkModelViewSet):
     serializer_class = TargetSpeciesSerializer
     filter_fields = '__all__'
 
+class SubSpeciesViewSet(BulkModelViewSet):
+    """
+    API endpoint that allows target species to be viewed or edited.
+    """
+    queryset = SubSpecies.objects.all()
+    serializer_class = SubSpeciesSerializer
+    filter_fields = '__all__'
+
 class AssemblyTeamViewSet(BulkModelViewSet):
     """
     API endpoint that allows assembly teams to be viewed or edited.

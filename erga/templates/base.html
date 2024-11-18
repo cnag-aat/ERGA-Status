@@ -75,47 +75,47 @@ body {
         <li class="nav-item">
           <a class="nav-link" id="overviewlink" href="{% url 'overview' %}">Status</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" id="specieslink" href="{% url 'species_list' %}">Species</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" id="collectionlink" href="{% url 'collection_list' %}">Collection</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" id="specimenslink" href="{% url 'specimen_list' %}">Specimens</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" id="sampleslink" href="{% url 'sample_list' %}">Samples</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" id="runslink" href="{% url 'runs_list' %}">Runs</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" id="runslink" href="{% url 'ena_runs_list' %}">Submitted runs</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" id="readslink" href="{% url 'ena_reads_list' %}">Data Summary</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" id="assemblylink" href="{% url 'assembly_list' %}">Assemblies</a>
-        </li>
 
 
-        <li class="nav-item">
-          <a class="nav-link" id="teamslink" href="{% url 'genome_teams' %}">Teams</a>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Species and Sampling
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="dropdown-item" id="specieslink" href="{% url 'species_list' %}">Species</a>
+              <a class="dropdown-item" id="goatlink" href="{% url 'goat_list' %}">GoaT Target List</a>
+              <a class="dropdown-item" id="collectionlink" href="{% url 'collection_list' %}">Collection</a>
+              <a class="dropdown-item" id="specimenslink" href="{% url 'specimen_list' %}">Specimens</a>
+              <a class="dropdown-item" id="sampleslink" href="{% url 'sample_list' %}">Samples</a>
+          </div>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" id="authorslink" href="{% url 'author_list' %}">Authors</a>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Data
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="dropdown-item" id="runslink" href="{% url 'runs_list' %}">Runs</a>
+              <a class="dropdown-item" id="runslink" href="{% url 'ena_runs_list' %}">Runs (ENA)</a>
+              <a class="dropdown-item" id="readslink" href="{% url 'ena_reads_list' %}">Data Summary</a>
+              <a class="dropdown-item" id="readslink" href="{% url 'ena_reads_list' %}">Data Summary (ENA)</a>
+              <a class="dropdown-item" id="assemblylink" href="{% url 'assembly_list' %}">Assemblies</a>
+          </div>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'add_species_list' %}">Load-Species</a>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Management
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a>
+              <a class="dropdown-item" id="teamslink" href="{% url 'genome_teams' %}">Teams</a>
+              <a class="dropdown-item" id="authorslink" href="{% url 'author_list' %}">Authors</a>
+              <a class="dropdown-item" href="{% url 'add_species_list' %}">Load-Species</a>
+              <a class="dropdown-item" href="{% url 'api-root' %}">API</a>
+          </div>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'api-root' %}">API</a>
-        </li>
+
         <li class="nav-item">
           <a class="nav-link" href="{% url 'help' %}">Help</a>
         </li>
