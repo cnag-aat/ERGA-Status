@@ -19,26 +19,40 @@
   </div>
 </div>
 
-<div class="row">
-  <div class="col-md-8">
-    <div class="card mb-1">
-      <div class="card-body">
-        <div>
-          <canvas id="SeqProdChart"></canvas>
+<!-- <div class="row" style="flex">
+  <div class="col-md-12" style="flex">
+    <div class="card-group">
+      <div class="card" style="flex-grow: 2">
+        <div class="card-body">
+          <div style="aspect-ratio: 2">
+            <canvas id="SeqProdChart"></canvas>
+          </div>
+          <div>&nbsp;</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div style="aspect-ratio: 2">
+            <canvas id="TotalSeqProdChart"></canvas>
+          </div>
+          <div>&nbsp;</div>
         </div>
       </div>
     </div>
-  </div>
-  <div class="col-md-4">
-    <div class="card mb-1">
-       <div class="card-body">
-        <div>
-          <canvas id="TotalSeqProdChart"></canvas>
-        </div>
-      </div>
-    </div>
-  </div>
+  </div> -->
 
+  <div class="row" style="flex">
+    <div class="col-md-6" style="flex">
+      <div style="aspect-ratio: 2">
+        <canvas id="SeqProdChart"></canvas>
+      </div>
+    </div>
+    <div class="col-md-6" style="flex">
+      <div style="aspect-ratio: 2">
+        <canvas id="TotalSeqProdChart"></canvas>
+      </div>
+    </div>
+  </div>
 
   <!-- <div class="col-md-6">
     <div class="card mb-1">
@@ -122,6 +136,7 @@
         },
       },
       responsive: true,
+      maintainAspectRatio: false,
       scales: {
         x: {
           stacked: true,
@@ -147,12 +162,13 @@
   var cumsum1 = tad;
   var cumsum2 = tad + ta;
   var cumsum3 = tad + ta + tsd;
-  var cumsum4 = tad + ta + tsd + ts;
+  var cumsum4 = tad + ta + tsd + ts; //all data in production
   var cumsum5 = tad + ta + tsd + ts + tc;
-  var cumsum6 = tad + ta + tsd + ts + tc + tnc;
-  var sum_notstarted = tc + tnc;
-  var sum_notfinished = ts + tc + tnc;
-  var excess = cumsum6 -450;
+  /* var cumsum6 = tad + ta + tsd + ts + tc + tnc; */
+  var target = cumsum4 < 450 ? 450 : cumsum4;
+  var sum_notstarted = target - cumsum4; // var sum_notstarted = tc + tnc;
+  var sum_notfinished = target - cumsum3; /* = ts + tc + tnc; */
+  var excess = target -450
 
   new Chart(totalctx, {
     type: 'doughnut',
@@ -174,7 +190,7 @@
         ''
       ],
       datasets: [
-        {
+        { /* sequencing done */
           data: [
             0,0,0,0,0,0,cumsum3,sum_notfinished,0,0,0,0,0,0
           ],
@@ -198,7 +214,7 @@
           rotation: -90,
           circumference: 180
         },
-        {
+        { /* sequencing_started */
           data: [
             0,0,0,0,0,0,0,0,cumsum4,sum_notstarted,0,0,0,0
           ],
@@ -222,14 +238,14 @@
           rotation: -90,
           circumference: 180
         },
-        {
+        { /* detailed state */ 
           data: [
             {{ total_assembly_done|safe }},
             {{ total_assembling|safe }},
             {{ total_seq_done|safe }},
             {{ total_sequencing|safe }},
-            {{ total_collected|safe }},
-            {{ total_not_collected|safe }}
+            tc < target - cumsum4 ? tc : target - cumsum4,//tc,
+            target - cumsum5 > 0 ? target - cumsum5 : 0 //tnc
           ],
           weight:5,
           backgroundColor: [
@@ -248,7 +264,7 @@
           rotation: -90,
           circumference: 180
         },
-        {
+        { /* milestones */
           data: [
             0,0,0,0,0,0,0,0,0,0,90,140,220,excess
           ],
@@ -280,8 +296,12 @@
           display: true,
           text: 'Total'
         },
+        legend: {
+          display: false
+        },
       },
       responsive: true,
+      maintainAspectRatio: false,
     }
   });
 

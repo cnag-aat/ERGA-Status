@@ -86,7 +86,7 @@ CRON_CLASSES = [
     "status.views.FetchEARsCronJob",
     # ...
 ]
-
+DJANGO_CRON_LOCK_BACKEND = "django_cron.backends.lock.cache.CacheLockBackend"
 ROOT_URLCONF = 'erga.urls'
 
 TEMPLATES = [
@@ -243,7 +243,7 @@ ACCOUNT_FORMS = {
 'signup': 'status.forms.CustomSignupForm',
 }
 
-LOGGING = {
+""" LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
@@ -256,7 +256,12 @@ LOGGING = {
             'level': 'NOTSET',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
-        }
+        },
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "/home/talioto/logs/erga-gtc.log",
+        },
     },
     'loggers': {
         '': {
@@ -269,7 +274,45 @@ LOGGING = {
             'level': 'ERROR'
         }
     }
+} """
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',  # Simple formatting using str.format()
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',  # Log WARNING and ERROR messages
+            'class': 'logging.FileHandler',
+            'filename': "/home/talioto/logs/erga-gtc.log",  # Change file path if needed
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'WARNING',
+            'propagate': True,
+        },
+        'status': {  # Logger for your custom app
+            'handlers': ['file'],
+            'level': 'DEBUG',  # DEBUG level logs for development
+            'propagate': False,
+        },
+        'erga': {  # Logger for your custom app
+            'handlers': ['file'],
+            'level': 'DEBUG',  # DEBUG level logs for development
+            'propagate': False,
+        },
+    },
 }
+
 USE_THOUSAND_SEPARATOR = True
 DATE_INPUT_FORMATS = [
     '%Y-%m-%d', '%m/%d/%Y', '%m/%d/%y', # '2006-10-25', '10/25/2006', '10/25/06'

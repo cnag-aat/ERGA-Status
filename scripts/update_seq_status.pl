@@ -106,7 +106,7 @@ if ($ena_json){
 	print STDERR "$number_found runs found.\n";
 	if ($number_found){
 		foreach my $r (@$ena_response){
-			#next if $r->{tax_id} ne '2053936'; #test ilGraIsab
+			#next if $r->{tax_id} ne '10034'; #test ilGraIsab
 			next if $r->{base_count} < 1;
 			my $proj_url = '';
 			my $species_query = "$erga_status_url/species/?taxon_id=".$r->{tax_id};
@@ -291,7 +291,7 @@ foreach my $surl (keys %projects){
 			$seq_insert_data{long_seq_status}="Submitted";
 			$makechange=1;
 		}elsif($hifi_target>0 && $sums{HiFi}/($hifi_target * $gs_update) > 0){
-			$seq_insert_data{long_seq_status}="Sequencing" unless $r->{long_seq_status} eq "Done";
+			$seq_insert_data{long_seq_status}="Sequencing" unless ($r->{long_seq_status} eq "Done" || $r->{long_seq_status} eq "Submitted" );
 			$makechange=1;
 		}
 		print STDERR join("\t",($ont_target,$sums{ONT},$gs_update)),"\n";
@@ -299,7 +299,7 @@ foreach my $surl (keys %projects){
 			$seq_insert_data{long_seq_status}="Submitted";
 			$makechange=1;
 		}elsif($ont_target>0 && $sums{ONT}/($ont_target * $gs_update)> 0){
-			$seq_insert_data{long_seq_status}="Sequencing" unless $r->{long_seq_status} eq "Done";
+			$seq_insert_data{long_seq_status}="Sequencing" unless ($r->{long_seq_status} eq "Done" || $r->{long_seq_status} eq "Submitted" );
 			$makechange=1;
 		}
 		print STDERR join("\t",($short_target,$sums{Illumina},$gs_update)),"\n";
@@ -307,7 +307,7 @@ foreach my $surl (keys %projects){
 			$seq_insert_data{short_seq_status}="Submitted";
 			$makechange=1;
 		}elsif($short_target>0 && $sums{Illumina}/($short_target * $gs_update)> 0){
-			$seq_insert_data{short_seq_status}="Sequencing" unless $r->{short_seq_status} eq "Done";
+			$seq_insert_data{short_seq_status}="Sequencing" unless ($r->{short_seq_status} eq "Done" || $r->{short_seq_status} eq "Submitted" );
 			$makechange=1;
 		}
 		print STDERR join("\t",($hic_target,$sums{HiC},$gs_update)),"\n";
@@ -315,7 +315,7 @@ foreach my $surl (keys %projects){
 			$seq_insert_data{hic_seq_status}="Submitted";
 			$makechange=1;
 		}elsif($hic_target>0 && $sums{HiC}/($hic_target * $gs_update)> 0){
-			$seq_insert_data{hic_seq_status}="Sequencing" unless $r->{hic_seq_status} eq "Done";
+			$seq_insert_data{hic_seq_status}="Sequencing" unless ($r->{hic_seq_status} eq "Done" || $r->{hic_seq_status} eq "Submitted" );
 			$makechange=1;
 		}
 		print STDERR "RNA target:",$rna_target,"\n";
@@ -323,7 +323,7 @@ foreach my $surl (keys %projects){
 			$seq_insert_data{rna_seq_status}="Submitted";
 			$makechange=1;
 		}elsif($rna_target>0 && $sums{RNA}/$rna_target > 0){
-			$seq_insert_data{rna_seq_status}="Sequencing"  unless $r->{rna_seq_status} eq "Done";;
+			$seq_insert_data{rna_seq_status}="Sequencing"  unless ($r->{rna_seq_status} eq "Done" || $r->{rna_seq_status} eq "Submitted" );
 			$makechange=1;
 		}
 		if ($makechange){

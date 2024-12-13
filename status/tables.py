@@ -35,7 +35,7 @@ class OverviewTable(tables.Table):
     #community_annotation_status = tables.Column(accessor='communityannotation.status',verbose_name='Community Annotation',attrs={"td": {"class": "analysis_col"},"th": {"class": "analysis_col"}})
     annotation_status = tables.Column(accessor='annotation.status',verbose_name='Annotation',attrs={"td": {"class": "analysis_col"},"th": {"class": "analysis_col"}})
     tolid_prefix = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("pk")}, empty_values=())
-    scientific_name = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("pk")}, empty_values=())
+    scientific_name = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("pk")}, empty_values=())#,attrs={"td": {"class": "species_col"},"th": {"class": "species_col"}})
     log = tables.TemplateColumn('<a href="' + settings.DEFAULT_DOMAIN + 'log/?species={{record.id}}"><i class="fas fa-history"></i></a>',empty_values=(), verbose_name='log',orderable=False)
     #attrs={"td": {"class": "overview-table"}}
 
@@ -47,7 +47,7 @@ class OverviewTable(tables.Table):
         cfirst = True
 
         collections = list(value.all())
-        print(str(collections))
+        #print(str(collections))
         for c in collections:
             if not cfirst:
                 clist += "<br />"
@@ -56,8 +56,8 @@ class OverviewTable(tables.Table):
             #print c.task.short_name
             if c is not None:
                 if c.task is not None:
-                    print(c.task)
-                    print(c.task.short_name)
+                    #print(c.task)
+                    #print(c.task.short_name)
                     clist += str(c.task.short_name) 
 
         return mark_safe(clist)
@@ -99,8 +99,8 @@ class OverviewTable(tables.Table):
         return value
         
     def render_copo_status(self, value, record):
-        html = '<a href="' + settings.DEFAULT_DOMAIN + 'collection/?species='+str(record.pk)+'"><span class="status '+escape(value.replace(" ",''))+'">'+escape(value)+'</span></a>'
-
+       #html = '<a href="' + settings.DEFAULT_DOMAIN + 'collection/?species='+str(record.pk)+'"><span class="status '+escape(value.replace(" ",''))+'">'+escape(value)+'</span></a>'
+        html = '<span class="status '+escape(value.replace(" ",''))+'">'+escape(value)+'</span>'
         # cs_string = ""
         # sFirst = True
         # for s in value.all():
@@ -205,8 +205,15 @@ class TargetSpeciesTable(tables.Table):
     scientific_name = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("pk")}, empty_values=())
     subspecies_rel = tables.ManyToManyColumn(verbose_name="Subspecies") #accessor='subspecies_rel.scientific_name',
     phase = tables.Column(accessor='sequencing_rel__phase',verbose_name="Phase")
-    task = tables.Column(accessor='collection_rel__task',verbose_name="Task")
-    country = tables.Column(accessor='collection_rel__country',verbose_name="Country")
+    task = tables.ManyToManyColumn(accessor='collection_rel',verbose_name="Task")
+    country = tables.ManyToManyColumn(accessor='collection_rel',verbose_name="Country")
+    def render_task(self, value, record):
+        tasks = {sc.task.short_name for sc in value.all() if sc.task}
+        return ';'.join(tasks)
+    def render_country(self, value, record):
+        countries = {sc.country.name for sc in value.all() if sc.country}
+        return ';'.join(countries)
+    
     def render_scientific_name(self, value, record):
         url = reverse('species_detail',kwargs={'pk': record.pk})
         return format_html('<a href="{}">{}</a>',url, str(value))
@@ -223,7 +230,7 @@ class TargetSpeciesTable(tables.Table):
         template_name = "django_tables2/bootstrap4.html"
         #order_by = 'taxon_kingdom,taxon_phylum,taxon_class,taxon_order,taxon_family,taxon_genus,scientific_name' # use dash for descending order
         paginate = {"per_page": 100}
-        fields = ('listed_species','scientific_name','taxon_id','subspecies_rel','genome_size','genome_size_update','phase','task','country','goat_target_list_status','goat_sequencing_status','ranking', 'iucn_code', 'iucn_url', 'c_value','ploidy','haploid_number','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus')
+        fields = ('listed_species','scientific_name','taxon_id','subspecies_rel','genome_size','genome_size_update','phase','task','country','goat_target_list_status','goat_sequencing_status','copo_status','ranking', 'iucn_code', 'iucn_url', 'c_value','ploidy','haploid_number','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus')
 
 class GoaTSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']

@@ -86,7 +86,7 @@ class OverviewSpeciesFilter(django_filters.FilterSet):
 		('Accepted', 'Accepted'),
 		('Pending', 'Pending')
 	)
-    copo_status = django_filters.ChoiceFilter(field_name='collection_rel__copo_status',label='COPO Status',choices=COPO_STATUS_CHOICES,null_label=None)
+    #copo_status = django_filters.ChoiceFilter(field_name='collection_rel__copo_status',label='COPO Status',choices=COPO_STATUS_CHOICES,null_label=None)
     long_seq_status = django_filters.ChoiceFilter(field_name='sequencing_rel__long_seq_status',label='Long Read Status',choices=SEQSTATUS_CHOICES,null_label=None)
 
     #long_seq_status = django_filters.CharFilter(field_name='sequencing__long_seq_status',label='Long Read Status')

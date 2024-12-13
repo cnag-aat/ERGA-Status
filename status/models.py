@@ -321,7 +321,7 @@ class TargetSpecies(models.Model):
             self.gss_rank = gss_rank[self.goat_sequencing_status]
         if self.taxon_id:
             found_in_goat=0
-            print(self.listed_species)
+            #print(self.listed_species)
             #process = subprocess.run('/home/www/resistome.cnag.cat/incredible/search/mash dist -i /home/www/resistome.cnag.cat/incredible/search/incredble.release7.fasta.msh /home/www/resistome.cnag.cat/incredible/deployment/data/'+ new_query.fasta.name +' | /home/www/resistome.cnag.cat/incredible/search/mash_hits_to_json.pl', shell=True, check=True, stdout=subprocess.PIPE, universal_newlines=True)
             #output = process.stdout
             #targetspecies = TargetSpecies.objects.get(taxon_id=self.taxon_id)
@@ -335,7 +335,7 @@ class TargetSpecies(models.Model):
                 #csvreader = csv.DictReader(output, delimiter='\t')
                 #print("reading csv\n")
                 for row in csvreader:  
-                    print(row)
+                    #print(row)
                     if row['scientific_name'] and row['scientific_name'].strip():
                         found_in_goat = True
                         self.goat = True
@@ -1080,7 +1080,7 @@ def do_nothing(sender, *args, **kwargs):
 class Specimen(models.Model):
     specimen_id = models.CharField(max_length=100, help_text='Internal Specimen ID', db_index=True)
     species = models.ForeignKey(TargetSpecies, on_delete=models.CASCADE, related_name='specimen_rel', verbose_name="species",null=True, blank=True, db_index=True)
-    tolid = models.CharField(max_length=20, help_text='Registered ToLID for the Specimen', null=True, blank=True)
+    tolid = models.CharField(max_length=20, help_text='Registered ToLID for the Specimen', default='No ToLID')
     biosampleAccession = models.CharField(max_length=20, help_text='BioSample Accession', null=True, blank=True, verbose_name="Specimen BioSample")
     collection = models.ForeignKey(SampleCollection, on_delete=models.CASCADE, verbose_name="Collection", db_index=True, null=True, blank=True)
     sample_coordinator = models.CharField(max_length=120, help_text='Sample coordinator', null=True, blank=True)
@@ -1105,7 +1105,7 @@ class Specimen(models.Model):
         return self.tolid or self.specimen_id or str(self.id)
 
 class FromManifest(models.Model):
-    specimen = models.ForeignKey(Specimen, on_delete=models.CASCADE, related_name="manifest_roles_rel", verbose_name="specimen")
+    specimen = models.ForeignKey(Specimen, unique=True, on_delete=models.CASCADE, related_name="manifest_roles_rel", verbose_name="specimen")
     collector = models.ManyToManyField(Person, null=True, blank=True, related_name="collector_rel")
     preserver = models.ManyToManyField(Person, null=True, blank=True, related_name="preserver_rel")
     identifier = models.ManyToManyField(Person, null=True, blank=True, related_name="identifier_rel")

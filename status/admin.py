@@ -52,6 +52,7 @@ export_csv.short_description = "Export CSV"
 # Register your models here.
 GOAT_TARGET_LIST_STATUS_CHOICES = (
     ('none', 'none'),
+    ('waiting_list', 'waiting_list'),
     ('long_list', 'long_list'),
     ('other_priority', 'other_priority'),
     ('family_representative', 'family_representative'),
