@@ -79,7 +79,8 @@ SEQUENCING_STATUS_CHOICES = (
     ('External', 'External'),
     ('Submitted', 'Submitted'),
     ('Done', 'Done'),
-    ('Issue', 'Issue')
+    ('Issue', 'Issue'),
+    ('Abandoned', 'Abandoned')
 )
 
 class UpdateSpeciesActionForm(ActionForm):
@@ -428,8 +429,9 @@ admin.site.register(AssemblyTeam)
 admin.site.register(Statement)
 @register(AssemblyProject)
 class AssemblyProjectAdmin(admin.ModelAdmin):
-    list_filter = ["species__gt_rel__assembly_team"]
+    list_filter = ["species__gt_rel__assembly_team","status"]
     list_display = (
+        'get_tolid_prefix',
         'species',
         'status',
         'note'
@@ -437,7 +439,9 @@ class AssemblyProjectAdmin(admin.ModelAdmin):
     readonly_fields=(
         'species',
     )
-    search_fields = ['species__scientific_name']
+    search_fields = ['species__scientific_name','species__tolid_prefix']
+    def get_tolid_prefix(self, obj):
+        return obj.species.tolid_prefix
     def get_queryset(self, request):
         qs = super(AssemblyProjectAdmin, self).get_queryset(request)
         return qs.exclude(species__goat_target_list_status = 'removed')
@@ -552,12 +556,13 @@ class SequencingAdmin(admin.ModelAdmin):
         'hic_seq_status',
         'rna_seq_status',
         'recipe',
+        'species_umbrella',
         'note'
     )
     readonly_fields=(
         'species',
     )
-    search_fields = ['species__scientific_name']
+    search_fields = ['species__scientific_name','species_umbrella']
     # def queryset(self, request):
     #     qs = super(SequencingAdmin, self).queryset(request)
     #     seqteam_qs = SequencingTeam.objects.get(species=self.species)

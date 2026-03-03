@@ -59,7 +59,8 @@ SEQUENCING_STATUS_CHOICES = (
     ('External', 'External'),
     ('Submitted', 'Submitted'),
     ('Done', 'Done'),
-    ('Issue', 'Issue')
+    ('Issue', 'Issue'),
+    ('Abandoned', 'Abandoned')
 )
 
 ASSEMBLY_STATUS_CHOICES = (
@@ -73,10 +74,12 @@ ASSEMBLY_STATUS_CHOICES = (
     ('UnderReview', 'UnderReview'),
     ('Approved', 'Approved'),
     ('Submitted', 'Submitted'),
-    ('Issue', 'Issue')
+    ('Issue', 'Issue'),
+    ('Abandoned', 'Abandoned')
 )
 assembly_rank = {
     'Waiting':0,
+    'Abandoned':1,
     'Issue':1,
     'Assembling':2,
     'Contigs':3,
@@ -505,7 +508,7 @@ class SubSpecies(models.Model):
         verbose_name_plural = 'subspecies'
 
     def __str__(self):
-        return self.scientific_name or self.taxon_id
+        return self.scientific_name + " (" + self.taxon_id + ")" or self.scientific_name or self.taxon_id
 
 class Affiliation(models.Model):
     affiliation = models.CharField(max_length=500, null=True, blank=True, unique=True)
@@ -558,8 +561,8 @@ class UserProfile(models.Model):
         send_mail(
             '[ERGA] New user, '+ self.first_name + " " + self.last_name +', has registered in ERGA-Stream',
             'name: '+ self.first_name +" "+self.last_name +"\nemail: "+self.user.email+"\naffiliations: "+self.get_affiliations()+"\nroles: "+self.get_roles()+"\nlead: "+str(self.lead)+"\n",
-            'denovo@cnag.eu',
-            ['denovo@cnag.eu'],
+            'erga.gtc@gmail.com',
+            ['erga.gtc@gmail.com'],
             fail_silently=True,
         )
 
@@ -1005,7 +1008,7 @@ class SampleCollection(models.Model):
                         send_mail(
                             '[ERGA] Metadata for '+ self.species.scientific_name +' accepted in COPO.',
                             'Dear '+ sequencing_team.lead.first_name+",\n\nMetadata for one or more specimens of "+ self.species.scientific_name +" have been submitted and accepted by COPO. More info can be found here:\n" +myurl,
-                            'denovo@cnag.eu',
+                            'erga.gtc@gmail.com',
                             [sequencing_team.lead.user.email],
                             fail_silently=True,
                         )
@@ -1160,6 +1163,7 @@ class Sample(models.Model):
     leftover_biobanking_team = models.ForeignKey(BiobankingTeam, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="biobanking team")
     date_sent = models.DateField(blank=True,null=True)
     date_received = models.DateField(blank=True,null=True)
+    suppressed = models.BooleanField(default=False)
 
     def get_absolute_url(self):
         return reverse('sample_detail', args=[str(self.pk)])
@@ -1206,6 +1210,7 @@ class Sequencing(models.Model):
     rna_seq_status = models.CharField(max_length=20, help_text='Status', choices=SEQUENCING_STATUS_CHOICES, default='Waiting')
     note = models.CharField(max_length=300, help_text='Notes', null=True, blank=True)
     recipe = models.ForeignKey(Recipe, on_delete=models.SET_NULL, to_field='name', verbose_name="Recipe", null=True)
+    species_umbrella = models.CharField(max_length=12, null=True, blank=True, verbose_name="Species Umbrella Accession")
     #recipe = models.ForeignKey(Recipe, on_delete=models.SET_NULL, to_field='name', default='HiFi25', verbose_name="Recipe", null=True, blank=True)
     
     __original_long_seq_status = None
@@ -1284,7 +1289,7 @@ class Sequencing(models.Model):
                         send_mail(
                             '[ERGA] Long read genomic sequencing for '+ self.species.scientific_name +'is done',
                             'Dear '+ assembly_team.lead.first_name+",\n\nLong-read genomic sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
-                            'denovo@cnag.eu',
+                            'erga.gtc@gmail.com',
                             [assembly_team.lead.user.email],
                             fail_silently=True,
                         )
@@ -1298,7 +1303,7 @@ class Sequencing(models.Model):
                         send_mail(
                             '[ERGA] Genomic sequencing for '+ self.species.scientific_name +'is done',
                             'Dear '+ assembly_team.lead.first_name+",\n\nShort-read genomic sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
-                            'denovo@cnag.eu',
+                            'erga.gtc@gmail.com',
                             [assembly_team.lead.user.email],
                             fail_silently=True,
                         )
@@ -1312,7 +1317,7 @@ class Sequencing(models.Model):
                         send_mail(
                             '[ERGA] Hi-C sequencing for '+ self.species.scientific_name +'is done',
                             'Dear '+ assembly_team.lead.first_name+",\n\nHi-C sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
-                            'denovo@cnag.eu',
+                            'erga.gtc@gmail.com',
                             [assembly_team.lead.user.email],
                             fail_silently=True,
                         )
@@ -1326,7 +1331,7 @@ class Sequencing(models.Model):
                         send_mail(
                             '[ERGA] RNA sequencing for '+ self.species.scientific_name +'is done',
                             'Dear '+ community_annotation_team.lead.first_name+",\n\nRNA sequencing for "+ self.species.scientific_name + " is done. More info can be found here:\n" +myurl,
-                            'denovo@cnag.eu',
+                            'erga.gtc@gmail.com',
                             [community_annotation_team.lead.user.email],
                             fail_silently=True,
                         )
@@ -1606,6 +1611,10 @@ class AssemblyProject(models.Model):
 
         if not self.genome_size_estimate:
             self.genome_size_estimate = self.species.genome_size
+        else:
+            self.species.genome_size_update = self.genome_size_estimate
+            self.species.genome_size_update_evidence = 'k-mers'
+            self.species.save()
         self.assembly_rank = assembly_rank[self.status]
         super(AssemblyProject, self).save(*args, **kwargs)
 

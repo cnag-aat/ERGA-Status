@@ -292,3 +292,11 @@ a {text-decoration: none;}
     color:  #0087a3;
   }
 
+  .hide {
+    display: none;
+  }
+      
+  .notesDIV:hover + .hide {
+    display: block;
+    color: hwb(255 0% 0%);
+  }

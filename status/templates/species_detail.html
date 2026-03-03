@@ -21,6 +21,7 @@
               {{ species.taxon_order }}:
               {{ species.taxon_family }}:
               {{ species.taxon_genus }}</br></td></tr>
+          {% for subs in subspecies.all %}<tr><td>Subspecies:</td><td> {{ subs }} <a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{ subs.taxon_id }}"><code>NCBI</code></a>&nbsp;<a href="https://goat.genomehubs.org/record?recordId={{ subs.taxon_id }}&result=taxon&taxonomy=ncbi"><code>GoaT</code></a></br></td></tr>{% endfor %}
           <tr><td>Number of chromosomes:</td><td> {{ species.chromosome_number }}</br></td></tr>
           <tr><td>Haploid number:</td><td> {{ species.haploid_number }}</br></td></tr>
           <tr><td>Ploidy:</td><td> {{ species.ploidy }}</br></td></tr>

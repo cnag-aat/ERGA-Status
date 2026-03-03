@@ -1,5 +1,11 @@
 # tables.py
 import django_tables2 as tables
+from django_tables2_column_shifter.tables import (
+    ColumnShiftTableBootstrap2, # If you use bootstrap2
+    ColumnShiftTableBootstrap3, # If you use bootstrap3
+    ColumnShiftTableBootstrap4, # If you use bootstrap4
+    ColumnShiftTableBootstrap5, # If you use bootstrap5
+)
 from django_tables2.utils import A
 from .models import *
 import re
@@ -18,15 +24,21 @@ class SummingGBColumn(tables.Column):
     def render_footer(self, bound_column, table):
         return "{:.3f}".format(sum(bound_column.accessor.resolve(row) for row in table.data)/1000000000)
         #return sum(bound_column.accessor.resolve(row) for row in table.data)/1000000000
-      
-class OverviewTable(tables.Table):
+
+class OverviewTable(tables.Table):      
+#class OverviewTable(ColumnShiftTableBootstrap4):
     export_formats = ['csv', 'tsv','xls']
     genome_size_update = SummingGBColumn(verbose_name='Span'
         #footer=lambda table: sum(x["genome_size_update"] for x in table.data)
     )
-    tasks = tables.ManyToManyColumn(accessor='collection_rel',verbose_name='Tasks') #accessor='collection_rel__task__short_name'
-    seq_center = tables.Column(accessor='gt_rel__sequencing_team__name',verbose_name='Center')
+    #tasks = tables.ManyToManyColumn(accessor='collection_rel',verbose_name='Tasks') #accessor='collection_rel__task__short_name'
+    #tasks = tables.Column(accessor="tasks_list", verbose_name="Tasks")
+    #tasks = tables.Column(verbose_name='Tasks',orderable=False)
+    seq_center = tables.Column(accessor='gt_rel__sequencing_team__name',verbose_name='LR Center')
+    hic_center = tables.Column(accessor='gt_rel__hic_team__name',verbose_name='Hi-C Center')
+    assembly_team = tables.Column(accessor='gt_rel__assembly_team__name',verbose_name='Assembly Team')
     copo_status = tables.Column(verbose_name='COPO',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
+    recipe = tables.Column(accessor='sequencing_rel.recipe',verbose_name='LR',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
     long_seq_status = tables.Column(accessor='sequencing_rel.long_seq_status',verbose_name='ONT/HiFi WGS',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
     short_seq_status = tables.Column(accessor='sequencing_rel.short_seq_status',verbose_name='Illumina WGS',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
     hic_seq_status = tables.Column(accessor='sequencing_rel.hic_seq_status',verbose_name='Hi-C',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
@@ -37,30 +49,48 @@ class OverviewTable(tables.Table):
     tolid_prefix = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("pk")}, empty_values=())
     scientific_name = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("pk")}, empty_values=())#,attrs={"td": {"class": "species_col"},"th": {"class": "species_col"}})
     log = tables.TemplateColumn('<a href="' + settings.DEFAULT_DOMAIN + 'log/?species={{record.id}}"><i class="fas fa-history"></i></a>',empty_values=(), verbose_name='log',orderable=False)
-    #attrs={"td": {"class": "overview-table"}}
+    date = tables.Column(
+        accessor="latest_status_ts",
+        verbose_name="Date",
+        order_by=("latest_status_ts",),
+    )
 
     goat_sequencing_status = tables.Column(verbose_name="GoaT Status",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     assembly_rank = tables.Column(accessor='assembly_rel__assembly_rank',verbose_name='Assembly level')
+    notes = tables.Column(accessor='assembly_rel__note',verbose_name='Notes')
+    # study_accession = tables.Column(accessor='sequencing_rel__enareads__study_accession',verbose_name='BioProject')
+    # def render_study_accession(self, value, record):
+    #     html = '<a target="blank" href="https://www.ebi.ac.uk/ena/browser/view/'+value+'">'+escape(value)+'</a>'
+    #     return mark_safe(html)
+    # def value_study_accession(self, value):
+    #     return value
+    def render_notes(self, value, record):
+         return format_html('<a href="#" data-toggle="tooltip" title="{}"><i class="fa fa-comment" aria-hidden="true"</i></a>', str(value))
+    # comment = tables.TemplateColumn('<a href="#" data-toggle="tooltip" title="{{record.comment}}">{{record.comment|truncatewords:5}}')
     
-    def render_tasks(self, value, record):
-        clist = ""
-        cfirst = True
+    def render_date(self, value, record):
+        return value.strftime("%Y-%m-%d") if value else ""
 
-        collections = list(value.all())
-        #print(str(collections))
-        for c in collections:
-            if not cfirst:
-                clist += "<br />"
-            else:
-                cfirst = False
-            #print c.task.short_name
-            if c is not None:
-                if c.task is not None:
-                    #print(c.task)
-                    #print(c.task.short_name)
-                    clist += str(c.task.short_name) 
 
-        return mark_safe(clist)
+    # def render_tasks(self, value, record):
+    #     clist = ""
+    #     cfirst = True
+
+    #     collections = list(value.all())
+    #     #print(str(collections))
+    #     for c in collections:
+    #         if not cfirst:
+    #             clist += "<br />"
+    #         else:
+    #             cfirst = False
+    #         #print c.task.short_name
+    #         if c is not None:
+    #             if c.task is not None:
+    #                 #print(c.task)
+    #                 #print(c.task.short_name)
+    #                 clist += str(c.task.short_name) 
+
+    #     return mark_safe(clist)
     
     #targetspecies=TargetSpecies.objects.get(=pk)
     # def render_collection_status(self, value):
@@ -190,9 +220,10 @@ class OverviewTable(tables.Table):
     class Meta:
         model = TargetSpecies
         template_name = "django_tables2/bootstrap4.html"
-        paginate = {"per_page": 100}
+        #orderable = False
+        #paginate = {"per_page": 100}
         # fields = ('tolid_prefix', 'scientific_name','genomic_sample_status','hic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','curation_status','annotation_status','submission_status')
-        fields = ('scientific_name','tolid_prefix','taxon_phylum','genome_size_update','tasks','seq_center','goat_sequencing_status','copo_status','long_seq_status','short_seq_status','hic_seq_status','rna_seq_status','assembly_status','annotation_status','assembly_rank','log')
+        fields = ('scientific_name','tolid_prefix','taxon_phylum','taxon_family','genome_size_update','seq_center','recipe','hic_center','assembly_team','goat_sequencing_status','copo_status','long_seq_status','short_seq_status','hic_seq_status','rna_seq_status','assembly_status','annotation_status','assembly_rank','notes','date','log')
 
 class TargetSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']
@@ -371,7 +402,7 @@ class SequencingTable(tables.Table):
     rna_seq_status = tables.TemplateColumn('<span class="status {{record.rna_seq_status}}">{{record.rna_seq_status}}</span>',empty_values=(), verbose_name='RNA Status')
     species = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("species.pk")}, empty_values=())
     team = tables.Column(accessor='species__gt_rel__sequencing_team',linkify=True)
-    reads = tables.TemplateColumn('<a href="{% url \'reads_list\' %}?project={{record.pk}}">reads</a>',empty_values=(), verbose_name='Reads')
+    reads = tables.TemplateColumn('<a href="{% url \'ena_reads_list\' %}?project={{record.pk}}">ENA reads</a></br></br><a href="{% url \'reads_list\' %}?project={{record.pk}}">GTC reads</a>',empty_values=(), verbose_name='Reads')
     recipe = tables.TemplateColumn('<a href="{% url \'recipe_detail\'  record.recipe.pk %}">{{record.recipe}}</a>',empty_values=(), verbose_name='Recipe')
     def value_genomic_seq_status(self, value):
         return value

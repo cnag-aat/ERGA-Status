@@ -25,7 +25,7 @@ COPO_STATUS_CHOICES = (
 )
 class GenomeTeamFilter(django_filters.FilterSet):
     # species__tags__tag = django_filters.ModelChoiceFilter(label='tags',queryset=Tag.objects.all())	
-	species = django_filters.CharFilter(field_name='species',lookup_expr='icontains',label='Species')
+	species = django_filters.CharFilter(field_name='species__scientific_name',lookup_expr='icontains',label='Species')
 	class Meta:
 		model = GenomeTeam
 		fields = [
@@ -45,10 +45,12 @@ class GenomeTeamFilter(django_filters.FilterSet):
             ]
 
 class OverviewSpeciesFilter(django_filters.FilterSet):
-    collection_rel__task = django_filters.ModelChoiceFilter(label='Task',queryset=Task.objects.all())
-    gt_rel__sequencing_team = django_filters.ModelChoiceFilter(label='Center',queryset=SequencingTeam.objects.all())
+	#collection_rel__task = django_filters.ModelChoiceFilter(label='Task',queryset=Task.objects.all())
+	gt_rel__sequencing_team = django_filters.ModelChoiceFilter(label='LR Center',queryset=SequencingTeam.objects.all())
+	gt_rel__hic_team = django_filters.ModelChoiceFilter(label='Hi-C Center',queryset=SequencingTeam.objects.all())
+	gt_rel__assembly_team = django_filters.ModelChoiceFilter(label='Assembly Team',queryset=AssemblyTeam.objects.all())
 
-    SEQSTATUS_CHOICES = (
+	SEQSTATUS_CHOICES = (
         ('Waiting', 'Waiting'),
     	('Received', 'Received'),
 		('Prep', 'Prep'),
@@ -59,8 +61,9 @@ class OverviewSpeciesFilter(django_filters.FilterSet):
 		('Submitted', 'Submitted'),
 		('Done', 'Done'),
 		('Issue', 'Issue'),
+    	('Abandoned', 'Abandoned')
     )
-    ASSEMBLY_STATUS_CHOICES = (
+	ASSEMBLY_STATUS_CHOICES = (
 		('Waiting', 'Waiting'),
 		('Assembling', 'Assembling'),
 		('Contigs', 'Contigs'),
@@ -71,43 +74,47 @@ class OverviewSpeciesFilter(django_filters.FilterSet):
 		('UnderReview', 'UnderReview'),
 		('Approved', 'Approved'),
 		('Submitted', 'Submitted'),
-		('Issue', 'Issue')
+		('Issue', 'Issue'),
+    	('Abandoned', 'Abandoned')
 	)
-    ANNOTATION_STATUS_CHOICES = (
+	ANNOTATION_STATUS_CHOICES = (
 		('Waiting', 'Waiting'),
 		('Annotating', 'Annotating'),
 		('Done', 'Done'),
 		('Sent', 'Sent'),
 		('Issue', 'Issue')
 	)
-    COPO_STATUS_CHOICES = (
+	COPO_STATUS_CHOICES = (
 		('Not submitted', 'Not submitted'),
 		('Rejected', 'Rejected'),
 		('Accepted', 'Accepted'),
 		('Pending', 'Pending')
 	)
-    #copo_status = django_filters.ChoiceFilter(field_name='collection_rel__copo_status',label='COPO Status',choices=COPO_STATUS_CHOICES,null_label=None)
-    long_seq_status = django_filters.ChoiceFilter(field_name='sequencing_rel__long_seq_status',label='Long Read Status',choices=SEQSTATUS_CHOICES,null_label=None)
+	#copo_status = django_filters.ChoiceFilter(field_name='collection_rel__copo_status',label='COPO Status',choices=COPO_STATUS_CHOICES,null_label=None)
+	long_seq_status = django_filters.ChoiceFilter(field_name='sequencing_rel__long_seq_status',label='Long Read Status',choices=SEQSTATUS_CHOICES,null_label=None)
 
-    #long_seq_status = django_filters.CharFilter(field_name='sequencing__long_seq_status',label='Long Read Status')
-    short_seq_status = django_filters.ChoiceFilter(field_name='sequencing_rel__short_seq_status',label='Short Read Status',choices=SEQSTATUS_CHOICES,null_label=None)
-    hic_seq_status = django_filters.ChoiceFilter(field_name='sequencing_rel__hic_seq_status',label='Hi-C Status',choices=SEQSTATUS_CHOICES,null_label=None)
-    rna_seq_status = django_filters.ChoiceFilter(field_name='sequencing_rel__rna_seq_status',label='RNA-Seq Status',choices=SEQSTATUS_CHOICES,null_label=None)
-    assembly_status = django_filters.ChoiceFilter(field_name='assembly_rel__status',label='Assembly Status',choices=ASSEMBLY_STATUS_CHOICES,null_label=None)
-    annotation_status = django_filters.ChoiceFilter(field_name='annotation__status',label='Annotation Status',choices=ANNOTATION_STATUS_CHOICES,null_label=None)
-    community_annotation_status = django_filters.ChoiceFilter(field_name='communityannotation__status',label='Community Annotation Status',choices=ANNOTATION_STATUS_CHOICES,null_label=None)
-    assembly_rank = django_filters.RangeFilter(field_name='assembly_rel__assembly_rank',label='Assembly level')
-    scientific_name = django_filters.CharFilter(field_name='scientific_name',lookup_expr='icontains',label='Species')
-    tolid_prefix = django_filters.CharFilter(field_name='tolid_prefix',lookup_expr='icontains',label='ToLID Prefix')
+	#long_seq_status = django_filters.CharFilter(field_name='sequencing__long_seq_status',label='Long Read Status')
+	short_seq_status = django_filters.ChoiceFilter(field_name='sequencing_rel__short_seq_status',label='Short Read Status',choices=SEQSTATUS_CHOICES,null_label=None)
+	hic_seq_status = django_filters.ChoiceFilter(field_name='sequencing_rel__hic_seq_status',label='Hi-C Status',choices=SEQSTATUS_CHOICES,null_label=None)
+	rna_seq_status = django_filters.ChoiceFilter(field_name='sequencing_rel__rna_seq_status',label='RNA-Seq Status',choices=SEQSTATUS_CHOICES,null_label=None)
+	assembly_status = django_filters.ChoiceFilter(field_name='assembly_rel__status',label='Assembly Status',choices=ASSEMBLY_STATUS_CHOICES,null_label=None)
+	annotation_status = django_filters.ChoiceFilter(field_name='annotation__status',label='Annotation Status',choices=ANNOTATION_STATUS_CHOICES,null_label=None)
+	community_annotation_status = django_filters.ChoiceFilter(field_name='communityannotation__status',label='Community Annotation Status',choices=ANNOTATION_STATUS_CHOICES,null_label=None)
+	assembly_rank = django_filters.RangeFilter(field_name='assembly_rel__assembly_rank',label='Assembly level')
+	scientific_name = django_filters.CharFilter(field_name='scientific_name',lookup_expr='icontains',label='Species')
+	tolid_prefix = django_filters.CharFilter(field_name='tolid_prefix',lookup_expr='icontains',label='ToLID Prefix')
+	
+	class Meta:
 
-    class Meta:
-        model = TargetSpecies
-        fields = [
+		model = TargetSpecies
+		fields = [
             'scientific_name',
             'tolid_prefix',
-            'collection_rel__task',
+            #'collection_rel__task',
             'copo_status',
         	'gt_rel__sequencing_team',
+        	'gt_rel__hic_team',
+        	'gt_rel__assembly_team',
         	'goat_sequencing_status',
     		'assembly_status',
         	'annotation_status',
@@ -169,9 +176,11 @@ class ReadsFilter(django_filters.FilterSet):
 
 class AssemblyFilter(django_filters.FilterSet):
 	project__species__gt_rel__assembly_team = django_filters.ModelChoiceFilter(label='Assembly Team',queryset=AssemblyTeam.objects.all())
+	project__species__scientific_name = django_filters.CharFilter(lookup_expr='icontains',label='Species')
+	project__species__tolid_prefix = django_filters.CharFilter(lookup_expr='icontains',label='ToLID prefix')
 	class Meta:
 		model = Assembly
-		fields = ['project__species__gt_rel__assembly_team','pipeline','type','chromosome_level','accession','gca']
+		fields = ['project__species__scientific_name','project__species__tolid_prefix','project__species__gt_rel__assembly_team','pipeline','type','chromosome_level','accession','gca']
 
 class SpecimenFilter(django_filters.FilterSet):
 	q = django_filters.CharFilter(method='my_custom_filter', label="Search")

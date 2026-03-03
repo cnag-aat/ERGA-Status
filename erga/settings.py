@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'django_tables2',
+    'django_tables2_column_shifter',
     'bootstrap3',
     'bootstrap4',
     'cookielaw',

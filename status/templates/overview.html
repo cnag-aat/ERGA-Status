@@ -54,6 +54,17 @@
           <div align="center">Displaying {{ table.page.start_index }} to {{ table.page.end_index }} of {{ table.page.paginator.count }}.</div>
         </div>
       </div>
+        <!-- <table>
+      {% for row in table.rows %}
+        <tr>
+          <td>{{ counter }}</td>
+          <td>{{ row.record.tolid_prefix }}</td>
+        </tr>
+        {% empty %}
+          <tr><td>No records found</td></tr>
+      {% endfor %}
+    </table> -->
+    </div>
     </div>
   </div>
 </div>

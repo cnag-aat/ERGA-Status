@@ -24,6 +24,7 @@ GetOptions(
 print join("\t",qw(original_species tags taxon_id kingdom phylum class order family genus scientific_name tolid_prefix chromosome_number haploid_number ploidy c_value genome_size common_name synonym )),"\n";
 
   $goatclient->GET("$goat_url"."record?recordId=$taxid_query&result=taxon&taxonomy=ncbi");
+  #print STDERR $goatclient->responseContent();
   my $goatresponse2 = decode_json $goatclient->responseContent();
   #print Data::Dumper->Dump([$goatresponse2]) and exit;
   die $goatresponse2->{status}->{hits}. " records\n" if $goatresponse2->{status}->{hits}!=1;

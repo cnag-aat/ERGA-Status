@@ -29,6 +29,7 @@ from django.db.models import F, Value
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.utils.decorators import method_decorator
+
 import subprocess
 import json
 import os, time, sys, re
@@ -64,7 +65,6 @@ from django.core.cache import cache
 from django.db.models.functions import Coalesce
 from django_cron import CronJobBase, Schedule
 from datetime import datetime
-import requests
 import logging
 import re
 from unicodedata import normalize
@@ -72,6 +72,7 @@ from unidecode import unidecode
 import yaml
 import urllib
 from urllib import request
+from .aggregates import GroupConcat
 
 # Get an instance of a logger
 # logger = logging.getLogger(__name__)
@@ -139,7 +140,8 @@ def home(request):
     total_assembly_done = []
     total_submitted = []
    # speciesdict = {}
-    in_production_set = {'Received', 'Prep', 'Sequencing', 'TopUp', 'Extracted'}
+    in_production_set = {'Prep', 'Sequencing', 'TopUp', 'Extracted'}
+    #in_production_set = {'Received', 'Prep', 'Sequencing', 'TopUp', 'Extracted'}
     seq_done_set = {'Done', 'Submitted'}
     in_assembly_set = {'Issue','Assembling', 'Contigs','Scaffolding','Scaffolds','Curating','Done'}
     assembly_done_set = {'Approved','Submitted','UnderReview'}
@@ -345,23 +347,38 @@ class GoaTListView(ExportMixin, SingleTableMixin, FilterView):
     #         return queryset.filter(id__in=species_with_task)
 
 class OverView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
-    # permission_required = "resistome.view_sample"
     login_url = "access_denied"
     model = TargetSpecies
     table_class = OverviewTable
     template_name = 'overview.html'
     filterset_class = OverviewSpeciesFilter
     export_formats = ['csv', 'tsv','xlsx','json']
-    #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
+
+
+
+
     def get_context_data(self, *args, **kwargs):
         data = super(OverView, self).get_context_data(*args, **kwargs)
         data['build_page_title'] = 'ERGA-GTC OverView'
         return data
     
     def get_queryset(self):
-        return TargetSpecies.objects.exclude(goat_target_list_status = None).exclude(goat_target_list_status = 'none').exclude(goat_target_list_status = '').exclude(goat_target_list_status = 'removed').exclude(goat_sequencing_status = 'none').exclude(genome_size = None).order_by('-gss_rank','-assembly_rel__assembly_rank','collection_rel__copo_status','taxon_kingdom','taxon_phylum','taxon_class','taxon_order','taxon_family','taxon_genus','scientific_name')
-        #return TargetSpecies.objects.exclude(goat_sequencing_status = None).exclude(goat_sequencing_status = '')
+        latest_status = StatusUpdate.objects.filter(
+            species=OuterRef("pk")
+        ).order_by("-timestamp")
+        queryset = super().get_queryset().annotate(
+            latest_status_ts=Subquery(
+                latest_status.values("timestamp")[:1]
+            )
+        )
+        ordered_queryset = queryset.order_by(
+            '-gss_rank', '-assembly_rel__assembly_rank', #'collection_rel__copo_status',
+            'taxon_kingdom', 'taxon_phylum', 'taxon_class', 'taxon_order',
+            'taxon_family', 'taxon_genus', 'scientific_name'
+        )
+        filtered_queryset = ordered_queryset.exclude(goat_target_list_status = None).exclude(goat_target_list_status = 'none').exclude(goat_target_list_status = '').exclude(goat_target_list_status = 'removed').exclude(goat_sequencing_status = 'none').exclude(genome_size = None)
+        return filtered_queryset
 
 @login_required
 def species_detail(request, pk=None, scientific_name=None):
@@ -370,7 +387,9 @@ def species_detail(request, pk=None, scientific_name=None):
     else:
         sp = TargetSpecies.objects.get(scientific_name=scientific_name)
         pk = TargetSpecies.pk
-    context = {"species": sp
+    sub = SubSpecies.objects.filter(species=sp)
+    context = {"species": sp,
+               "subspecies": sub
                }
     response = render(request, "species_detail.html", context)
     return response
@@ -520,7 +539,7 @@ class AssemblyListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, Filter
         context = super().get_context_data(**kwargs)
         context['build_page_title'] = 'ERGA-GTC Assemblies'
         return context
-    def get_queryset(self):
+    def get_queryset(self): #the following filter basically requires the assembly to be in the ENA and have a GCA and stats from NCBI. 
         return Assembly.objects.filter(chromosome_level=True).exclude(type='Hap2').exclude(type='Endosymbiont').exclude(type='Alternate').exclude(type='MT').exclude(type='Chloroplast')
     #     queryset = super(AssemblyListView, self).get_queryset()
     #     if 'gca' in self.request.GET:
@@ -608,7 +627,9 @@ class SampleListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterVi
         context = super().get_context_data(**kwargs)
         context['build_page_title'] = 'ERGA-GTC GoaT Samples'
         return context
-
+    def get_queryset(self):
+        queryset = super(SampleListView, self).get_queryset().filter(suppressed=False)
+        return queryset
 #@login_required
 def copo_record(request, copoid):
     r=requests.get("https://copo-project.org/api/sample/copo_id/"+ copoid)
@@ -672,7 +693,7 @@ class RunListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView)
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_queryset(self):
         queryset = super(RunListView, self).get_queryset()
-        if 'project' in self.request.GET:
+        if 'project' in self.request.GET and self.request.GET['project'] is not '':
             queryset = queryset.filter(project=self.request.GET['project'])
         return queryset
 
@@ -692,7 +713,7 @@ class EnaRunListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterVi
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_queryset(self):
         queryset = super(EnaRunListView, self).get_queryset()
-        if 'project' in self.request.GET:
+        if 'project' in self.request.GET and self.request.GET['project'] is not '':
             queryset = queryset.filter(project=self.request.GET['project'])
         return queryset
 
@@ -1229,7 +1250,7 @@ class SpeciesSaveCronJob(CronJobBase):
             sp.save()
             
 class UpdateSamplesCronJob(CronJobBase):
-    RUN_EVERY_MINS = 720 # every 3 hours
+    RUN_EVERY_MINS = 720 # every 12 hours
     schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
     code = 'status.update_samples_cron_job'    # a unique code
     
@@ -1248,9 +1269,12 @@ class UpdateSamplesCronJob(CronJobBase):
         copo_url="https://copo-project.org/api"
         species_qs = TargetSpecies.objects.all().values("taxon_id","goat_target_list_status")    
         for sp in species_qs:
+            if (sp['taxon_id'] == "8585"):
+                logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ": UpdateSamplesCronJob: Natrix maura ")
+                            
             if sp['taxon_id'] is not None and sp["goat_target_list_status"] != "removed":
-                # if sp['taxon_id'] is not '269343':
-                #     continue
+#                if sp['taxon_id'] != '8585':
+#                    continue
                 
                 # #print('taxon_id: '+ sp['taxon_id']) 
                 tid = sp.get('taxon_id')
@@ -1259,7 +1283,7 @@ class UpdateSamplesCronJob(CronJobBase):
                 num_samples = 0
                 #species_copo_status = 'Not submitted'
                 try:
-                    copo_taxid_response = requests.get(copo_url+"/sample/sample_field/TAXON_ID/"+tid)
+                    copo_taxid_response = requests.get(copo_url+"/sample/taxon_id/"+tid)
                     copo_taxid_response.raise_for_status()
                     #print(copo_taxid_response)
                     #print(copo_taxid_response.json())
@@ -1269,9 +1293,11 @@ class UpdateSamplesCronJob(CronJobBase):
                     num_samples = copo_taxid_json.get("number_found")
                     data = copo_taxid_json.get("data")
                 except requests.exceptions.HTTPError as error:
+                    logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ": UpdateSamplesCronJob: error:"+copo_url+"/sample/taxon_id/"+tid)
                     continue
                     #print(error)
                 if num_samples > 0:
+                    best_copo_status = 'rejected'
                     for copo_record in data:
                         copo_id = copo_record.get('copo_id')
                         logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ": UpdateSamplesCronJob: getting copo_id "+copo_id+".")
@@ -1290,7 +1316,8 @@ class UpdateSamplesCronJob(CronJobBase):
                         sample_data_all = copo_sample_json.get('data')
                         if num_found > 0:
                             if num_found > 1:
-                                sys.exit("more than one copo_record per copo id !!!")
+                                logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ": UpdateSamplesCronJob: more than one record for "+copo_id+".")
+                                continue
                             status = ''
                             updated_species = False
                             sample_data = sample_data_all[0]
@@ -1301,6 +1328,12 @@ class UpdateSamplesCronJob(CronJobBase):
                             tolid = sample_data.get('public_name')
                             #print(tolid)
                             taxid = sample_data.get('TAXON_ID')
+                            if (taxid != sp['taxon_id']):
+                                logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ": UpdateSamplesCronJob: " + taxid + ' != ' + sp['taxon_id'])
+                                continue
+#                            if (taxid == "8585"):
+#                                logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ": UpdateSamplesCronJob: processing Natrix maura")
+
                             tol_project = sample_data.get('tol_project')
                             associated_tol_project = sample_data.get('associated_tol_project')
                             primary_biogenome_project = sample_data.get('PRIMARY_BIOGENOME_PROJECT')
@@ -1315,6 +1348,8 @@ class UpdateSamplesCronJob(CronJobBase):
                             #print(tolid +'|' +copo_id)
                             copo_status = sample_data.get('status')
                             specimen_id = sample_data.get('SPECIMEN_ID')
+#                            if (taxid == "8585"):
+#                                logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ": UpdateSamplesCronJob: Natrix maura status: "+copo_status)
                             if 'pending' in copo_status:
                                 status = 'pending'
                             else:
@@ -1325,7 +1360,14 @@ class UpdateSamplesCronJob(CronJobBase):
                             tolid_prefix = re.sub(r'\d+$', '', tolid)
                             #print(tolid_prefix)
                             sample_accession = sample_data.get('biosampleAccession')
-                            species = TargetSpecies.objects.get(taxon_id=tid)
+                            #species = TargetSpecies.objects.get(taxon_id=tid)
+                            species_qs = TargetSpecies.objects.filter(taxon_id=tid) #filtering instead of getting. Seems safer.
+                            if (len(species_qs) == 1): 
+                                species = species_qs[0] 
+                            else:
+                                continue
+                            logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ": Update species with taxid "+species.taxon_id+".")
+                       
                             species_copo_status = species.copo_status
                             if tolid_prefix != species.tolid_prefix:
                                 species.tolid_prefix = tolid_prefix
@@ -1336,8 +1378,8 @@ class UpdateSamplesCronJob(CronJobBase):
                             if (len(collection_qs) == 1): #don't have a way to match up collection with specimen, yet. can do some matching of names and countries...
                                 specimen_record.collection = collection_qs[0] 
                             specimen_record.tolid = tolid
-                            specimen_record.specimen_id = specimen_id
                             specimen_record.species = species
+                            specimen_record.specimen_id = specimen_id
                             specimen_record.tissue_removed_for_biobanking = True if sample_data.get('TISSUE_REMOVED_FOR_BIOBANKING') == 'Y' else False
                             specimen_record.tissue_voucher_id_for_biobanking = sample_data.get('TISSUE_VOUCHER_ID_FOR_BIOBANKING')
                             specimen_record.proxy_tissue_voucher_id_for_biobanking = sample_data.get('PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING')
@@ -1367,9 +1409,28 @@ class UpdateSamplesCronJob(CronJobBase):
                             sample_record.purpose_of_specimen = sample_data.get('PURPOSE_OF_SPECIMEN')
                             sample_record.tube_or_well_id = sample_data.get('TUBE_OR_WELL_ID')
                             sample_record.gal_sample_id = sample_data.get('GAL_SAMPLE_ID')
+                            sample_record.specimen = specimen_record
                             sample_record.sampleDerivedFrom = sample_data.get('sampleDerivedFrom')
                             sample_record.sampleSameAs = sample_data.get('sampleSameAs')
-                            sample_record.specimen = specimen_record
+                            
+                            if 'REFERENCE_GENOME' in sample_data.get('PURPOSE_OF_SPECIMEN'):
+                                #if species.copo_status != 'accepted':
+                                if status == 'accepted':
+                                    species.copo_status = 'Accepted'
+                                    best_copo_status = 'accepted'
+                                    updated_species = True
+                                if status == 'pending':
+                                    if best_copo_status != 'accepted':
+                                        species.copo_status = 'Pending'
+                                        best_copo_status = 'pending'
+                                        updated_species = True
+                                if status == 'rejected':
+                                    if best_copo_status == 'rejected':
+                                        species.copo_status = 'Rejected'
+                                        updated_species = True
+
+                            if updated_species:
+                                species.save() 
                             sample_record.save()
 
                             #update genome team with sequencing team
@@ -1589,25 +1650,41 @@ class UpdateSamplesCronJob(CronJobBase):
                                     else:
                                         from_manifest_record.preserver.add(person)
 
-                            best_copo_status = 'rejected'
-                            if 'REFERENCE_GENOME' in sample_data.get('PURPOSE_OF_SPECIMEN'):
-                                #if species.copo_status != 'accepted':
-                                if status == 'accepted':
-                                    species.copo_status = 'Accepted'
-                                    best_copo_status = 'accepted'
-                                    updated_species = True
-                                if status == 'pending':
-                                    if best_copo_status != 'accepted':
-                                        species.copo_status = 'Pending'
-                                        best_copo_status = 'pending'
-                                        updated_species = True
-                                if status == 'rejected':
-                                    if best_copo_status == 'rejected':
-                                        species.copo_status = 'Rejected'
-                                        updated_species = True
+                            # best_copo_status = 'rejected'
+                            # if 'REFERENCE_GENOME' in sample_data.get('PURPOSE_OF_SPECIMEN'):
+                            #     #if species.copo_status != 'accepted':
+                            #     if status == 'accepted':
+                            #         species.copo_status = 'Accepted'
+                            #         best_copo_status = 'accepted'
+                            #         updated_species = True
+                            #     if status == 'pending':
+                            #         if best_copo_status != 'accepted':
+                            #             species.copo_status = 'Pending'
+                            #             best_copo_status = 'pending'
+                            #             updated_species = True
+                            #     if status == 'rejected':
+                            #         if best_copo_status == 'rejected':
+                            #             species.copo_status = 'Rejected'
+                            #             updated_species = True
 
-                            if updated_species:
-                                species.save() 
+                            # if updated_species:
+                            #     species.save() 
+        for samplerecord in Sample.objects.all():
+            copoid = samplerecord.copo_id
+            r=requests.get("https://copo-project.org/api/sample/copo_id/"+ copoid)
+            resp = ""
+            if(r.status_code == 200):
+                if re.search(r'COPO offline',r.text):
+                    pass
+                else:
+                    resp=r.json()
+                    if resp.number_found:
+                        samplerecord.suppressed=True
+                    else:
+                        samplerecord.suppressed=False
+                    samplerecord.save()
+            else:
+                pass
 
 class FetchEARsCronJob(CronJobBase):
     RUN_EVERY_MINS = 480 # every 8 hours
@@ -1642,16 +1719,30 @@ class FetchEARsCronJob(CronJobBase):
         def fetch_repo_tree(owner, repo, branch='main'):
             url = f"https://api.github.com/repos/{owner}/{repo}/git/trees/{branch}?recursive=1"
             headers = {'Accept': 'application/vnd.github+json', 'Authorization':'Bearer '+ settings.GITHUB_TOKEN}
-            
-            response = requests.get(url, headers=headers)
+            logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ": Fetching using "+ settings.GITHUB_TOKEN)
+            try:
+                logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ": " + url )
+                response = requests.get(url, headers=headers)
+            except:
+                logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ": Exception ")
+                
+                
+
+            logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ": " + str(response.status_code))
             
             if response.status_code == 200:
+                logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ": Fetched data: "+ str(response.status_code)+".")
                 return response.json()
             else:
+                logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ": Failed to fetch data: "+str(response.status_code)+".")
+                        
                 #print(f"Failed to fetch data: {response.status_code}")
                 return None
             
+        
+        logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + "FetchEARsCronJob: here")
         data = fetch_repo_tree(owner, repo, branch)
+        logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + "FetchEARsCronJob: hereafter")
         yaml_files = []
         if data and "tree" in data:
             files, directories = parse_tree(data['tree'])
@@ -1679,50 +1770,70 @@ class FetchEARsCronJob(CronJobBase):
             pdf = re.sub(r'yaml$','pdf',yf)
             x = request.urlopen(raw_url_prefix + yf)
             ear_yaml = yaml.safe_load(x)
-            logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + "FetchEARsCronJob: "+ ear_yaml)
+            logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + "FetchEARsCronJob: "+ yf)
 
             EAR_pdf = regular_url_prefix + pdf
             #print(ear_yaml['Species'])
             assembly_project= AssemblyProject.objects.all().filter(species__scientific_name=ear_yaml['Species']).first()
             if assembly_project:
                 #print(assembly_project)
-                assembly_object = Assembly.objects.filter(project=assembly_project).first()
-                if assembly_object is None:
-                    assembly_object = Assembly.objects.create(project=assembly_project)
-                #print('assmebly object: ' + str(assembly_object.project))
+                logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + "FetchEARsCronJob: " + ear_yaml['Species'])
                 for m in ear_yaml['Metrics']:
-                    #print(m)
+                    logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + "FetchEARsCronJob: " + m)
                     if re.match(r'^Pre-curation',m):
                         continue
                     if m == 'Curated hap1':
-                        assembly_object.type = 'Hap1'
-                    elif m == 'Curated pr':
-                        assembly_object.type = 'Primary'
+                        ass_type = 'Hap1'
+                    elif m == 'Curated pri':
+                        ass_type = 'Primary'
                     elif m == 'Curated collapsed':
-                        assembly_object.type = 'Primary'
-                    if ear_yaml['Metrics'][m].get('Total bp'):
-                        assembly_object.span = re.sub(r',','',ear_yaml['Metrics'][m]['Total bp'])
-                    if ear_yaml['Metrics'][m].get('Scaffold N50'):
-                        assembly_object.scaffold_n50 = re.sub(r',','',ear_yaml['Metrics'][m]['Scaffold N50'])
-                    if ear_yaml['Metrics'][m].get('Contig N50'):
-                        assembly_object.contig_n50 = re.sub(r',','',ear_yaml['Metrics'][m]['Contig N50'])
-                    if ear_yaml['Metrics'][m].get('QV'):
-                        assembly_object.qv = ear_yaml['Metrics'][m]['QV']
-                    if ear_yaml['BUSCO'].get('ver') is not None and re.search(r'^\d',ear_yaml['BUSCO']['ver']):
-                        busco_version = ear_yaml['BUSCO']['ver']
-                        bv, created = BUSCOversion.objects.get_or_create(version=busco_version)
-                        assembly_object.busco_version = bv
-                    if ear_yaml['BUSCO'].get('lineage') is not None and re.search(r'odb',ear_yaml['BUSCO']['lineage']):
-                        busco_db = ear_yaml['BUSCO']['lineage']
-                        bdb, created = BUSCOdb.objects.get_or_create(db=busco_db)
-                        assembly_object.busco_db = bdb
-                    if (ear_yaml['Metrics'][m].get('BUSCO sing.')):
-                        #print('making busco string')
-                        busco_s = re.sub(r'%','',ear_yaml['Metrics'][m]['BUSCO sing.'])
-                        busco_d = re.sub(r'%','',ear_yaml['Metrics'][m]['BUSCO dupl.'])
-                        busco_f = re.sub(r'%','',ear_yaml['Metrics'][m]['BUSCO frag.'])
-                        busco_m = re.sub(r'%','',ear_yaml['Metrics'][m]['BUSCO miss.'])
-                        assembly_object.busco  = 'C:{complete:.1f}%[S:{single:.1f}%,D:{duplicate:.1f}%],F:{fragmented:.1f}%,M:{missing:.1f}%'.format(complete = float(busco_s)+float(busco_d), single = float(busco_s), duplicate = float(busco_d), fragmented = float(busco_f), missing = float(busco_m))
-                assembly_object.report = EAR_pdf
-                assembly_object.save()
+                        ass_type = 'Primary'
+
+                    assembly = Assembly.objects.all().filter(project=assembly_project).filter(chromosome_level=True).exclude(type='Hap2').exclude(type='Endosymbiont').exclude(type='Alternate').exclude(type='MT').exclude(type='Chloroplast').first()
+                    if not assembly:
+                        Assembly.objects.create(project=assembly_project,type=ass_type)
+                    for assembly_object in Assembly.objects.all().filter(project=assembly_project).filter(chromosome_level=True).exclude(type='Hap2').exclude(type='Endosymbiont').exclude(type='Alternate').exclude(type='MT').exclude(type='Chloroplast'):
+                        #assembly_object.type = ass_type #this was redundant
+                        
+                        if ear_yaml['Metrics'][m].get('Total bp'):
+                            assembly_object.span = re.sub(r',','',ear_yaml['Metrics'][m]['Total bp'])
+                            #logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + " FetchEARsCronJob: " + assembly_object.span)
+                        if ear_yaml['Metrics'][m].get('Scaffold N50'):
+                            assembly_object.scaffold_n50 = re.sub(r',','',ear_yaml['Metrics'][m]['Scaffold N50'])
+                        if ear_yaml['Metrics'][m].get('Contig N50'):
+                            assembly_object.contig_n50 = re.sub(r',','',ear_yaml['Metrics'][m]['Contig N50'])
+                        if ear_yaml['Metrics'][m].get('QV'):
+                            assembly_object.qv = ear_yaml['Metrics'][m]['QV']
+                            #logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + " FetchEARsCronJob: " + assembly_object.qv)
+                            #assembly_object.save()
+                        #logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + " FetchEARsCronJob: " + ear_yaml['BUSCO'].get('ver'))
+                        if ear_yaml['BUSCO'].get('ver'):
+                            if re.search(r'^\d',ear_yaml['BUSCO']['ver']):
+                                busco_version = ear_yaml['BUSCO']['ver']
+                                #logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + " FetchEARsCronJob: " + busco_version)
+                                busco_version_no_space = str(busco_version.split()[0] if busco_version.split() else '')
+                                #logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + " FetchEARsCronJob: " + busco_version_no_space)
+                                bv, created = BUSCOversion.objects.get_or_create(version=busco_version_no_space)
+                                #logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + " FetchEARsCronJob: " + 'after busco version lookup')
+                                #logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + " FetchEARsCronJob: " + str(created))
+                                #logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + " FetchEARsCronJob: " + str(bv))
+                                assembly_object.busco_version = bv
+                                assembly_object.save()
+                                #logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + " FetchEARsCronJob: " + str(assembly_object.busco_version))
+                        if ear_yaml['BUSCO'].get('lineage') is not None and re.search(r'odb',ear_yaml['BUSCO']['lineage']):
+                            busco_db = ear_yaml['BUSCO']['lineage']
+                            bdb, created = BUSCOdb.objects.get_or_create(db=busco_db)
+                            assembly_object.busco_db = bdb
+                            assembly_object.save()
+                        if (ear_yaml['Metrics'][m].get('BUSCO sing.')):
+                            #print('making busco string')
+                            busco_s = re.sub(r'%','',ear_yaml['Metrics'][m]['BUSCO sing.'])
+                            busco_d = re.sub(r'%','',ear_yaml['Metrics'][m]['BUSCO dupl.'])
+                            busco_f = re.sub(r'%','',ear_yaml['Metrics'][m]['BUSCO frag.'])
+                            busco_m = re.sub(r'%','',ear_yaml['Metrics'][m]['BUSCO miss.'])
+                            assembly_object.busco  = 'C:{complete:.1f}%[S:{single:.1f}%,D:{duplicate:.1f}%],F:{fragmented:.1f}%,M:{missing:.1f}%'.format(complete = float(busco_s)+float(busco_d), single = float(busco_s), duplicate = float(busco_d), fragmented = float(busco_f), missing = float(busco_m))
+                            assembly_object.save()
+                            #logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + " FetchEARsCronJob: " + str(assembly_object.busco))
+                        assembly_object.report = EAR_pdf
+                        assembly_object.save()
 
