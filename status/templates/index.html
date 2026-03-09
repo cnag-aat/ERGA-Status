@@ -19,28 +19,6 @@
   </div>
 </div>
 
-<!-- <div class="row" style="flex">
-  <div class="col-md-12" style="flex">
-    <div class="card-group">
-      <div class="card" style="flex-grow: 2">
-        <div class="card-body">
-          <div style="aspect-ratio: 2">
-            <canvas id="SeqProdChart"></canvas>
-          </div>
-          <div>&nbsp;</div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-body">
-          <div style="aspect-ratio: 2">
-            <canvas id="TotalSeqProdChart"></canvas>
-          </div>
-          <div>&nbsp;</div>
-        </div>
-      </div>
-    </div>
-  </div> -->
-
   <div class="row" style="flex">
     <div class="col-md-6" style="flex">
       <div style="aspect-ratio: 2">
@@ -54,20 +32,70 @@
     </div>
   </div>
 
-  <!-- <div class="col-md-6">
+</div>
+
+<!-- Phylogenetic Chart Section -->
+<div class="row mt-4">
+  <div class="col-md-12">
     <div class="card mb-1">
       <div class="card-body">
-        <h5 class="card-title">Assembly Production</h5>
-        <div>
-          <canvas id="AssProdChart"></canvas>
+        <h5 class="card-title">Phylogenetic Distribution</h5>
+        <p class="text-muted">Species with completed assemblies organized by Phylum, Class, and Family</p>
+        
+        <div class="row mt-3 mb-3">
+          <div class="col-md-3 text-center">
+            <div class="p-3 bg-light rounded">
+              <h3 id="phylo-total-species" class="text-primary mb-0">0</h3>
+              <small class="text-muted text-uppercase">Total Species</small>
+            </div>
+          </div>
+          <div class="col-md-3 text-center">
+            <div class="p-3 bg-light rounded">
+              <h3 id="phylo-total-phyla" class="text-primary mb-0">0</h3>
+              <small class="text-muted text-uppercase">Phyla</small>
+            </div>
+          </div>
+          <div class="col-md-3 text-center">
+            <div class="p-3 bg-light rounded">
+              <h3 id="phylo-total-classes" class="text-primary mb-0">0</h3>
+              <small class="text-muted text-uppercase">Classes</small>
+            </div>
+          </div>
+          <div class="col-md-3 text-center">
+            <div class="p-3 bg-light rounded">
+              <h3 id="phylo-total-families" class="text-primary mb-0">0</h3>
+              <small class="text-muted text-uppercase">Families</small>
+            </div>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-9">
+            <div id="phylo-chart-wrapper" style="background: white; border-radius: 4px; padding: 2rem;">
+              <svg id="phyloChart"></svg>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div id="phylo-legend" style="background: white; border-radius: 4px; padding: 1.5rem; max-height: 700px; overflow-y: auto;">
+              <h6 class="font-weight-bold mb-3">Legend</h6>
+              <div id="phylo-legend-content"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div> -->
+  </div>
+</div>
 
+<!-- Tooltip for phylogenetic chart -->
+<div id="phylo-tooltip" style="position: absolute; display: inline-block; width: max-content; max-width: 300px; background: #2c3338; color: white; padding: 0.75rem 1rem; border-radius: 4px; font-size: 0.85rem; pointer-events: none; opacity: 0; transition: opacity 0.2s ease; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">  <div id="phylo-tooltip-phylum" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.7; margin-bottom: 0.25rem;"></div>
+  <div id="phylo-tooltip-class" style="font-size: 0.8rem; opacity: 0.8; margin-bottom: 0.25rem;"></div>
+  <div id="phylo-tooltip-family" style="font-style: italic; font-size: 1rem; margin-bottom: 0.25rem;"></div>
+  <div id="phylo-tooltip-count" style="font-size: 0.75rem; opacity: 0.9;"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
   
 <script>
   const ctx = document.getElementById('SeqProdChart');
@@ -162,12 +190,11 @@
   var cumsum1 = tad;
   var cumsum2 = tad + ta;
   var cumsum3 = tad + ta + tsd;
-  var cumsum4 = tad + ta + tsd + ts; //all data in production
+  var cumsum4 = tad + ta + tsd + ts;
   var cumsum5 = tad + ta + tsd + ts + tc;
-  /* var cumsum6 = tad + ta + tsd + ts + tc + tnc; */
   var target = cumsum4 < 450 ? 450 : cumsum4;
-  var sum_notstarted = target - cumsum4; // var sum_notstarted = tc + tnc;
-  var sum_notfinished = target - cumsum3; /* = ts + tc + tnc; */
+  var sum_notstarted = target - cumsum4;
+  var sum_notfinished = target - cumsum3;
   var excess = target -450
 
   new Chart(totalctx, {
@@ -190,7 +217,7 @@
         ''
       ],
       datasets: [
-        { /* sequencing done */
+        {
           data: [
             0,0,0,0,0,0,cumsum3,sum_notfinished,0,0,0,0,0,0
           ],
@@ -214,7 +241,7 @@
           rotation: -90,
           circumference: 180
         },
-        { /* sequencing_started */
+        {
           data: [
             0,0,0,0,0,0,0,0,cumsum4,sum_notstarted,0,0,0,0
           ],
@@ -238,14 +265,14 @@
           rotation: -90,
           circumference: 180
         },
-        { /* detailed state */ 
+        {
           data: [
             {{ total_assembly_done|safe }},
             {{ total_assembling|safe }},
             {{ total_seq_done|safe }},
             {{ total_sequencing|safe }},
-            tc < target - cumsum4 ? tc : target - cumsum4,//tc,
-            target - cumsum5 > 0 ? target - cumsum5 : 0 //tnc
+            tc < target - cumsum4 ? tc : target - cumsum4,
+            target - cumsum5 > 0 ? target - cumsum5 : 0
           ],
           weight:5,
           backgroundColor: [
@@ -264,7 +291,7 @@
           rotation: -90,
           circumference: 180
         },
-        { /* milestones */
+        {
           data: [
             0,0,0,0,0,0,0,0,0,0,90,140,220,excess
           ],
@@ -305,8 +332,450 @@
     }
   });
 
+  // Phylogenetic Chart - FIXED to keep rings aligned
+  (function() {
+    const rawSpeciesData = {{ phylo_data|safe }};
+    renderPhylogeneticChart(rawSpeciesData);
 
+    function renderPhylogeneticChart(speciesData) {
+      // Organize data hierarchically: phylum -> class -> family
+      const hierarchy = {};
+      speciesData.forEach(s => {
+        const phylum = s.phylum || 'Unknown';
+        const taxonClass = s.class || 'Unknown';
+        const family = s.family || 'Unknown';
+        
+        if (!hierarchy[phylum]) {
+          hierarchy[phylum] = {};
+        }
+        if (!hierarchy[phylum][taxonClass]) {
+          hierarchy[phylum][taxonClass] = {};
+        }
+        if (!hierarchy[phylum][taxonClass][family]) {
+          hierarchy[phylum][taxonClass][family] = 0;
+        }
+        hierarchy[phylum][taxonClass][family]++;
+      });
 
+      // Update stats
+      const totalClasses = Object.values(hierarchy).reduce((sum, classes) => 
+        sum + Object.keys(classes).length, 0);
+      const totalFamilies = Object.values(hierarchy).reduce((sum, classes) => 
+        sum + Object.values(classes).reduce((sum2, families) => 
+          sum2 + Object.keys(families).length, 0), 0);
 
+      document.getElementById('phylo-total-species').textContent = speciesData.length;
+      document.getElementById('phylo-total-phyla').textContent = Object.keys(hierarchy).length;
+      document.getElementById('phylo-total-classes').textContent = totalClasses;
+      document.getElementById('phylo-total-families').textContent = totalFamilies;
+
+      // Color schemes for phyla
+      const phylumColors = {
+        'Arthropoda': '#6b8e7f',
+        'Chordata': '#c86b4c',
+        'Streptophyta': '#d4a574',
+        'Mollusca': '#5a6a7a',
+        'Annelida': '#9b7e6b',
+        'Cnidaria': '#7b92a8',
+        'Echinodermata': '#a67c8e',
+        'Nemertea': '#8a9473',
+        'Nematomorpha': '#7a8e9b',
+        'Porifera': '#9d8b7a',
+        'Bryozoa': '#6d8a7c',
+        'Basidiomycota': '#b88a6e',
+        'Platyhelminthes': '#7e9688',
+        'Unknown': '#999999'
+      };
+
+      // Create legend
+      const legend = document.getElementById('phylo-legend-content');
+      let legendHTML = '';
+      
+      Object.entries(hierarchy).sort((a, b) => {
+        const sumA = Object.values(a[1]).reduce((s, families) => 
+          s + Object.values(families).reduce((s2, v) => s2 + v, 0), 0);
+        const sumB = Object.values(b[1]).reduce((s, families) => 
+          s + Object.values(families).reduce((s2, v) => s2 + v, 0), 0);
+        return sumB - sumA;
+      }).forEach(([phylum, classes]) => {
+        const totalInPhylum = Object.values(classes).reduce((sum, families) => 
+          sum + Object.values(families).reduce((s, v) => s + v, 0), 0);
+        
+        legendHTML += `
+          <div class="mb-3">
+            <div class="d-flex align-items-center mb-2">
+              <span class="d-inline-block mr-2" style="width: 16px; height: 16px; background: ${phylumColors[phylum] || '#999'}; border-radius: 2px;"></span>
+              <strong style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em;">${phylum} (${totalInPhylum})</strong>
+            </div>
+        `;
+        
+        Object.entries(classes).sort((a, b) => {
+          const sumA = Object.values(a[1]).reduce((s, v) => s + v, 0);
+          const sumB = Object.values(b[1]).reduce((s, v) => s + v, 0);
+          return sumB - sumA;
+        }).forEach(([taxonClass, families]) => {
+          const totalInClass = Object.values(families).reduce((sum, count) => sum + count, 0);
+          legendHTML += `
+            <div class="ml-3 mb-2">
+              <div class="font-weight-bold" style="font-size: 0.85rem;">${taxonClass} (${totalInClass})</div>
+          `;
+          
+          Object.entries(families).sort((a, b) => b[1] - a[1]).forEach(([family, count]) => {
+            legendHTML += `
+              <div class="d-flex justify-content-between align-items-center py-1 ml-3 border-bottom" style="font-size: 0.85rem;">
+                <span style="font-style: italic;">${family}</span>
+                <span class="text-muted">${count}</span>
+              </div>
+            `;
+          });
+          
+          legendHTML += '</div>';
+        });
+        
+        legendHTML += '</div>';
+      });
+      
+      legend.innerHTML = legendHTML;
+
+      // Create nested donut chart
+      const width = 700;
+      const height = 700;
+      const radius = Math.min(width, height) / 2;
+
+      const svg = d3.select('#phyloChart')
+        .attr('width', width)
+        .attr('height', height)
+        .append('g')
+        .attr('transform', `translate(${width / 2},${height / 2})`);
+
+      // Build flat arrays in HIERARCHICAL ORDER (not sorted independently)
+      // This keeps all rings aligned!
+      const phylaDataFlat = [];
+      const classesDataFlat = [];
+      const familiesDataFlat = [];
+      
+      // Sort phyla by total count (descending)
+      const sortedPhyla = Object.entries(hierarchy).sort((a, b) => {
+        const sumA = Object.values(a[1]).reduce((s, families) => 
+          s + Object.values(families).reduce((s2, v) => s2 + v, 0), 0);
+        const sumB = Object.values(b[1]).reduce((s, families) => 
+          s + Object.values(families).reduce((s2, v) => s2 + v, 0), 0);
+        return sumB - sumA;
+      });
+      
+      // Build aligned data structures
+      sortedPhyla.forEach(([phylum, classes]) => {
+        const phylumTotal = Object.values(classes).reduce((sum, families) => 
+          sum + Object.values(families).reduce((s, v) => s + v, 0), 0);
+        phylaDataFlat.push({ phylum, value: phylumTotal });
+        
+        // Sort classes within this phylum
+        const sortedClasses = Object.entries(classes).sort((a, b) => {
+          const sumA = Object.values(a[1]).reduce((s, v) => s + v, 0);
+          const sumB = Object.values(b[1]).reduce((s, v) => s + v, 0);
+          return sumB - sumA;
+        });
+        
+        sortedClasses.forEach(([taxonClass, families]) => {
+          const classTotal = Object.values(families).reduce((sum, count) => sum + count, 0);
+          classesDataFlat.push({ phylum, class: taxonClass, value: classTotal });
+          
+          // Sort families within this class
+          const sortedFamilies = Object.entries(families).sort((a, b) => b[1] - a[1]);
+          
+          sortedFamilies.forEach(([family, count]) => {
+            familiesDataFlat.push({ phylum, class: taxonClass, family, value: count });
+          });
+        });
+      });
+
+      // Create pie layout with sort disabled
+      const pie = d3.pie()
+        .value(d => d.value)
+        .sort(null);  // CRITICAL: Don't sort, keep order
+
+      // Inner ring (phyla)
+      const phylaArc = d3.arc()
+        .innerRadius(radius * 0.35)
+        .outerRadius(radius * 0.55);
+
+      const phylaArcs = svg.selectAll('.phylum-arc')
+        .data(pie(phylaDataFlat))
+        .enter()
+        .append('g')
+        .attr('class', 'phylum-arc');
+
+      phylaArcs.append('path')
+        .attr('d', phylaArc)
+        .attr('fill', d => phylumColors[d.data.phylum] || '#999')
+        .attr('stroke', 'white')
+        .attr('stroke-width', 2)
+        .style('opacity', 0.9)
+        .style('cursor', 'pointer')
+        .on('mouseover', function(event, d) {
+          d3.select(this).transition().duration(200).style('opacity', 1).attr('transform', 'scale(1.02)');
+          showTooltip(event, d.data.phylum, null, null, d.data.value);
+        })
+        .on('mouseout', function() {
+          d3.select(this).transition().duration(200).style('opacity', 0.9).attr('transform', 'scale(1)');
+          hideTooltip();
+        })
+        .transition()
+        .duration(800)
+        .attrTween('d', function(d) {
+          const interpolate = d3.interpolate({ startAngle: 0, endAngle: 0 }, d);
+          return function(t) { return phylaArc(interpolate(t)); };
+        });
+
+      // Add phylum labels
+      phylaArcs.each(function(d) {
+        const angle = (d.startAngle + d.endAngle) / 2;
+        const labelRadius = radius * 0.45;
+        const x = Math.cos(angle - Math.PI / 2) * labelRadius;
+        const y = Math.sin(angle - Math.PI / 2) * labelRadius;
+        const percentage = (d.endAngle - d.startAngle) / (2 * Math.PI);
+        
+        if (percentage > 0.03) {
+          let labelText = d.data.phylum;
+          if (percentage < 0.08 && labelText.length > 10) {
+            labelText = labelText.substring(0, 8) + '.';
+          }
+          
+          const text = d3.select(this).append('text')
+            .attr('x', x)
+            .attr('y', y)
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'middle')
+            .style('fill', 'white')
+            .style('font-size', percentage > 0.1 ? '0.7rem' : '0.6rem')
+            .style('font-weight', '700')
+            .style('text-transform', 'uppercase')
+            .style('letter-spacing', '0.08em')
+            .style('pointer-events', 'none')
+            .style('opacity', 0)
+            .text(labelText);
+          
+          const rotation = (angle * 180 / Math.PI);
+          const adjustedRotation = rotation > 90 && rotation < 270 ? rotation + 180 : rotation;
+          
+          text.attr('transform', `rotate(${adjustedRotation}, ${x}, ${y})`)
+            .transition().duration(800).delay(1000).style('opacity', 1);
+        }
+      });
+
+      // Middle ring (classes)
+      const classArc = d3.arc()
+        .innerRadius(radius * 0.57)
+        .outerRadius(radius * 0.73);
+
+      const classArcs = svg.selectAll('.class-arc')
+        .data(pie(classesDataFlat))
+        .enter()
+        .append('g')
+        .attr('class', 'class-arc');
+
+      classArcs.append('path')
+        .attr('d', classArc)
+        .attr('fill', d => {
+          const baseColor = phylumColors[d.data.phylum] || '#999';
+          return d3.color(baseColor).brighter(0.15);
+        })
+        .attr('stroke', 'white')
+        .attr('stroke-width', 1.5)
+        .style('opacity', 0.88)
+        .style('cursor', 'pointer')
+        .on('mouseover', function(event, d) {
+          d3.select(this).transition().duration(200).style('opacity', 1).attr('transform', 'scale(1.02)');
+          showTooltip(event, d.data.phylum, d.data.class, null, d.data.value);
+        })
+        .on('mouseout', function() {
+          d3.select(this).transition().duration(200).style('opacity', 0.88).attr('transform', 'scale(1)');
+          hideTooltip();
+        })
+        .transition()
+        .duration(1000)
+        .delay((d, i) => i * 3)
+        .attrTween('d', function(d) {
+          const interpolate = d3.interpolate({ startAngle: 0, endAngle: 0 }, d);
+          return function(t) { return classArc(interpolate(t)); };
+        });
+
+      // Add class labels
+      classArcs.each(function(d) {
+        const angle = (d.startAngle + d.endAngle) / 2;
+        const labelRadius = radius * 0.65;
+        const x = Math.cos(angle - Math.PI / 2) * labelRadius;
+        const y = Math.sin(angle - Math.PI / 2) * labelRadius;
+        const percentage = (d.endAngle - d.startAngle) / (2 * Math.PI);
+        
+        if (percentage > 0.025) {
+          let labelText = d.data.class;
+          if (percentage < 0.05 && labelText.length > 12) {
+            labelText = labelText.substring(0, 10) + '.';
+          } else if (percentage < 0.08 && labelText.length > 15) {
+            labelText = labelText.substring(0, 13) + '.';
+          }
+          
+          const text = d3.select(this).append('text')
+            .attr('x', x)
+            .attr('y', y)
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'middle')
+            .style('fill', 'white')
+            .style('font-size', percentage > 0.08 ? '0.62rem' : '0.55rem')
+            .style('font-weight', '600')
+            .style('letter-spacing', '0.05em')
+            .style('pointer-events', 'none')
+            .style('opacity', 0)
+            .text(labelText);
+          
+          const rotation = (angle * 180 / Math.PI);
+          const adjustedRotation = rotation > 90 && rotation < 270 ? rotation + 180 : rotation;
+          
+          text.attr('transform', `rotate(${adjustedRotation}, ${x}, ${y})`)
+            .transition().duration(800).delay(1200).style('opacity', 0.95);
+        }
+      });
+
+      // Outer ring (families)
+      const familyArc = d3.arc()
+        .innerRadius(radius * 0.75)
+        .outerRadius(radius * 0.95);
+
+      const familyArcs = svg.selectAll('.family-arc')
+        .data(pie(familiesDataFlat))
+        .enter()
+        .append('g')
+        .attr('class', 'family-arc');
+
+      familyArcs.append('path')
+        .attr('d', familyArc)
+        .attr('fill', d => {
+          const baseColor = phylumColors[d.data.phylum] || '#999';
+          return d3.color(baseColor).brighter(0.35);
+        })
+        .attr('stroke', 'white')
+        .attr('stroke-width', 1)
+        .style('opacity', 0.85)
+        .style('cursor', 'pointer')
+        .on('mouseover', function(event, d) {
+          d3.select(this).transition().duration(200).style('opacity', 1).attr('transform', 'scale(1.03)');
+          showTooltip(event, d.data.phylum, d.data.class, d.data.family, d.data.value);
+        })
+        .on('mouseout', function() {
+          d3.select(this).transition().duration(200).style('opacity', 0.85).attr('transform', 'scale(1)');
+          hideTooltip();
+        })
+        .transition()
+        .duration(1000)
+        .delay((d, i) => i * 5)
+        .attrTween('d', function(d) {
+          const interpolate = d3.interpolate({ startAngle: 0, endAngle: 0 }, d);
+          return function(t) { return familyArc(interpolate(t)); };
+        });
+
+      // Add family labels
+      familyArcs.each(function(d) {
+        const angle = (d.startAngle + d.endAngle) / 2;
+        const labelRadius = radius * 0.85;
+        const x = Math.cos(angle - Math.PI / 2) * labelRadius;
+        const y = Math.sin(angle - Math.PI / 2) * labelRadius;
+        const percentage = (d.endAngle - d.startAngle) / (2 * Math.PI);
+        
+        if (percentage > 0.02) {
+          let labelText = d.data.family;
+          if (percentage < 0.03 && labelText.length > 8) {
+            labelText = labelText.substring(0, 6) + '.';
+          } else if (percentage < 0.05 && labelText.length > 12) {
+            labelText = labelText.substring(0, 10) + '.';
+          } else if (percentage < 0.08 && labelText.length > 16) {
+            labelText = labelText.substring(0, 14) + '.';
+          }
+          
+          let fontSize = '0.5rem';
+          if (percentage > 0.08) fontSize = '0.6rem';
+          if (percentage > 0.15) fontSize = '0.65rem';
+          
+          const text = d3.select(this).append('text')
+            .attr('x', x)
+            .attr('y', y)
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'middle')
+            .style('fill', '#2c3338')
+            .style('font-size', fontSize)
+            .style('font-weight', '500')
+            .style('font-style', 'italic')
+            .style('letter-spacing', '0.02em')
+            .style('pointer-events', 'none')
+            .style('opacity', 0)
+            .text(labelText);
+          
+          const rotation = (angle * 180 / Math.PI);
+          const adjustedRotation = rotation > 90 && rotation < 270 ? rotation + 180 : rotation;
+          
+          text.attr('transform', `rotate(${adjustedRotation}, ${x}, ${y})`)
+            .transition().duration(800).delay(1400).style('opacity', 0.9);
+        }
+      });
+
+      // Center text
+      svg.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('dy', '-0.5em')
+        .style('font-size', '2.5rem')
+        .style('font-weight', '600')
+        .style('fill', '#2c3338')
+        .text(speciesData.length)
+        .style('opacity', 0)
+        .transition().duration(800).delay(1000).style('opacity', 1);
+
+      svg.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('dy', '1.2em')
+        .style('font-size', '0.8rem')
+        .style('text-transform', 'uppercase')
+        .style('letter-spacing', '0.15em')
+        .style('fill', '#5a6a7a')
+        .text('Species')
+        .style('opacity', 0)
+        .transition().duration(800).delay(1200).style('opacity', 1);
+
+      // Tooltip functions
+      const tooltip = document.getElementById('phylo-tooltip');
+
+      function showTooltip(event, phylum, taxonClass, family, count) {
+        const phylumEl = document.getElementById('phylo-tooltip-phylum');
+        const classEl = document.getElementById('phylo-tooltip-class');
+        const familyEl = document.getElementById('phylo-tooltip-family');
+        const countEl = document.getElementById('phylo-tooltip-count');
+
+        phylumEl.textContent = phylum;
+        
+        if (taxonClass) {
+          classEl.textContent = taxonClass;
+          classEl.style.display = 'block';
+        } else {
+          classEl.style.display = 'none';
+        }
+        
+        if (family) {
+          familyEl.textContent = family;
+          familyEl.style.display = 'block';
+        } else {
+          familyEl.style.display = 'none';
+        }
+        
+        countEl.textContent = `${count} species`;
+
+        tooltip.style.left = event.pageX + 15 + 'px';
+        tooltip.style.top = event.pageY + 15 + 'px';
+        tooltip.style.opacity = '1';
+      }
+
+      function hideTooltip() {
+        tooltip.style.opacity = '0';
+      }
+    }
+  })();
 </script>
 {% endblock %}

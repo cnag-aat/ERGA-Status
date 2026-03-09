@@ -29,6 +29,8 @@ from django.db.models import F, Value
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.utils.decorators import method_decorator
+from django.http import JsonResponse
+from collections import defaultdict
 
 import subprocess
 import json
@@ -121,7 +123,34 @@ class HelpView(TemplateView):
         logger.error(f"An error occurred: {e}")
         # return HttpResponse("An error occurred.") """
     
+def phylogenetic_chart_data(request):
+    """
+    API endpoint to provide phylogenetic data for D3.js chart
+    Returns species organized by phylum and family
+    """
+    # Query all target species with their taxonomy information
+    species_list = TargetSpecies.objects.filter(
+        phylum__isnull=False
+    ).exclude(
+        phylum__name=''
+    ).values(
+        'scientific_name',
+        'phylum__name',
+        'family__name'
+    )
     
+    # Convert to list format for JSON serialization
+    data = []
+    for species in species_list:
+        data.append({
+            'name': species['scientific_name'],
+            'phylum': species['phylum__name'] or 'Unknown',
+            'family': species['family__name'] or 'Unknown'
+        })
+    
+    return JsonResponse({
+        'species': data
+    })    
 
 def home(request):
     centerlabels = []
@@ -132,6 +161,7 @@ def home(request):
     seq_done = []
     assembling = []
     assembly_done = []
+    assembly_dropped = []
     total_collected = []
     total_not_collected = []
     total_sequencing = []
@@ -140,6 +170,7 @@ def home(request):
     total_assembly_done = []
     total_submitted = []
    # speciesdict = {}
+    dropped_set = {'Abandoned'}
     in_production_set = {'Prep', 'Sequencing', 'TopUp', 'Extracted'}
     #in_production_set = {'Received', 'Prep', 'Sequencing', 'TopUp', 'Extracted'}
     seq_done_set = {'Done', 'Submitted'}
@@ -158,6 +189,7 @@ def home(request):
         seq_done_span = 0
         assembling_span = 0
         assembly_done_span = 0
+        assembly_dropped_span = 0
         submitted_span = 0
         #.filter(sequencing_rel__long_seq_status='Done')
         queryset = TargetSpecies.objects.filter(gt_rel__sequencing_team=c)
@@ -167,19 +199,22 @@ def home(request):
                 if (sp.assembly_rel.status in assembly_done_set):
                         assembly_done_span += sp.genome_size_update
                 else:
-                    if ((sp.assembly_rel.status in in_assembly_set) and (sp.sequencing_rel.long_seq_status in seq_done_set) and (sp.sequencing_rel.hic_seq_status in seq_done_set)):
-                        assembling_span += sp.genome_size_update
+                    if (sp.assembly_rel.status in dropped_set):
+                        assembly_dropped_span += sp.genome_size_update
                     else:
-                        if ((sp.sequencing_rel.long_seq_status in seq_done_set) and (sp.sequencing_rel.hic_seq_status in seq_done_set)):
-                            seq_done_span += sp.genome_size_update
-                        else: 
-                            if ((sp.sequencing_rel.long_seq_status in in_production_set) or (sp.sequencing_rel.hic_seq_status in in_production_set) or (sp.sequencing_rel.long_seq_status in seq_done_set) or (sp.sequencing_rel.hic_seq_status in seq_done_set)):
-                                sequencing_span += sp.genome_size_update
-                            else:
-                                if ((sp.goat_sequencing_status == 'sample_collected') or (sp.goat_sequencing_status == 'sample_acquired')):
-                                    collected_span += sp.genome_size_update
+                        if ((sp.assembly_rel.status in in_assembly_set) and (sp.sequencing_rel.long_seq_status in seq_done_set) and (sp.sequencing_rel.hic_seq_status in seq_done_set)):
+                            assembling_span += sp.genome_size_update
+                        else:
+                            if ((sp.sequencing_rel.long_seq_status in seq_done_set) and (sp.sequencing_rel.hic_seq_status in seq_done_set)):
+                                seq_done_span += sp.genome_size_update
+                            else: 
+                                if ((sp.sequencing_rel.long_seq_status in in_production_set) or (sp.sequencing_rel.hic_seq_status in in_production_set) or (sp.sequencing_rel.long_seq_status in seq_done_set) or (sp.sequencing_rel.hic_seq_status in seq_done_set)):
+                                    sequencing_span += sp.genome_size_update
                                 else:
-                                    not_collected_span += sp.genome_size_update
+                                    if ((sp.goat_sequencing_status == 'sample_collected') or (sp.goat_sequencing_status == 'sample_acquired')):
+                                        collected_span += sp.genome_size_update
+                                    else:
+                                        not_collected_span += sp.genome_size_update
 
                          
             # goat_sequencing_status
@@ -189,6 +224,7 @@ def home(request):
             seq_done.append(seq_done_span/1000000000)
             assembling.append(assembling_span/1000000000)
             assembly_done.append(assembly_done_span/1000000000)
+            assembly_dropped.append(assembly_dropped_span/1000000000)
         else:
             not_collected.append(0)
             collected.append(0)
@@ -196,6 +232,7 @@ def home(request):
             seq_done.append(0)
             assembling.append(0)
             assembly_done.append(0)
+            assembly_dropped.append(0)
 
 #### TOTALS
 
@@ -206,6 +243,7 @@ def home(request):
     total_seq_done_span = 0
     total_assembling_span = 0
     total_assembly_done_span = 0
+    total_assembly_dropped_span = 0
         #.filter(sequencing_rel__long_seq_status='Done')
     allqueryset = TargetSpecies.objects.all().exclude(goat_target_list_status = None).exclude(goat_target_list_status = '').exclude(goat_target_list_status = 'removed')
 
@@ -217,19 +255,23 @@ def home(request):
             if (sp.assembly_rel and sp.assembly_rel.status in assembly_done_set):
                     total_assembly_done_span += sp.genome_size_update
             else:
-                if ((sp.assembly_rel.status in in_assembly_set) and (sp.sequencing_rel.long_seq_status in seq_done_set) and (sp.sequencing_rel.hic_seq_status in seq_done_set)):
-                    total_assembling_span += sp.genome_size_update
+
+                if (sp.assembly_rel and sp.assembly_rel.status in dropped_set):
+                        total_assembly_dropped_span += sp.genome_size_update
                 else:
-                    if ((sp.sequencing_rel.long_seq_status in seq_done_set) and (sp.sequencing_rel.hic_seq_status in seq_done_set)):
-                        total_seq_done_span += sp.genome_size_update
-                    else: 
-                        if ((sp.sequencing_rel.long_seq_status in in_production_set) or (sp.sequencing_rel.hic_seq_status in in_production_set) or (sp.sequencing_rel.long_seq_status in seq_done_set) or (sp.sequencing_rel.hic_seq_status in seq_done_set)):
-                            total_sequencing_span += sp.genome_size_update
-                        else:
-                            if ((sp.goat_sequencing_status == 'sample_collected') or (sp.goat_sequencing_status == 'sample_acquired')):
-                                total_collected_span += sp.genome_size_update
+                    if ((sp.assembly_rel.status in in_assembly_set) and (sp.sequencing_rel.long_seq_status in seq_done_set) and (sp.sequencing_rel.hic_seq_status in seq_done_set)):
+                        total_assembling_span += sp.genome_size_update
+                    else:
+                        if ((sp.sequencing_rel.long_seq_status in seq_done_set) and (sp.sequencing_rel.hic_seq_status in seq_done_set)):
+                            total_seq_done_span += sp.genome_size_update
+                        else: 
+                            if ((sp.sequencing_rel.long_seq_status in in_production_set) or (sp.sequencing_rel.hic_seq_status in in_production_set) or (sp.sequencing_rel.long_seq_status in seq_done_set) or (sp.sequencing_rel.hic_seq_status in seq_done_set)):
+                                total_sequencing_span += sp.genome_size_update
                             else:
-                                total_not_collected_span += sp.genome_size_update
+                                if ((sp.goat_sequencing_status == 'sample_collected') or (sp.goat_sequencing_status == 'sample_acquired')):
+                                    total_collected_span += sp.genome_size_update
+                                else:
+                                    total_not_collected_span += sp.genome_size_update
 
                          
     # goat_sequencing_status
@@ -239,6 +281,7 @@ def home(request):
     total_seq_done_span = total_seq_done_span/1000000000
     total_assembling_span = total_assembling_span/1000000000
     total_assembly_done_span = total_assembly_done_span/1000000000
+    total_assembly_dropped_span = total_assembly_done_span/1000000000
             
     # messages.info(request, 'centers: ' + str(centerlabels)) 
     # messages.info(request, 'not_collected: ' + str(not_collected)) 
@@ -252,7 +295,28 @@ def home(request):
     # messages.info(request, 'total_sequencing: '+ str(total_sequencing_span))  
     # messages.info(request, 'total_seq_done: '+ str(total_seq_done_span)) 
     # messages.info(request, 'total_assembling: '+ str(total_assembling_span)) 
-    # messages.info(request, 'total_assembly_done: '+ str(total_assembly_done_span))  
+    # messages.info(request, 'total_assembly_done: '+ str(total_assembly_done_span))
+    phylo_data = []
+    for species in allqueryset:
+        if (species.assembly_rel.status in assembly_done_set):
+            phylo_data.append({
+                'name': species.scientific_name,
+                'phylum': (
+                    species.taxon_phylum.name
+                    if species.taxon_phylum and species.taxon_phylum.name
+                    else 'Unknown'
+                ),
+                'class': (
+                    species.taxon_class.name
+                    if species.taxon_class and species.taxon_class.name
+                    else 'Unknown'
+                ),
+                'family': (
+                    species.taxon_family.name
+                    if species.taxon_family and species.taxon_family.name
+                    else 'Unknown'
+                )
+            })
     return render(request, 'index.html', {
         'centers': centerlabels,
         'not_collected': not_collected,  
@@ -267,6 +331,8 @@ def home(request):
         'total_seq_done': total_seq_done_span,
         'total_assembling': total_assembling_span,
         'total_assembly_done': total_assembly_done_span,
+        'total_assembly_dropped': total_assembly_dropped_span,
+        'phylo_data': json.dumps(phylo_data)
     })
 
 class SuccessView(TemplateView):

@@ -66,7 +66,9 @@ GOAT_SEQUENCING_STATUS_CHOICES = (
     ('data_generation', 'data_generation'),
     ('in_assembly', 'in_assembly'),
     ('insdc_open', 'insdc_open'),
-    ('publication_available', 'publication_available')
+    ('published', 'published'),
+    ('cancelled','cancelled'),
+    ('paused','paused')
 )
 
 SEQUENCING_STATUS_CHOICES = (
@@ -139,7 +141,7 @@ class SubSpeciesInlineAdmin(admin.TabularInline):
 
 @register(TargetSpecies)
 class TargetSpeciesAdmin(admin.ModelAdmin):
-    list_filter = ["gt_rel__sequencing_team","sequencing_rel__phase","collection_rel__country","collection_rel__task",'goat_target_list_status','goat_sequencing_status']
+    list_filter = ["gt_rel__sequencing_team","assembly_rel__status","sequencing_rel__phase","collection_rel__country","collection_rel__task",'goat_target_list_status','goat_sequencing_status']
     #list_filter = ["sequencing_rel__phase","collection_rel__country","collection_rel__task","tags",'goat_target_list_status','goat_sequencing_status']
     action_form = UpdateSpeciesActionForm
     actions = [update_goat_list_status,update_goat_seq_status]
@@ -777,3 +779,7 @@ class StatusUpdateAdmin(admin.ModelAdmin):
     )
 admin.site.unregister(User)
 admin.site.register(User, MyUserAdmin)
+
+@register(Publication)
+class PublicationAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in Publication._meta.fields]

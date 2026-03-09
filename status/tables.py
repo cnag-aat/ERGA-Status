@@ -58,6 +58,9 @@ class OverviewTable(tables.Table):
     goat_sequencing_status = tables.Column(verbose_name="GoaT Status",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     assembly_rank = tables.Column(accessor='assembly_rel__assembly_rank',verbose_name='Assembly level')
     notes = tables.Column(accessor='assembly_rel__note',verbose_name='Notes')
+    #doi = tables.Column(accessor='publication_rel__doi',verbose_name='DOI')
+    pmcid = tables.Column(accessor='publication_rel__pmcid',verbose_name='PMCID')
+
     # study_accession = tables.Column(accessor='sequencing_rel__enareads__study_accession',verbose_name='BioProject')
     # def render_study_accession(self, value, record):
     #     html = '<a target="blank" href="https://www.ebi.ac.uk/ena/browser/view/'+value+'">'+escape(value)+'</a>'
@@ -67,7 +70,10 @@ class OverviewTable(tables.Table):
     def render_notes(self, value, record):
          return format_html('<a href="#" data-toggle="tooltip" title="{}"><i class="fa fa-comment" aria-hidden="true"</i></a>', str(value))
     # comment = tables.TemplateColumn('<a href="#" data-toggle="tooltip" title="{{record.comment}}">{{record.comment|truncatewords:5}}')
-    
+    def render_doi(self, value, record):
+        return format_html('<a href="https://doi.org/{}">{}</a>',str(value), str(value))    
+    def render_pmcid(self, value, record):
+        return format_html('<a href="https://pmc.ncbi.nlm.nih.gov/articles/{}">{}</a>',str(value), str(value))    
     def render_date(self, value, record):
         return value.strftime("%Y-%m-%d") if value else ""
 
@@ -223,7 +229,7 @@ class OverviewTable(tables.Table):
         #orderable = False
         #paginate = {"per_page": 100}
         # fields = ('tolid_prefix', 'scientific_name','genomic_sample_status','hic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','curation_status','annotation_status','submission_status')
-        fields = ('scientific_name','tolid_prefix','taxon_phylum','taxon_family','genome_size_update','seq_center','recipe','hic_center','assembly_team','goat_sequencing_status','copo_status','long_seq_status','short_seq_status','hic_seq_status','rna_seq_status','assembly_status','annotation_status','assembly_rank','notes','date','log')
+        fields = ('scientific_name','tolid_prefix','taxon_class','genome_size_update','seq_center','recipe','hic_center','assembly_team','goat_sequencing_status','copo_status','long_seq_status','short_seq_status','hic_seq_status','rna_seq_status','assembly_status','annotation_status','pmcid','assembly_rank','notes','date','log')
 
 class TargetSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']

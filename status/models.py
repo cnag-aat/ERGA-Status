@@ -15,6 +15,8 @@ import time
 from django.contrib import messages
 from django.forms import ModelForm
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator, MaxValueValidator
+from datetime import datetime
 #from tagging.registry import register
 
 
@@ -172,7 +174,9 @@ GOAT_SEQUENCING_STATUS_CHOICES = (
     ('data_generation', 'data_generation'),
     ('in_assembly', 'in_assembly'),
     ('insdc_open', 'insdc_open'),
-    ('published', 'published')
+    ('published', 'published'),
+    ('cancelled','cancelled'),
+    ('paused','paused')
 )
 
 gss_rank = {
@@ -1705,3 +1709,23 @@ class StatusUpdate(models.Model):
 class SpeciesUpload(models.Model):
     file = models.FileField(upload_to='uploaded_files/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
+
+   
+class Publication(models.Model):
+    species = models.OneToOneField(TargetSpecies, related_name='publication_rel', on_delete=models.CASCADE, verbose_name="species")
+    doi = models.CharField(max_length=50, help_text='DOI')
+    title = models.CharField(max_length=250, help_text='Title')
+    journal = models.CharField(max_length=100, help_text='Journal')
+    date = models.IntegerField(
+        validators=[
+            MinValueValidator(1000),
+            MaxValueValidator(datetime.now().year)
+        ]
+    )
+    pmcid = models.CharField(max_length=30, help_text='PMCID')
+ 
+    class Meta:
+        verbose_name_plural = 'publications'
+
+    def __str__(self):
+        return self.doi or str(self.id)
