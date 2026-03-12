@@ -1,0 +1,2 @@
+species_name,taxon_id,task,country,sample_provider_name,sample_provider_email,goat_target_list_status,goat_sequencing_status,sampling_delay,sampling_month,deadline_manifest_sharing,deadline_manifest_acceptance,deadline_sample_shipment,mta1,mta2
+Podarcis lilfordi,74358,pilot,Spain,Laura Baldo,baldo.laura@ub.edu,other_priority,insdc_open,,,,,,,

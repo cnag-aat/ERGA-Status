@@ -17,6 +17,7 @@ from django.forms import ModelForm
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from datetime import datetime
+from django_ckeditor_5.fields import CKEditor5Field
 #from tagging.registry import register
 
 
@@ -81,7 +82,7 @@ ASSEMBLY_STATUS_CHOICES = (
 )
 assembly_rank = {
     'Waiting':0,
-    'Abandoned':1,
+    'Abandoned':0,
     'Issue':1,
     'Assembling':2,
     'Contigs':3,
@@ -181,6 +182,7 @@ GOAT_SEQUENCING_STATUS_CHOICES = (
 
 gss_rank = {
     'none':0,
+    'cancelled':0,
     'in_collection':1,
     'sample_collected':2,
     'sample_acquired':3,
@@ -189,6 +191,24 @@ gss_rank = {
     'insdc_open':6,
     'published':7
 }
+
+class Customization(models.Model):
+    project = models.CharField(blank=True, null=True, max_length=100)
+    about = CKEditor5Field(blank=True, null=True, max_length=2000)
+    logo_filename = models.CharField(blank=True, null=True, max_length=100)
+    link1_url = models.CharField(blank=True, null=True, max_length=100)
+    link1_filename = models.CharField(blank=True, null=True, max_length=100)
+    link2_url = models.CharField(blank=True, null=True, max_length=100)
+    link2_filename = models.CharField(blank=True, null=True, max_length=100)
+    link3_url = models.CharField(blank=True, null=True, max_length=100)
+    link3_filename = models.CharField(blank=True, null=True, max_length=100)
+    show_production_by_center = models.BooleanField(default=False)
+    show_milestones = models.BooleanField(default=False)
+    class Meta:
+        verbose_name_plural = 'customizations'
+
+    def __str__(self):
+        return self.project or str(self.id)
 
 class Role(models.Model):
     description = models.CharField(max_length=100)

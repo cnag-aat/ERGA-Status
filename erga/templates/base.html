@@ -65,7 +65,7 @@ body {
 </style>
 {% if not view.is_popup %}
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="{% url 'home' %}"><img src="{% static "erga-sts-2.png" %}" width=150 alt="ERGA"></a>
+  <a class="navbar-brand" href="{% url 'home' %}"><img src="{% static custom.logo_filename %}" height=40 alt=""></a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -194,9 +194,9 @@ body {
 	<!-- <h5 class="text-uppercase">Collaborators</h5> -->
         <div class="row">
         <!-- Content -->
-        <div class="col-sm-4 my-auto text-center"><a target="_blank" href="https://www.cnag.cat/"><img src="/static/CNAG_logo.png" ></a></div>
-        <div class="col-sm-4 my-auto text-center"><a target="_blank" href="https://www.erga-biodiversity.eu/"><img src="/static/ERGA.png" height=50></a></div>
-        <div class="col-sm-4 my-auto text-center"><a target="_blank" href="https://biodiversitygenomics.eu/"><img src="/static/BGE_color.png" height=50></a></div>
+        <div class="col-sm-4 my-auto text-center"><a target="_blank" href="{{ custom.link1_url }}"><img src="{% static custom.link1_filename %}" height=30></a></div>
+        <div class="col-sm-4 my-auto text-center"><a target="_blank" href="{{ custom.link2_url }}"><img src="{% static custom.link2_filename %}" height=30></a></div>
+        <div class="col-sm-4 my-auto text-center"><a target="_blank" href="{{ custom.link3_url }}"><img src="{% static custom.link3_filename %}" height=30></a></div>
       </div>
       </div>
       <!-- Grid column -->

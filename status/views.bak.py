@@ -1286,156 +1286,442 @@ class SpeciesSaveCronJob(CronJobBase):
             logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + "SpeciesSaveCronJob: Saving "+ sp.scientific_name)
             sp.save()
             
-# import re
-# import logging
-# import requests
-# from datetime import datetime, timedelta
-# from unidecode import unidecode
-# from django_cron import CronJobBase, Schedule
-# from myapp.models import (
-#     TargetSpecies, Specimen, Sample, FromManifest,
-#     Person, Affiliation, SequencingTeam, GenomeTeam
-# )
-
-# logger = logging.getLogger(__name__)
-
 class UpdateSamplesCronJob(CronJobBase):
-    RUN_EVERY_MINS = 720  # every 12 hours
+    RUN_EVERY_MINS = 720 # every 12 hours
     schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
-    code = 'status.update_samples_cron_job'  # a unique code
-
-    def strip_blanks(self, string_list):
-        endtrimmed = [re.sub(r'\s+$', '', name) for name in string_list]
-        both_trimmed = [re.sub(r'^\s+', '', name) for name in endtrimmed]
-        return both_trimmed
+    code = 'status.update_samples_cron_job'    # a unique code
+    
 
     def do(self):
-        now = datetime.now()
-        one_week_ago = now - timedelta(days=7)
+        def strip_blanks(string_list):
+            endtrimmed = [re.sub(r'\s+$', '', name) for name in string_list]
+            both_trimmed = [re.sub(r'^\s+', '', name) for name in endtrimmed]
+            return both_trimmed
+        now = datetime.now() # current date and time
         date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
-        logger.debug(f"{date_time}: Executing UpdateSamplesCronJob.")
-
+        logger.debug(date_time + ": Executing UpdateSamplesCronJob.")
         logging.getLogger("requests").setLevel(logging.WARNING)
-        logging.getLogger('urllib3').setLevel(logging.CRITICAL)
-
-        copo_url = "https://copo-project.org/api"
-
-        # Query all species
-        species_qs = TargetSpecies.objects.all().values("taxon_id", "goat_target_list_status")
+        urllib3_logger = logging.getLogger('urllib3')
+        urllib3_logger.setLevel(logging.CRITICAL)
+        copo_url="https://copo-project.org/api"
+        species_qs = TargetSpecies.objects.all().values("taxon_id","goat_target_list_status")    
         for sp in species_qs:
-            if sp['taxon_id'] is None or sp["goat_target_list_status"] == "removed":
-                continue
-            tid = sp['taxon_id']
-
-            # Check if samples exist and are stale (>1 week)
-            stale_samples = Sample.objects.filter(species__taxon_id=tid, updated_at__lte=one_week_ago)
-            if not stale_samples.exists():
-                continue
-
-            # Fetch COPO data
-            try:
-                copo_taxid_response = requests.get(f"{copo_url}/sample/taxon_id/{tid}")
-                copo_taxid_response.raise_for_status()
-                copo_taxid_json = copo_taxid_response.json()
-                num_samples = copo_taxid_json.get("number_found", 0)
-                data = copo_taxid_json.get("data", [])
-            except requests.RequestException:
-                logger.debug(f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')}: Error fetching COPO taxid {tid}")
-                continue
-
-            if num_samples == 0:
-                continue
-
-            best_copo_status = 'rejected'
-            for copo_record in data:
-                copo_id = copo_record.get('copo_id')
-                logger.debug(f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')}: Getting copo_id {copo_id}")
+            # if (sp['taxon_id'] == "8585"):
+            #     logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ": UpdateSamplesCronJob: Natrix maura ")
+                            
+            if sp['taxon_id'] is not None and sp["goat_target_list_status"] != "removed":
+#                if sp['taxon_id'] != '8585':
+#                    continue
+                
+                # #print('taxon_id: '+ sp['taxon_id']) 
+                tid = sp.get('taxon_id')
+                #print(copo_url+"/sample/sample_field/TAXON_ID/"+tid)
+                copo_taxid_json = []
+                num_samples = 0
+                #species_copo_status = 'Not submitted'
                 try:
-                    copo_sample_response = requests.get(f"{copo_url}/sample/copo_id/{copo_id}/")
-                    copo_sample_response.raise_for_status()
-                    copo_sample_json = copo_sample_response.json()
-                    num_found = copo_sample_json.get('number_found', 0)
-                    if num_found != 1:
-                        continue
-                    sample_data = copo_sample_json['data'][0]
-                except requests.RequestException:
+                    copo_taxid_response = requests.get(copo_url+"/sample/taxon_id/"+tid)
+                    copo_taxid_response.raise_for_status()
+                    #print(copo_taxid_response)
+                    #print(copo_taxid_response.json())
+                    copo_taxid_json = copo_taxid_response.json()
+                    #print(json_resp["status"])
+                    #print(str(copo_taxid_json["number_found"])+' samples found for '+tid)
+                    num_samples = copo_taxid_json.get("number_found")
+                    data = copo_taxid_json.get("data")
+                except requests.exceptions.HTTPError as error:
+                    logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ": UpdateSamplesCronJob: error:"+copo_url+"/sample/taxon_id/"+tid)
                     continue
+                    #print(error)
+                if num_samples > 0:
+                    best_copo_status = 'rejected'
+                    for copo_record in data:
+                        copo_id = copo_record.get('copo_id')
+                        logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ": UpdateSamplesCronJob: getting copo_id "+copo_id+".")
+                        #print(copo_id)
+                        copo_sample_json = []
+                        num_found = 0
+                        try:
+                            copo_sample_response = requests.get(copo_url+"/sample/copo_id/"+copo_record['copo_id']+'/')
+                        except requests.exceptions.HTTPError as error:
+                            continue
+                            #print(error)
+                        if not copo_sample_response:
+                            continue
+                        copo_sample_json = copo_sample_response.json()
+                        num_found = copo_sample_json.get('number_found')
+                        sample_data_all = copo_sample_json.get('data')
+                        if num_found > 0:
+                            if num_found > 1:
+                                logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ": UpdateSamplesCronJob: more than one record for "+copo_id+".")
+                                continue
+                            status = ''
+                            updated_species = False
+                            sample_data = sample_data_all[0]
+                            if 'BARCODING' in sample_data['PURPOSE_OF_SPECIMEN']:
+                                continue
+                            if 'RESEQUENCING' in sample_data['PURPOSE_OF_SPECIMEN']:
+                                continue
+                            tolid = sample_data.get('public_name')
+                            #print(tolid)
+                            taxid = sample_data.get('TAXON_ID')
+                            if (taxid != sp['taxon_id']):
+                                logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ": UpdateSamplesCronJob: " + taxid + ' != ' + sp['taxon_id'])
+                                continue
+#                            if (taxid == "8585"):
+#                                logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ": UpdateSamplesCronJob: processing Natrix maura")
 
-                # Skip if not relevant project
-                primary_biogenome_project = sample_data.get('PRIMARY_BIOGENOME_PROJECT')
-                tol_project = sample_data.get('tol_project', '')
-                associated_tol_project = sample_data.get('associated_tol_project', '')
-                if not primary_biogenome_project:
-                    continue
-                if ('ERGA-BGE' not in primary_biogenome_project and
-                    'ERGA' not in tol_project and
-                    'BGE' not in tol_project and
-                    'ERGA' not in associated_tol_project and
-                    'BGE' not in associated_tol_project):
-                    continue
+                            tol_project = sample_data.get('tol_project')
+                            associated_tol_project = sample_data.get('associated_tol_project')
+                            primary_biogenome_project = sample_data.get('PRIMARY_BIOGENOME_PROJECT')
+                            if primary_biogenome_project is None:
+                                continue
+                            if ('ERGA-BGE' not in primary_biogenome_project and 
+                                'ERGA' not in tol_project and
+                                'BGE' not in tol_project and
+                                'ERGA' not in associated_tol_project and
+                                'BGE' not in associated_tol_project):
+                                continue
+                            #print(tolid +'|' +copo_id)
+                            copo_status = sample_data.get('status')
+                            specimen_id = sample_data.get('SPECIMEN_ID')
+#                            if (taxid == "8585"):
+#                                logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ": UpdateSamplesCronJob: Natrix maura status: "+copo_status)
+                            if 'pending' in copo_status:
+                                status = 'pending'
+                            else:
+                                status = copo_status
+                            if not ((status == 'pending') or (status == 'accepted') or (status == "rejected")):
+                                continue
+                            tolid_prefix = tolid
+                            tolid_prefix = re.sub(r'\d+$', '', tolid)
+                            #print(tolid_prefix)
+                            sample_accession = sample_data.get('biosampleAccession')
+                            #species = TargetSpecies.objects.get(taxon_id=tid)
+                            species_qs = TargetSpecies.objects.filter(taxon_id=tid) #filtering instead of getting. Seems safer.
+                            if (len(species_qs) == 1): 
+                                species = species_qs[0] 
+                            else:
+                                continue
+                            logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ": Update species with taxid "+species.taxon_id+".")
+                       
+                            species_copo_status = species.copo_status
+                            if tolid_prefix != species.tolid_prefix:
+                                species.tolid_prefix = tolid_prefix
+                                updated_species = True
+                            #get sample_collection -- not sure if needed. it would return multiple records now
+                            specimen_record, _ = Specimen.objects.get_or_create(tolid=tolid) # if doesn't exist create it
+                            collection_qs = SampleCollection.objects.filter(species=species)
+                            if (len(collection_qs) == 1): #don't have a way to match up collection with specimen, yet. can do some matching of names and countries...
+                                specimen_record.collection = collection_qs[0] 
+                            specimen_record.tolid = tolid
+                            specimen_record.species = species
+                            specimen_record.specimen_id = specimen_id
+                            specimen_record.tissue_removed_for_biobanking = True if sample_data.get('TISSUE_REMOVED_FOR_BIOBANKING') == 'Y' else False
+                            specimen_record.tissue_voucher_id_for_biobanking = sample_data.get('TISSUE_VOUCHER_ID_FOR_BIOBANKING')
+                            specimen_record.proxy_tissue_voucher_id_for_biobanking = sample_data.get('PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING')
+                            specimen_record.tissue_for_biobanking = sample_data.get('TISSUE_FOR_BIOBANKING')
+                            specimen_record.dna_removed_for_biobanking = True if sample_data.get('DNA_REMOVED_FOR_BIOBANKING') == 'Y' else False
+                            specimen_record.dna_voucher_id_for_biobanking = sample_data.get('DNA_VOUCHER_ID_FOR_BIOBANKING')
+                            specimen_record.voucher_id = sample_data.get('VOUCHER_ID')
+                            specimen_record.proxy_voucher_id = sample_data.get('PROXY_VOUCHER_ID')
+                            specimen_record.voucher_link = sample_data.get('VOUCHER_LINK')
+                            specimen_record.proxy_voucher_link = sample_data.get('PROXY_VOUCHER_LINK')
+                            specimen_record.voucher_institution = sample_data.get('VOUCHER_INSTITUTION')
+                            if len(sample_data.get('sampleDerivedFrom'))>1:
+                                specimen_record.biosampleAccession = sample_data.get('sampleDerivedFrom')
+                            elif len(sample_data.get('sampleSameAs'))>1:
+                                specimen_record.biosampleAccession = sample_data.get('sampleSameAs')
+                            #print(sample_data)
+                            #sys.exit()
+                            specimen_record.save()
+                            sample_record, _ = Sample.objects.get_or_create(copo_id=copo_id) ### Check to see that only one sample is returned. There's a case with two
+                            sample_record.biosampleAccession = sample_data.get('biosampleAccession')
+                            sample_record.species = species
+                            sample_record.gal = sample_data.get('GAL')
+                            sample_record.barcode = ''
+                            sample_record.collector_sample_id = sample_data.get('COLLECTOR_SAMPLE_ID')
+                            sample_record.copo_date = sample_data.get('time_updated')
+                            sample_record.copo_status = sample_data.get('status')
+                            sample_record.purpose_of_specimen = sample_data.get('PURPOSE_OF_SPECIMEN')
+                            sample_record.tube_or_well_id = sample_data.get('TUBE_OR_WELL_ID')
+                            sample_record.gal_sample_id = sample_data.get('GAL_SAMPLE_ID')
+                            sample_record.specimen = specimen_record
+                            sample_record.sampleDerivedFrom = sample_data.get('sampleDerivedFrom')
+                            sample_record.sampleSameAs = sample_data.get('sampleSameAs')
+                            
+                            if 'REFERENCE_GENOME' in sample_data.get('PURPOSE_OF_SPECIMEN'):
+                                #if species.copo_status != 'accepted':
+                                if status == 'accepted':
+                                    species.copo_status = 'Accepted'
+                                    best_copo_status = 'accepted'
+                                    updated_species = True
+                                if status == 'pending':
+                                    if best_copo_status != 'accepted':
+                                        species.copo_status = 'Pending'
+                                        best_copo_status = 'pending'
+                                        updated_species = True
+                                if status == 'rejected':
+                                    if best_copo_status == 'rejected':
+                                        species.copo_status = 'Rejected'
+                                        updated_species = True
 
-                # Skip if sample already up-to-date
-                biosample_accession = sample_data.get('biosampleAccession')
-                specimen_record = Specimen.objects.filter(biosampleAccession=biosample_accession,
-                                                          updated_at__gt=one_week_ago).first()
-                if specimen_record:
-                    continue  # fresh, skip
+                            if updated_species:
+                                species.save() 
+                            sample_record.save()
 
-                # Update specimen
-                specimen_record, _ = Specimen.objects.get_or_create(tolid=sample_data.get('public_name'))
-                specimen_record.species = TargetSpecies.objects.filter(taxon_id=tid).first()
-                specimen_record.specimen_id = sample_data.get('SPECIMEN_ID')
-                specimen_record.tissue_removed_for_biobanking = sample_data.get('TISSUE_REMOVED_FOR_BIOBANKING') == 'Y'
-                specimen_record.dna_removed_for_biobanking = sample_data.get('DNA_REMOVED_FOR_BIOBANKING') == 'Y'
-                specimen_record.biosampleAccession = biosample_accession
-                specimen_record.save()
+                            #update genome team with sequencing team
+                            seq_team_name = sample_data.get('GAL')
+                            seq_team_name_ascii = unidecode(seq_team_name)
+                            assign_center = 0
+                            if assign_center:
+                                if (seq_team_name is not None) and (seq_team_name != 'Other_ERGA_Associated_GAL'):
+                                    seqteam = SequencingTeam.objects.filter(gal_name=seq_team_name_ascii).first()
+                                    if seqteam is not None:
+                                        #print(seqteam)
+                                        gt, _ = GenomeTeam.objects.get_or_create(species=species)
+                                        if gt is not None:
+                                            gt.sequencing_team = seqteam
+                                            gt.save()
+                                    else:
+                                        newseqteam = SequencingTeam.objects.create(name=seq_team_name_ascii,gal_name=seq_team_name_ascii)
+                                        newseqteam.save()
+                                        gt, _ = GenomeTeam.objects.get_or_create(species=species)
+                                        if gt is not None:
+                                            gt.sequencing_team = newseqteam
+                                            gt.save()
 
-                # Update sample
-                sample_record, _ = Sample.objects.get_or_create(copo_id=copo_id)
-                sample_record.species = specimen_record.species
-                sample_record.specimen = specimen_record
-                sample_record.biosampleAccession = biosample_accession
-                sample_record.copo_status = sample_data.get('status')
-                sample_record.save()
+                            #$from_mani_query  = "$erga_status_url/from_manifest/?specimen=".$specimen_pk;
+                            from_manifest_record, _ = FromManifest.objects.get_or_create(specimen=specimen_record)
+                            collector_names = []
+                            collector_affiliations = []
+                            collector_affiliations_records = []
+                            collector_orcids = []
+                            collected_by_string = sample_data.get('COLLECTED_BY')
+                            if collected_by_string is not None:
+                                from_manifest_record.sample_collectors = collected_by_string
+                                collector_names = strip_blanks(collected_by_string.split('|'))
+                                #print(collector_names)
+                            collector_affiliation_string = sample_data.get('COLLECTOR_AFFILIATION')
+                            if collector_affiliation_string is not None:
+                                from_manifest_record.sample_collector_affiliations = collector_affiliation_string
+                                collector_affiliations = strip_blanks(collector_affiliation_string.split('|'))
+                                #print(collector_affiliations)
+                                for aff in collector_affiliations:
+                                    affrecord, _ = Affiliation.objects.get_or_create(affiliation=aff)
+                                    collector_affiliations_records.append(affrecord)
+                            collector_orcid_string = sample_data.get('COLLECTOR_ORCID_ID')
+                            if collector_orcid_string is not None:
+                                from_manifest_record.sample_collector_orcids = collector_orcid_string
+                                collector_orcids = strip_blanks(collector_orcid_string.split('|'))
+                                #print(collector_orcids)
+                            ### Now add each person
+                            for i in range(len(collector_names)):
+                                #print(i)
+                                if i >= len(collector_affiliations_records):
+                                    collector_affiliations_records.append(None)
+                                if i >= len(collector_orcids):
+                                    collector_orcids.append(None)
+                                people = Person.objects.filter(name=collector_names[i])
+                                if (len(people)>0):
+                                    for p in people:
+                                        if collector_affiliations_records[i] is not None:
+                                            if Affiliation.objects.filter(pk=collector_affiliations_records[i].pk).exists():
+                                                pass
+                                            else:
+                                                p.affiliation.add(collector_affiliations_records[i])
+                                                # add person to from_manifest
+                                        if from_manifest_record.collector.filter(pk=p.pk).exists():
+                                            pass
+                                        else:
+                                            from_manifest_record.collector.add(p)
+                                else:
+                                    person, _ = Person.objects.get_or_create(name=collector_names[i],orcid=collector_orcids[i])
+                                    if collector_affiliations_records[i] is not None:
+                                        person.affiliation.add(collector_affiliations_records[i])
+                                        person.save()
+                                    # add person to from_manifest
+                                    if from_manifest_record.preserver.filter(pk=person.pk).exists():
+                                        pass
+                                    else:
+                                        from_manifest_record.preserver.add(person)
 
-                # Parse pipe-separated fields for FromManifest personnel
-                from_manifest_record, _ = FromManifest.objects.get_or_create(specimen=specimen_record)
-                for field, model_field in [
-                    ('COLLECTED_BY', 'sample_collectors'),
-                    ('COLLECTOR_AFFILIATION', 'sample_collector_affiliations'),
-                    ('COLLECTOR_ORCID_ID', 'sample_collector_orcids'),
-                    ('IDENTIFIED_BY', 'sample_identifiers'),
-                    ('IDENTIFIER_AFFILIATION', 'sample_identifier_affiliations'),
-                    ('SAMPLE_COORDINATOR', 'sample_coordinators'),
-                    ('SAMPLE_COORDINATOR_AFFILIATION', 'sample_coordinators_affiliations'),
-                    ('SAMPLE_COORDINATOR_ORCID_ID', 'sample_coordinators_orcids'),
-                    ('PRESERVED_BY', 'sample_preservers'),
-                    ('PRESERVER_AFFILIATION', 'sample_preserver_affiliations'),
-                ]:
-                    value = sample_data.get(field)
-                    if value:
-                        setattr(from_manifest_record, model_field, value)
-                        parsed_list = self.strip_blanks(value.split('|'))
-                        # You can optionally link Person/Affiliation objects here as before
-                from_manifest_record.save()
 
-        # COPO suppressed/offline check for stale samples
-        for sample_record in Sample.objects.filter(updated_at__lte=one_week_ago):
-            copoid = sample_record.copo_id
-            if not copoid:
-                continue
-            try:
-                r = requests.get(f"{copo_url}/sample/copo_id/{copoid}")
-                r.raise_for_status()
-            except requests.RequestException as e:
-                logger.warning(f"Failed to fetch COPO sample {copoid}: {e}")
-                continue
-            if "COPO offline" in r.text:
-                continue
-            resp = r.json()
-            if resp.get("number_found") is not None:
-                sample_record.suppressed = resp["number_found"] == 0
-                sample_record.save()
+                            identifier_names = []
+                            identifier_affiliations = []
+                            identifier_affiliations_records = []
+                            identified_by_string = sample_data.get('IDENTIFIED_BY')
+                            if identified_by_string is not None:
+                                from_manifest_record.sample_identifiers = identified_by_string
+                                identifier_names = strip_blanks(identified_by_string.split('|'))
+                                #print(identifier_names)
+                            identifier_affiliation_string = sample_data.get('IDENTIFIER_AFFILIATION')
+                            if identifier_affiliation_string is not None:
+                                from_manifest_record.sample_identifier_affiliations = identifier_affiliation_string
+                                identifier_affiliations = strip_blanks(identifier_affiliation_string.split('|'))
+                                #print(identifier_affiliations)
+                                for aff in identifier_affiliations:
+                                    affrecord, _ = Affiliation.objects.get_or_create(affiliation=aff)
+                                    identifier_affiliations_records.append(affrecord)
+                            ### Now add each person
+                            for i in range(len(identifier_names)):
+                                if i >= len(identifier_affiliations_records):
+                                    identifier_affiliations_records.append(None)
+                                people = Person.objects.filter(name=identifier_names[i])
+                                if (len(people)>0):
+                                    for p in people:
+                                        if identifier_affiliations_records[i] is not None:
+                                            if Affiliation.objects.filter(pk=identifier_affiliations_records[i].pk).exists():
+                                                pass
+                                            else:
+                                                p.affiliation.add(identifier_affiliations_records[i])
+                                                # add person to from_manifest
+                                        if from_manifest_record.identifier.filter(pk=p.pk).exists():
+                                            pass
+                                        else:
+                                            from_manifest_record.identifier.add(p)
+                                else:
+                                    person, _ = Person.objects.get_or_create(name=identifier_names[i])
+                                    if identifier_affiliations_records[i] is not None:
+                                        person.affiliation.add(identifier_affiliations_records[i])
+                                        person.save()
+                                    # add person to from_manifest
+                                    if from_manifest_record.preserver.filter(pk=person.pk).exists():
+                                        pass
+                                    else:
+                                        from_manifest_record.preserver.add(person)
+
+                            coordinator_names = []
+                            coordinator_affiliations = []
+                            coordinator_affiliations_records = []
+                            coordinator_orcids = []
+                            coordinated_by_string = sample_data.get('SAMPLE_COORDINATOR')
+                            if coordinated_by_string is not None:
+                                from_manifest_record.sample_coordinators = coordinated_by_string
+                                coordinator_names = strip_blanks(coordinated_by_string.split('|'))
+                                #print(coordinator_names)
+                            coordinator_affiliation_string = sample_data.get('SAMPLE_COORDINATOR_AFFILIATION')
+                            if coordinator_affiliation_string is not None:
+                                from_manifest_record.sample_coordinators_affiliations = coordinator_affiliation_string
+                                coordinator_affiliations = strip_blanks(coordinator_affiliation_string.split('|'))
+                                #print(coordinator_affiliations)
+                                for aff in coordinator_affiliations:
+                                    affrecord, _ = Affiliation.objects.get_or_create(affiliation=aff)
+                                    coordinator_affiliations_records.append(affrecord)
+                            coordinator_orcid_string = sample_data.get('SAMPLE_COORDINATOR_ORCID_ID')
+                            if coordinator_orcid_string is not None:
+                                from_manifest_record.sample_coordinators_orcids = coordinator_orcid_string
+                                coordinator_orcids = strip_blanks(coordinator_orcid_string.split('|'))
+                                #print(coordinator_orcids)
+                            ### Now add each person
+                            for i in range(len(coordinator_names)):
+                                if i >= len(coordinator_affiliations_records):
+                                    coordinator_affiliations_records.append(None)
+                                if i >= len(coordinator_orcids):
+                                    coordinator_orcids.append(None)
+                                people = Person.objects.filter(name=coordinator_names[i])
+                                if (len(people)>0):
+                                    for p in people:
+                                        if coordinator_affiliations_records[i] is not None:
+                                            if Affiliation.objects.filter(pk=coordinator_affiliations_records[i].pk).exists():
+                                                pass
+                                            else:
+                                                p.affiliation.add(coordinator_affiliations_records[i])
+                                            # add person to from_manifest
+                                        if from_manifest_record.coordinator.filter(pk=p.pk).exists():
+                                            pass
+                                        else:
+                                            from_manifest_record.coordinator.add(p)
+                                else:
+                                    person, _ = Person.objects.get_or_create(name=coordinator_names[i],orcid=coordinator_orcids[i])
+                                    if coordinator_affiliations_records[i] is not None:
+                                        person.affiliation.add(coordinator_affiliations_records[i])
+                                        person.save()
+                                    # add person to from_manifest
+                                    if from_manifest_record.preserver.filter(pk=person.pk).exists():
+                                        pass
+                                    else:
+                                        from_manifest_record.preserver.add(person)
+
+                            preserver_names = []
+                            preserver_affiliations = []
+                            preserver_affiliations_records = []
+                            preserved_by_string = sample_data.get('PRESERVED_BY')
+                            if preserved_by_string is not None:
+                                from_manifest_record.sample_preservers = preserved_by_string
+                                preserver_names = strip_blanks(preserved_by_string.split('|'))
+                                #print(preserver_names)
+                            preserver_affiliation_string = sample_data.get('PRESERVER_AFFILIATION')
+                            if preserver_affiliation_string is not None:
+                                from_manifest_record.sample_preserver_affiliations = preserver_affiliation_string
+                                preserver_affiliations = strip_blanks(preserver_affiliation_string.split('|'))
+                                #print(preserver_affiliations)
+                                for aff in preserver_affiliations:
+                                    affrecord, _ = Affiliation.objects.get_or_create(affiliation=aff)
+                                    preserver_affiliations_records.append(affrecord)
+                            ### Now add each person
+                            for i in range(len(preserver_names)):
+                                if i >= len(preserver_affiliations_records):
+                                    preserver_affiliations_records.append(None)
+                                people = Person.objects.filter(name=preserver_names[i])
+                                if (len(people)>0):
+                                    for p in people:
+                                        if preserver_affiliations_records[i] is not None:
+                                            if Affiliation.objects.filter(pk=preserver_affiliations_records[i].pk).exists():
+                                                pass
+                                            else:
+                                                p.affiliation.add(preserver_affiliations_records[i])
+                                                # add person to from_manifest
+                                        if from_manifest_record.preserver.filter(pk=p.pk).exists():
+                                            pass
+                                        else:
+                                            from_manifest_record.preserver.add(p)
+                                else:
+                                    person, _ = Person.objects.get_or_create(name=preserver_names[i])
+                                    if preserver_affiliations_records[i] is not None:
+                                        person.affiliation.add(preserver_affiliations_records[i])
+                                        person.save()
+                                    # add person to from_manifest
+                                    if from_manifest_record.preserver.filter(pk=person.pk).exists():
+                                        pass
+                                    else:
+                                        from_manifest_record.preserver.add(person)
+
+                            # best_copo_status = 'rejected'
+                            # if 'REFERENCE_GENOME' in sample_data.get('PURPOSE_OF_SPECIMEN'):
+                            #     #if species.copo_status != 'accepted':
+                            #     if status == 'accepted':
+                            #         species.copo_status = 'Accepted'
+                            #         best_copo_status = 'accepted'
+                            #         updated_species = True
+                            #     if status == 'pending':
+                            #         if best_copo_status != 'accepted':
+                            #             species.copo_status = 'Pending'
+                            #             best_copo_status = 'pending'
+                            #             updated_species = True
+                            #     if status == 'rejected':
+                            #         if best_copo_status == 'rejected':
+                            #             species.copo_status = 'Rejected'
+                            #             updated_species = True
+
+                            # if updated_species:
+                            #     species.save() 
+        for samplerecord in Sample.objects.all():
+            copoid = samplerecord.copo_id
+            r=requests.get("https://copo-project.org/api/sample/copo_id/"+ copoid)
+            resp = ""
+            if(r.status_code == 200):
+                if re.search(r'COPO offline',r.text):
+                    pass
+                else:
+                    resp=r.json()
+                    if resp.number_found:
+                        samplerecord.suppressed=True
+                    else:
+                        samplerecord.suppressed=False
+                    samplerecord.save()
+            else:
+                pass
 
 class FetchEARsCronJob(CronJobBase):
     RUN_EVERY_MINS = 480 # every 8 hours

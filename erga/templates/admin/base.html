@@ -1,0 +1,44 @@
+{% extends "admin/base.html" %}
+{% block extrahead %}
+{{ block.super }}
+<style>
+    :root, html, body {
+        color-scheme: light !important;
+        --primary: #444;
+        --secondary: #222;
+        --body-fg: #333;
+        --body-bg: #fff;
+        --body-quiet-color: #666;
+        --header-color: #fff;
+        --header-branding-color: #ccc;
+        --header-bg: #222;
+        --header-link-color: #fff;
+        --breadcrumbs-fg: #ccc;
+        --breadcrumbs-bg: #444;
+        --darkened-bg: #f8f8f8;
+        --selected-bg: #e8e8e8;
+        --selected-row: #ffffc1;
+        --close-button-bg: #888;
+        --link-fg: #333;
+        --link-hover-color: #000;
+        --link-selected-fg: #000;
+    }
+
+    #header {
+        background: #222;
+    }
+
+    div#header a:link, div#header a:visited {
+        color: #fff;
+    }
+
+    .module h2, .module caption, .inline-group h2 {
+        background: #444;
+        color: #fff;
+    }
+
+    a:link, a:visited {
+        color: #222;
+    }
+</style>
+{% endblock %}

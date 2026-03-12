@@ -32,7 +32,7 @@ from status.views import GoaTListView
 # from status.views import NewSpeciesView
 from status.views import NewSpeciesListView
 from status.views import HelpView
-
+from django_ckeditor_5.views import upload_file
 
 urlpatterns = [
     path("", views.home, name="home"),
@@ -105,6 +105,7 @@ urlpatterns = [
     path('success/', SuccessView.as_view(), name="success"),
     path("recipe/<int:pk>/", views.recipe_detail, name="recipe_detail"),
     path("help/", HelpView.as_view(), name="help"),
+    path("upload/", upload_file, name="custom_upload_file"),
 ]
 
 admin.site.site_header = "ERGA-GTC Admin"

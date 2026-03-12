@@ -6,14 +6,8 @@
   <div class="col-md-12">
     <div class="card mb-1">
       <div class="card-body">
-        <h5 class="card-title">Welcome to the ERGA Genome Tracking Console</h5>
-        <p>The purpose of this tool is to facilitate the tracking of samples, sequencing status, assembly and annotation status, and 
-          facilitate the deposition of data into the ENA by keeping track of accession numbers. </p>
-          <p>If you'd like to help develop or <a target="_blank" href="https://github.com/cnag-aat/ERGA-Status/issues">submit issues</a>,
-          head on over to <a target="_blank" href="https://github.com/cnag-aat/ERGA-Status">https://github.com/cnag-aat/ERGA-Status</a>. 
-          You can also send feedback to <a href="mailto:erga.gtc@gmail.com">erga.gtc@gmail.com</a>.
-          </p>
-          <p>NOTICE: Log in is now required for most views.</p>
+        <h5 class="card-title">Welcome to the {{ custom.project | safe }} Genome Tracking Console</h5>
+          {{ custom.about | safe }}
       </div>
     </div>
   </div>

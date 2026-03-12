@@ -11,6 +11,9 @@ from django.forms.widgets import DateInput
 from django.contrib.admin.widgets import AdminDateWidget
 from dateutil.parser import parse
 from status.widgets import CustomDatePickerWidget
+from django_ckeditor_5.widgets import CKEditor5Widget
+
+
 
 class ExportCsvMixin:
     def export_as_csv(self, request, queryset):
@@ -783,3 +786,19 @@ admin.site.register(User, MyUserAdmin)
 @register(Publication)
 class PublicationAdmin(admin.ModelAdmin):
     list_display = [field.name for field in Publication._meta.fields]
+
+
+
+
+class CustomizationAdminForm(forms.ModelForm):
+    class Meta:
+        model = Customization
+        fields = '__all__'
+        widgets = {
+            'about': CKEditor5Widget(config_name='default'),
+            # add any other RichText fields here
+        }
+
+@admin.register(Customization)
+class CustomizationAdmin(admin.ModelAdmin):
+    form = CustomizationAdminForm
