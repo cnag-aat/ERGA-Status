@@ -783,3 +783,9 @@ admin.site.register(User, MyUserAdmin)
 @register(Publication)
 class PublicationAdmin(admin.ModelAdmin):
     list_display = [field.name for field in Publication._meta.fields]
+
+
+@register(EnaReads)
+class EnaReads(admin.ModelAdmin):
+    list_filter = ['project__species__scientific_name']
+    search_fields = ['project__species__scientific_name']

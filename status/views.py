@@ -1806,9 +1806,9 @@ class FetchEARsCronJob(CronJobBase):
                 return None
             
         
-        logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + "FetchEARsCronJob: here")
+        logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ": FetchEARsCronJob: here")
         data = fetch_repo_tree(owner, repo, branch)
-        logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + "FetchEARsCronJob: hereafter")
+        logger.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ": FetchEARsCronJob: hereafter")
         yaml_files = []
         if data and "tree" in data:
             files, directories = parse_tree(data['tree'])

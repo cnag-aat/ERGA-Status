@@ -181,6 +181,7 @@ GOAT_SEQUENCING_STATUS_CHOICES = (
 
 gss_rank = {
     'none':0,
+    'cancelled':0,
     'in_collection':1,
     'sample_collected':2,
     'sample_acquired':3,
@@ -1423,7 +1424,8 @@ class Reads(models.Model):
     def __str__(self):
         return self.project.species.scientific_name or str(self.id)
 class EnaReads(models.Model):
-    project = models.ForeignKey(Sequencing, on_delete=models.CASCADE, verbose_name="Sequencing project")
+    #project = models.ForeignKey(Sequencing, on_delete=models.CASCADE, verbose_name="Sequencing project")
+    project = models.OneToOneField(Sequencing,on_delete=models.CASCADE,verbose_name="Sequencing project")
     #ont_yield = models.BigIntegerField(null=True, blank=True, verbose_name="ONT yield")
     #hifi_yield = models.BigIntegerField(null=True, blank=True, verbose_name="HiFi yield")
     #hic_yield = models.BigIntegerField(null=True, blank=True, verbose_name="Hi-C yield")
