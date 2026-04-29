@@ -108,6 +108,6 @@ urlpatterns = [
     path("upload/", upload_file, name="custom_upload_file"),
 ]
 
-admin.site.site_header = "ERGA-GTC Admin"
-admin.site.site_title = "ERGA-GTC Admin Portal"
+admin.site.site_header = "GTC Admin"
+admin.site.site_title = "GTC Admin Portal"
 admin.site.index_title = "Welcome to the ERGA Genome Tracking Console"

@@ -253,7 +253,7 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 #EMAIL_PORT=587 # also tried port 25
 NOTIFICATIONS = True
 ACCOUNT_FORMS = {
-'signup': 'gtc.forms.CustomSignupForm',
+'signup': 'status.forms.CustomSignupForm',
 }
 
 LOGGING = {

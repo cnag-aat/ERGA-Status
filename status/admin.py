@@ -103,27 +103,6 @@ class UpdateSpeciesActionForm(ActionForm):
         required=False
     )
 
-# def add_tags(modeladmin, request, queryset):
-#     if 'tags' in request.POST:
-#         tags = request.POST.getlist('tags')
-#         try:
-#             for obj in queryset:
-#                 for t in tags:
-#                     obj.tags.add(t)
-#         except ValueError:
-#              pass
-#     messages.add_message(request, messages.INFO, "Added tags successfully")
-
-# def remove_tags(modeladmin, request, queryset):
-#     if 'tags' in request.POST:
-#         tags = request.POST.getlist('tags')
-#         try:
-#             for obj in queryset:
-#                 for t in tags:
-#                     obj.tags.remove(t)
-#         except ValueError:
-#              pass
-#     messages.add_message(request, messages.INFO, "Removed tags successfully")
 
 def update_goat_list_status(modeladmin, request, queryset):
     if 'goat_target_list_status' in request.POST:
@@ -436,8 +415,8 @@ admin.site.register(Statement)
 class AssemblyProjectAdmin(admin.ModelAdmin):
     list_filter = ["species__gt_rel__assembly_team","status"]
     list_display = (
-        'get_tolid_prefix',
         'species',
+        'get_tolid_prefix',
         'status',
         'note'
     )
@@ -473,15 +452,62 @@ admin.site.register(CollectionTeam)
 admin.site.register(Subproject)
 admin.site.register(Task)
 admin.site.register(Country)
+
+class UpdateSampleCollectionActionForm(ActionForm):
+    subproject = forms.ModelMultipleChoiceField(
+        queryset=Subproject.objects.all().order_by('name'),
+        required=False
+    )
+    task = forms.ModelChoiceField(
+        queryset=Task.objects.all().order_by('name'),
+        required=False
+    )
+
+def update_sample_collection(modeladmin, request, queryset):
+    if 'subproject' in request.POST:
+        subproject_ids = request.POST.getlist('subproject')
+        if subproject_ids:
+            subprojects = Subproject.objects.filter(pk__in=subproject_ids)
+            for obj in queryset:
+                obj.subproject.set(subprojects)
+    if 'task' in request.POST:
+        task_id = request.POST['task']
+        if task_id:
+            task = Task.objects.get(pk=task_id)
+            queryset.update(task=task)
+    messages.add_message(request, messages.INFO, 'Successfully updated sample collection.')
+
+update_sample_collection.short_description = "Update subproject / task"
+
+
 @register(SampleCollection)
 class SampleCollectionAdmin(admin.ModelAdmin, ExportCsvMixin):
     search_fields = ['species__scientific_name']
-    list_filter = ["task",'subproject',"country__name","species__goat_sequencing_status","species__gt_rel__sample_handling_team","species__gt_rel__sequencing_team","sampling_delay"]
-    list_display = ('species','task','country','copo_status','sample_provider_name','sample_provider_email','mta1','mta2','barcoding_status','sampling_delay','deadline_manifest_acceptance','note')
-    actions = ["export_as_csv"]
-    # formfield_overrides = {
-    #     models.DateField: {'widget': CustomDatePickerWidget}
-    # }
+    list_filter = ["task", 'subproject', "country__name", "species__goat_sequencing_status",
+                   "species__gt_rel__sample_handling_team", "species__gt_rel__sequencing_team", "sampling_delay"]
+    list_display = ('species', 'task', 'country', 'copo_status', 'sample_provider_name',
+                    'sample_provider_email', 'mta1', 'mta2', 'barcoding_status',
+                    'sampling_delay', 'deadline_manifest_acceptance', 'note')
+    action_form = UpdateSampleCollectionActionForm
+    actions = ["export_as_csv", update_sample_collection]
+
+    def get_actions(self, request):
+        actions = super(SampleCollectionAdmin, self).get_actions(request)
+        try:
+            del actions['delete_selected']
+        except KeyError:
+            pass
+        return actions
+    
+# @register(SampleCollection)
+# class SampleCollectionAdmin(admin.ModelAdmin, ExportCsvMixin):
+#     search_fields = ['species__scientific_name']
+#     list_filter = ["task",'subproject',"country__name","species__goat_sequencing_status","species__gt_rel__sample_handling_team","species__gt_rel__sequencing_team","sampling_delay"]
+#     list_display = ('species','task','country','copo_status','sample_provider_name','sample_provider_email','mta1','mta2','barcoding_status','sampling_delay','deadline_manifest_acceptance','note')
+#     actions = ["export_as_csv"]
+#     # formfield_overrides = {
+#     #     models.DateField: {'widget': CustomDatePickerWidget}
+#     # }
     
 admin.site.register(CurationTeam)
 admin.site.register(Curation)
@@ -546,12 +572,12 @@ def update_sequencing(modeladmin, request, queryset):
         recipe = request.POST['recipe']
         rec = Recipe.objects.get(pk=recipe)
         queryset.update(recipe=rec.name)
-    messages.add_message(request, messages.INFO, 'Successfully updated sequencing. ' + recipe)
+    messages.add_message(request, messages.INFO, 'Successfully updated sequencing. ')
 
 
 @register(Sequencing)
 class SequencingAdmin(admin.ModelAdmin):
-    list_filter = ["species__gt_rel__sequencing_team","species__gt_rel__hic_team","species__sequencing_rel__phase","species__collection_rel__country","species__collection_rel__task"]
+    list_filter = ["species__gt_rel__sample_handling_team","species__gt_rel__sequencing_team","species__gt_rel__hic_team","species__sequencing_rel__phase","species__collection_rel__country","species__collection_rel__task","recipe"]
     #list_filter = ["species__gt_rel__sequencing_team","species__gt_rel__hic_team","species__tags","species__sequencing_rel__phase","species__collection_rel__country","species__collection_rel__task"]
     list_display = (
         'species',

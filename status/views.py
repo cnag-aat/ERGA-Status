@@ -82,6 +82,9 @@ from .aggregates import GroupConcat
 
 # Create a logger for your app
 logger = logging.getLogger('status')
+COPO_URL = "https://copo-project.org/api"
+CBP_URL = "https://dades.biogenoma.cat/api/biosamples?taxid__in={taxid}"
+ENA_BIOSAMPLES_URL = "https://www.ebi.ac.uk/biosamples/samples"
 
 def month_matching(date_str):
     try:
@@ -321,7 +324,7 @@ class TargetSpeciesListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, F
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Species'
+        context['build_page_title'] = 'GTC Species'
         return context
     
     def get_queryset(self):
@@ -345,7 +348,7 @@ class GoaTListView(ExportMixin, SingleTableMixin, FilterView):
         context = super().get_context_data(**kwargs)
         # Add in a QuerySet of all the books
         context["last_updated"] = TargetSpecies.objects.order_by('-date_updated')[:1].get().date_updated
-        context['build_page_title'] = 'ERGA-GTC GoaT List'
+        context['build_page_title'] = 'GTC GoaT List'
         return context
 
     def get_queryset(self):
@@ -397,7 +400,7 @@ class OverView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #
 
     def get_context_data(self, *args, **kwargs):
         data = super(OverView, self).get_context_data(*args, **kwargs)
-        data['build_page_title'] = 'ERGA-GTC OverView'
+        data['build_page_title'] = 'GTC OverView'
         return data
     
     def get_queryset(self):
@@ -552,7 +555,7 @@ class AssemblyProjectListView(LoginRequiredMixin, ExportMixin, SingleTableMixin,
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Assembly Status'
+        context['build_page_title'] = 'GTC Assembly Status'
         return context
     
     def get_queryset(self):
@@ -574,7 +577,7 @@ class AssemblyListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, Filter
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Assemblies'
+        context['build_page_title'] = 'GTC Assemblies'
         return context
     def get_queryset(self): #the following filter basically requires the assembly to be in the ENA and have a GCA and stats from NCBI. 
         return Assembly.objects.filter(chromosome_level=True).exclude(type='Hap2').exclude(type='Endosymbiont').exclude(type='Alternate').exclude(type='MT').exclude(type='Chloroplast')
@@ -605,7 +608,7 @@ class SampleCollectionListView(LoginRequiredMixin, ExportMixin, SingleTableMixin
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Sample Collection'
+        context['build_page_title'] = 'GTC Sample Collection'
         return context
     def get_queryset(self):
         #return SampleCollection.objects.exclude(species__goat_target_list_status = None).exclude(species__goat_target_list_status = 'none').exclude(species__goat_target_list_status = '').exclude(species__goat_target_list_status = 'removed').exclude(species__goat_sequencing_status = 'none')
@@ -627,7 +630,7 @@ class SpecimenListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, Filter
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Specimens'
+        context['build_page_title'] = 'GTC Specimens'
         return context
     
     def get_queryset(self):
@@ -662,7 +665,7 @@ class SampleListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterVi
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC GoaT Samples'
+        context['build_page_title'] = 'GTC GoaT Samples'
         return context
     def get_queryset(self):
         queryset = super(SampleListView, self).get_queryset().filter(suppressed=False)
@@ -693,7 +696,7 @@ class SequencingListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, Filt
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Sequencing Status'
+        context['build_page_title'] = 'GTC Sequencing Status'
         return context
 
     def get_queryset(self):
@@ -716,7 +719,7 @@ class SequencingDetailView(LoginRequiredMixin, DetailView): #LoginRequiredMixin,
     table_pagination = {"per_page": 100}
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Sequencing'
+        context['build_page_title'] = 'GTC Sequencing'
         return context
 
 class RunListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
@@ -736,7 +739,7 @@ class RunListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Runs'
+        context['build_page_title'] = 'GTC Runs'
         return context
 
 class EnaRunListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
@@ -756,7 +759,7 @@ class EnaRunListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterVi
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC ENA Runs'
+        context['build_page_title'] = 'GTC ENA Runs'
         return context
        
 class ReadsListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
@@ -770,7 +773,7 @@ class ReadsListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterVie
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Read Data'
+        context['build_page_title'] = 'GTC Read Data'
         return context
     
     def get_queryset(self):
@@ -800,7 +803,7 @@ class EnaReadsListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, Filter
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Read Data'
+        context['build_page_title'] = 'GTC Read Data'
         return context
     
     def get_queryset(self):
@@ -843,7 +846,7 @@ class AnnotationListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, Filt
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Annotations'
+        context['build_page_title'] = 'GTC Annotations'
         return context
     def get_queryset(self):
         return Annotation.objects.exclude(species__goat_target_list_status = None).exclude(species__goat_target_list_status = 'none').exclude(species__goat_target_list_status = '').exclude(species__goat_target_list_status = 'removed').exclude(species__goat_sequencing_status = 'none')
@@ -859,7 +862,7 @@ class CommunityAnnotationListView(LoginRequiredMixin, ExportMixin, SingleTableMi
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Community Annotations'
+        context['build_page_title'] = 'GTC Community Annotations'
         return context
     def get_queryset(self):
         return CommunityAnnotation.objects.exclude(species__goat_target_list_status = None).exclude(species__goat_target_list_status = 'none').exclude(species__goat_target_list_status = '').exclude(species__goat_target_list_status = 'removed').exclude(species__goat_sequencing_status = 'none')
@@ -868,7 +871,7 @@ class CommunityAnnotationListView(LoginRequiredMixin, ExportMixin, SingleTableMi
 class AccessDeniedView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Access Denied'
+        context['build_page_title'] = 'GTC Access Denied'
         return context
     template_name = 'denied.html'
 
@@ -883,7 +886,7 @@ class GenomeTeamsView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterV
     table_pagination = {"per_page": 100}
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Genome Teams'
+        context['build_page_title'] = 'GTC Genome Teams'
         return context
     def get_queryset(self):
         return GenomeTeam.objects.exclude(species__goat_target_list_status = None).exclude(species__goat_target_list_status = 'none').exclude(species__goat_target_list_status = '').exclude(species__goat_target_list_status = 'removed') #.exclude(species__goat_sequencing_status = 'none')
@@ -907,7 +910,7 @@ class AuthorsView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView)
     table_pagination = {"per_page": 100}
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Authors'
+        context['build_page_title'] = 'GTC Authors'
         return context
 
 class EditProfileView(FormView):
@@ -919,7 +922,7 @@ class EditProfileView(FormView):
     success_url = reverse_lazy('success')
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Edit Profile'
+        context['build_page_title'] = 'GTC Edit Profile'
         return context
 
     def get_form(self, form_class = ProfileUpdateForm):
@@ -949,7 +952,7 @@ class LogView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Log'
+        context['build_page_title'] = 'GTC Log'
         return context
 
     # def get_queryset(self):
@@ -969,7 +972,7 @@ class SpeciesLogView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterVi
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Species Log'
+        context['build_page_title'] = 'GTC Species Log'
         return context
 
     def get_queryset(self):
@@ -991,12 +994,12 @@ class NewSpeciesListView(GroupRequiredMixin, LoginRequiredMixin, FormView):#Grou
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Upload Species List'
+        context['build_page_title'] = 'GTC Upload Species List'
         return context
 
     def form_valid(self, form):
         gtls_options = ['waiting_list', 'none', 'long_list', 'other_priority', 'family_representative','removed']
-        gss_options = ['none', 'in_collection', 'sample_collected', 'sample_acquired', 'data_generation', 'in_assembly', 'insdc_open', 'publication_available' ]
+        gss_options = ['none', 'in_collection', 'sample_collected', 'sample_acquired', 'data_generation', 'in_assembly','insdc_submitted', 'insdc_open', 'published', 'publication_available' ]
         messages.info(self.request, "Adding...") 
         # form.instance.tag = "bge"
         form.save()
@@ -1252,7 +1255,7 @@ class NewSpeciesListView(GroupRequiredMixin, LoginRequiredMixin, FormView):#Grou
 def recipe_detail(request, pk=None):
     recipe = Recipe.objects.get(pk=pk)
     context = {"recipe": recipe,
-               'build_page_title':'ERGA-GTC Recipe'
+               'build_page_title':'GTC Recipe'
                }
     response = render(request, "recipe_detail.html", context)
     return response
@@ -1263,7 +1266,7 @@ def sample_detail(request, pk=None):
     site_url = settings.DEFAULT_DOMAIN
     context = {"sample": sample,
                "site_url": site_url,
-               'build_page_title':'ERGA-GTC Sample'
+               'build_page_title':'GTC Sample'
                }
     response = render(request, "sample_detail.html", context)
     return response
@@ -1299,143 +1302,6 @@ class SpeciesSaveCronJob(CronJobBase):
 
 # logger = logging.getLogger(__name__)
 
-class UpdateSamplesCronJob(CronJobBase):
-    RUN_EVERY_MINS = 720  # every 12 hours
-    schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
-    code = 'status.update_samples_cron_job'  # a unique code
-
-    def strip_blanks(self, string_list):
-        endtrimmed = [re.sub(r'\s+$', '', name) for name in string_list]
-        both_trimmed = [re.sub(r'^\s+', '', name) for name in endtrimmed]
-        return both_trimmed
-
-    def do(self):
-        now = datetime.now()
-        one_week_ago = now - timedelta(days=7)
-        date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
-        logger.debug(f"{date_time}: Executing UpdateSamplesCronJob.")
-
-        logging.getLogger("requests").setLevel(logging.WARNING)
-        logging.getLogger('urllib3').setLevel(logging.CRITICAL)
-
-        copo_url = "https://copo-project.org/api"
-
-        # Query all species
-        species_qs = TargetSpecies.objects.all().values("taxon_id", "goat_target_list_status")
-        for sp in species_qs:
-            if sp['taxon_id'] is None or sp["goat_target_list_status"] == "removed":
-                continue
-            tid = sp['taxon_id']
-
-            # Check if samples exist and are stale (>1 week)
-            stale_samples = Sample.objects.filter(species__taxon_id=tid, updated_at__lte=one_week_ago)
-            if not stale_samples.exists():
-                continue
-
-            # Fetch COPO data
-            try:
-                copo_taxid_response = requests.get(f"{copo_url}/sample/taxon_id/{tid}")
-                copo_taxid_response.raise_for_status()
-                copo_taxid_json = copo_taxid_response.json()
-                num_samples = copo_taxid_json.get("number_found", 0)
-                data = copo_taxid_json.get("data", [])
-            except requests.RequestException:
-                logger.debug(f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')}: Error fetching COPO taxid {tid}")
-                continue
-
-            if num_samples == 0:
-                continue
-
-            best_copo_status = 'rejected'
-            for copo_record in data:
-                copo_id = copo_record.get('copo_id')
-                logger.debug(f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')}: Getting copo_id {copo_id}")
-                try:
-                    copo_sample_response = requests.get(f"{copo_url}/sample/copo_id/{copo_id}/")
-                    copo_sample_response.raise_for_status()
-                    copo_sample_json = copo_sample_response.json()
-                    num_found = copo_sample_json.get('number_found', 0)
-                    if num_found != 1:
-                        continue
-                    sample_data = copo_sample_json['data'][0]
-                except requests.RequestException:
-                    continue
-
-                # Skip if not relevant project
-                primary_biogenome_project = sample_data.get('PRIMARY_BIOGENOME_PROJECT')
-                tol_project = sample_data.get('tol_project', '')
-                associated_tol_project = sample_data.get('associated_tol_project', '')
-                if not primary_biogenome_project:
-                    continue
-                if ('ERGA-BGE' not in primary_biogenome_project and
-                    'ERGA' not in tol_project and
-                    'BGE' not in tol_project and
-                    'ERGA' not in associated_tol_project and
-                    'BGE' not in associated_tol_project):
-                    continue
-
-                # Skip if sample already up-to-date
-                biosample_accession = sample_data.get('biosampleAccession')
-                specimen_record = Specimen.objects.filter(biosampleAccession=biosample_accession,
-                                                          updated_at__gt=one_week_ago).first()
-                if specimen_record:
-                    continue  # fresh, skip
-
-                # Update specimen
-                specimen_record, _ = Specimen.objects.get_or_create(tolid=sample_data.get('public_name'))
-                specimen_record.species = TargetSpecies.objects.filter(taxon_id=tid).first()
-                specimen_record.specimen_id = sample_data.get('SPECIMEN_ID')
-                specimen_record.tissue_removed_for_biobanking = sample_data.get('TISSUE_REMOVED_FOR_BIOBANKING') == 'Y'
-                specimen_record.dna_removed_for_biobanking = sample_data.get('DNA_REMOVED_FOR_BIOBANKING') == 'Y'
-                specimen_record.biosampleAccession = biosample_accession
-                specimen_record.save()
-
-                # Update sample
-                sample_record, _ = Sample.objects.get_or_create(copo_id=copo_id)
-                sample_record.species = specimen_record.species
-                sample_record.specimen = specimen_record
-                sample_record.biosampleAccession = biosample_accession
-                sample_record.copo_status = sample_data.get('status')
-                sample_record.save()
-
-                # Parse pipe-separated fields for FromManifest personnel
-                from_manifest_record, _ = FromManifest.objects.get_or_create(specimen=specimen_record)
-                for field, model_field in [
-                    ('COLLECTED_BY', 'sample_collectors'),
-                    ('COLLECTOR_AFFILIATION', 'sample_collector_affiliations'),
-                    ('COLLECTOR_ORCID_ID', 'sample_collector_orcids'),
-                    ('IDENTIFIED_BY', 'sample_identifiers'),
-                    ('IDENTIFIER_AFFILIATION', 'sample_identifier_affiliations'),
-                    ('SAMPLE_COORDINATOR', 'sample_coordinators'),
-                    ('SAMPLE_COORDINATOR_AFFILIATION', 'sample_coordinators_affiliations'),
-                    ('SAMPLE_COORDINATOR_ORCID_ID', 'sample_coordinators_orcids'),
-                    ('PRESERVED_BY', 'sample_preservers'),
-                    ('PRESERVER_AFFILIATION', 'sample_preserver_affiliations'),
-                ]:
-                    value = sample_data.get(field)
-                    if value:
-                        setattr(from_manifest_record, model_field, value)
-                        parsed_list = self.strip_blanks(value.split('|'))
-                        # You can optionally link Person/Affiliation objects here as before
-                from_manifest_record.save()
-
-        # COPO suppressed/offline check for stale samples
-        for sample_record in Sample.objects.filter(updated_at__lte=one_week_ago):
-            copoid = sample_record.copo_id
-            if not copoid:
-                continue
-            try:
-                r = requests.get(f"{copo_url}/sample/copo_id/{copoid}")
-                r.raise_for_status()
-            except requests.RequestException as e:
-                logger.warning(f"Failed to fetch COPO sample {copoid}: {e}")
-                continue
-            if "COPO offline" in r.text:
-                continue
-            resp = r.json()
-            if resp.get("number_found") is not None:
-                sample_record.suppressed = resp["number_found"] == 0
-                sample_record.save()
 
 class FetchEARsCronJob(CronJobBase):
     RUN_EVERY_MINS = 480 # every 8 hours
@@ -1588,3 +1454,258 @@ class FetchEARsCronJob(CronJobBase):
                         assembly_object.report = EAR_pdf
                         assembly_object.save()
 
+# --- COPO ---
+def get_copo_samples_by_taxid(taxid):
+    url = f"{COPO_URL}/sample/taxon_id/{taxid}"
+    logger.info(f"Querying COPO for taxid {taxid}")
+    try:
+        r = requests.get(url, timeout=30)
+        r.raise_for_status()
+    except Exception as e:
+        logger.error(f"COPO query failed: {e}")
+        return []
+
+    resp = r.json()
+    biosamples = []
+    for record in resp.get("data", []):
+        purpose = record.get("PURPOSE_OF_SPECIMEN", "")
+        if "BARCODING" in purpose or "RESEQUENCING" in purpose:
+            continue
+        accession = record.get("SAMPLE_ACCESSION") or record.get("biosampleAccession")
+        if accession:
+            biosamples.append({"accession": accession, "status": "accepted"})
+    return biosamples
+
+# --- CBP ---
+def get_cbp_samples_by_taxid(taxid):
+    url = CBP_URL.format(taxid=taxid)
+    logger.info(f"Querying CBP portal for taxid {taxid}")
+    try:
+        r = requests.get(url, timeout=30)
+        r.raise_for_status()
+    except Exception as e:
+        logger.error(f"CBP query failed: {e}")
+        return []
+
+    resp = r.json()
+    biosamples = []
+    for record in resp.get("data", []):
+        accession = record.get("metadata", {}).get("External Id") or record.get("accession")
+        if accession:
+            biosamples.append({"accession": accession, "status": "accepted"})
+    return biosamples
+
+# --- ENA fetch ---
+def fetch_biosample_metadata(accession):
+    if not accession:
+        return None
+    url = f"{ENA_BIOSAMPLES_URL}/{accession}?format=json"
+    logger.info(f"Retrieving ENA BioSamples metadata for {accession}")
+    try:
+        r = requests.get(url, timeout=30)
+        r.raise_for_status()
+        data = r.json()
+        characteristics = flatten_characteristics(data.get("characteristics", {}))
+        return {
+            "accession": data.get("accession"),
+            "name": data.get("name"),
+            "organism": characteristics.get("organism") or data.get("organism"),
+            "tax_id": data.get("taxId"),
+            "collection_date": characteristics.get("collection date") or data.get("submitted"),
+            "country": characteristics.get("geographic location (country and/or sea)"),
+            "characteristics": characteristics
+        }
+    except Exception as e:
+        logger.warning(f"ENA BioSamples query failed for {accession}: {e}")
+        return None
+    
+
+# --- Flatten characteristics with pipe-separated text handling ---
+def flatten_characteristics(characteristics):
+    flat_chars = {}
+    for key, values in characteristics.items():
+        if isinstance(values, list):
+            texts = [v.get("text") for v in values if "text" in v]
+            if not texts:
+                flat_chars[key] = None
+            elif len(texts) == 1:
+                if "|" in texts[0]:
+                    flat_chars[key] = [t.strip() for t in texts[0].split("|")]
+                else:
+                    flat_chars[key] = texts[0]
+            else:
+                all_values = []
+                for t in texts:
+                    if "|" in t:
+                        all_values.extend([x.strip() for x in t.split("|")])
+                    else:
+                        all_values.append(t)
+                flat_chars[key] = all_values
+        else:
+            flat_chars[key] = values
+    return flat_chars
+
+
+class UpdateSamplesCronJob(CronJobBase):
+    RUN_EVERY_MINS = 720  # every 12 hours
+    schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
+    code = 'status.update_samples_cron_job'
+
+    def strip_blanks(self, string_list):
+        return [s.strip() for s in string_list]
+
+    def do(self):
+        now = datetime.now()
+        one_week_ago = now - timedelta(days=7)
+        date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
+        logger.debug(f"{date_time}: Executing CBP UpdateSamplesCronJob.")
+
+        # Determine project type from Customization
+        customization = Customization.objects.first()
+        if not customization or not customization.project:
+            logger.warning("No Customization project found. Skipping cron.")
+            return
+        project = customization.project.strip().upper()  # normalize to "ERGA" or "CBP"
+
+        updated_sample_ids = set()
+
+        # Iterate over target species
+        species_qs = TargetSpecies.objects.all().values("taxon_id", "goat_target_list_status")
+        for sp in species_qs:
+            tid = sp['taxon_id']
+            if not tid or sp["goat_target_list_status"] == "removed":
+                continue
+
+            target_species = TargetSpecies.objects.filter(taxon_id=tid).first()
+            if not target_species:
+                continue
+
+            # FIX: Fetch accessions from COPO or CBP depending on project,
+            # rather than only relying on accessions already stored in the DB.
+            # This ensures new samples are picked up on each run.
+            try:
+                if project == "CBP":
+                    remote_samples = get_cbp_samples_by_taxid(tid)
+                else:  # default to ERGA/COPO
+                    remote_samples = get_copo_samples_by_taxid(tid)
+            except Exception as e:
+                logger.warning(f"Failed to fetch remote samples for taxid {tid}: {e}")
+                continue
+
+            if not remote_samples:
+                continue
+
+            for remote_sample in remote_samples:
+                accession = remote_sample.get('accession')
+                if not accession:
+                    continue
+
+                # Only process samples that are stale or new (not yet in DB)
+                existing_sample = Sample.objects.filter(biosampleAccession=accession).first()
+                if existing_sample and existing_sample.copo_date:
+                    try:
+                        # copo_date is a CharField - parse it to check staleness
+                        from django.utils.dateparse import parse_datetime
+                        last_updated = parse_datetime(existing_sample.copo_date)
+                        # if last_updated and last_updated > one_week_ago:
+                        #     logger.debug(f"Skipping {accession} - updated recently.")
+                        #     continue
+                    except Exception:
+                        pass  # if parsing fails, proceed with update
+
+                # Fetch EBI metadata
+                try:
+                    metadata = fetch_biosample_metadata(accession)
+                except Exception as e:
+                    logger.warning(f"Failed to fetch EBI metadata for {accession}: {e}")
+                    continue
+
+                if not metadata:
+                    logger.warning(f"No metadata returned for {accession}, skipping.")
+                    continue
+
+                chars = metadata.get('characteristics', {})
+
+                # Update or create specimen
+                specimen_record, _ = Specimen.objects.get_or_create(
+                    biosampleAccession=accession
+                )
+                specimen_record.species = target_species
+                specimen_record.specimen_id = chars.get('SPECIMEN_ID') or accession
+                specimen_record.tissue_removed_for_biobanking = (
+                    chars.get('TISSUE_REMOVED_FOR_BIOBANKING') == 'Y'
+                )
+                specimen_record.dna_removed_for_biobanking = (
+                    chars.get('DNA_REMOVED_FOR_BIOBANKING') == 'Y'
+                )
+                specimen_record.tolid = chars.get('public_name') or chars.get('tolid') or specimen_record.tolid
+                specimen_record.save()
+
+                # Update or create sample
+                sample_record, _ = Sample.objects.get_or_create(
+                    biosampleAccession=accession
+                )
+                sample_record.specimen = specimen_record
+                sample_record.species = target_species
+                sample_record.tube_or_well_id = chars.get('TUBE_OR_WELL_ID')
+                sample_record.purpose_of_specimen = chars.get('PURPOSE_OF_SPECIMEN')
+                sample_record.biosampleAccession = accession
+                sample_record.copo_date = now.isoformat()  # stamp the update time
+
+                # Only update copo_status if the remote source or ENA provided one
+                remote_status = remote_sample.get('status')
+                ena_status = metadata.get('status')
+                if remote_status:
+                    sample_record.copo_status = remote_status
+                elif ena_status:
+                    sample_record.copo_status = ena_status
+                sample_record.save()
+
+                updated_sample_ids.add(sample_record.pk)
+
+                # Update FromManifest personnel
+                from_manifest_record, _ = FromManifest.objects.get_or_create(
+                    specimen=specimen_record
+                )
+                fields_mapping = [
+                    ('COLLECTED_BY', 'sample_collectors'),
+                    ('COLLECTOR_AFFILIATION', 'sample_collector_affiliations'),
+                    ('COLLECTOR_ORCID_ID', 'sample_collector_orcids'),
+                    ('IDENTIFIED_BY', 'sample_identifiers'),
+                    ('IDENTIFIER_AFFILIATION', 'sample_identifier_affiliations'),
+                    ('SAMPLE_COORDINATOR', 'sample_coordinators'),
+                    ('SAMPLE_COORDINATOR_AFFILIATION', 'sample_coordinators_affiliations'),
+                    ('SAMPLE_COORDINATOR_ORCID_ID', 'sample_coordinators_orcids'),
+                    ('PRESERVED_BY', 'sample_preservers'),
+                    ('PRESERVER_AFFILIATION', 'sample_preserver_affiliations'),
+                ]
+                for field, model_field in fields_mapping:
+                    value = chars.get(field)
+                    if value:
+                        setattr(from_manifest_record, model_field, value)
+                from_manifest_record.save()
+
+        # COPO suppressed/offline check — only for ERGA/COPO projects
+        # CBP does not use COPO IDs so skip this block entirely for CBP
+        if project != "CBP":
+            copo_url = "https://copo-project.org/api"
+            samples_to_check = Sample.objects.filter(pk__in=updated_sample_ids)
+            for sample_record in samples_to_check:
+                copoid = sample_record.copo_id
+                if not copoid:
+                    continue
+                try:
+                    r = requests.get(
+                        f"{copo_url}/sample/copo_id/{copoid}",
+                        timeout=30
+                    )
+                    r.raise_for_status()
+                except requests.RequestException as e:
+                    logger.warning(f"COPO check failed for copo_id {copoid}: {e}")
+                    continue
+                if "COPO offline" in r.text:
+                    continue
+                resp = r.json()
+                if resp.get("number_found") is not None:
+                    sample_record.suppressed = resp["number_found"] == 0
+                    sample_record.save()

@@ -18,6 +18,8 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from datetime import datetime
 from django_ckeditor_5.fields import CKEditor5Field
+import requests
+from typing import Optional, Union
 #from tagging.registry import register
 
 
@@ -174,8 +176,10 @@ GOAT_SEQUENCING_STATUS_CHOICES = (
     ('sample_acquired', 'sample_acquired'),
     ('data_generation', 'data_generation'),
     ('in_assembly', 'in_assembly'),
+    ('insdc_submitted', 'insdc_submitted'),
     ('insdc_open', 'insdc_open'),
     ('published', 'published'),
+    ('publication_available', 'publication_available'),
     ('cancelled','cancelled'),
     ('paused','paused')
 )
@@ -188,12 +192,16 @@ gss_rank = {
     'sample_acquired':3,
     'data_generation':4,
     'in_assembly':5,
-    'insdc_open':6,
-    'published':7
+    'insdc_submitted':6,
+    'insdc_open':7,
+    'published':8,
+    'publication_available':8,
+
 }
 
 class Customization(models.Model):
     project = models.CharField(blank=True, null=True, max_length=100)
+    goat_subproject = models.CharField(blank=True, null=True, max_length=100)
     about = CKEditor5Field(blank=True, null=True, max_length=2000)
     logo_filename = models.CharField(blank=True, null=True, max_length=100)
     link1_url = models.CharField(blank=True, null=True, max_length=100)
@@ -303,6 +311,20 @@ class TaxonGenus(models.Model):
 
     def __str__(self):
         return self.name or str(self.id)
+
+
+
+
+
+def get_tolid_prefix(ncbi_taxon_id: int) -> Union[str, None]:
+    url = "https://id.tol.sanger.ac.uk/api/v2/species"
+    response = requests.get(url, params={"taxonomyId": ncbi_taxon_id})
+    response.raise_for_status()
+    data = response.json()
+    species = data.get("species", [])
+    if species:
+        return species[0]["prefix"]
+    return None
 
 class TargetSpecies(models.Model):
     # ncbi_taxon_id	species	subspecies	family	target_list_status	sequencing_status	synonym	publication_id
@@ -416,7 +438,9 @@ class TargetSpecies(models.Model):
                         self.scientific_name = row['scientific_name'] or None
                         #print (row['scientific_name'] + " " + self.scientific_name)
                         if self.tolid_prefix is None or len(self.tolid_prefix) == 0:
-                            self.tolid_prefix = row['tolid_prefix'] or None
+                            self.tolid_prefix = get_tolid_prefix(self.taxon_id)
+                            #row['tolid_prefix'] or None
+                        
                         self.chromosome_number = row['chromosome_number'] or None
                         self.haploid_number = row['haploid_number'] or None
                         self.ploidy = row['ploidy'] or None
@@ -1612,7 +1636,7 @@ class AssemblyProject(models.Model):
             #species = TargetSpecies.objects.get(species=self.species)
             if gss_rank[self.species.goat_sequencing_status]<6:
                 if self.status == "Submitted":
-                    self.species.goat_sequencing_status = "insdc_open" 
+                    self.species.goat_sequencing_status = "insdc_submitted" 
                     self.species.save()
                 else:
                     self.species.goat_sequencing_status = "in_assembly" 

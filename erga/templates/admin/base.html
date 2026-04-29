@@ -4,41 +4,101 @@
 <style>
     :root, html, body {
         color-scheme: light !important;
-        --primary: #444;
-        --secondary: #222;
-        --body-fg: #333;
+        --primary: #5a7a4a;
+        --secondary: #3d5c30;
+        --body-fg: #222;
         --body-bg: #fff;
-        --body-quiet-color: #666;
+        --body-quiet-color: #555;
         --header-color: #fff;
-        --header-branding-color: #ccc;
-        --header-bg: #222;
-        --header-link-color: #fff;
-        --breadcrumbs-fg: #ccc;
-        --breadcrumbs-bg: #444;
-        --darkened-bg: #f8f8f8;
-        --selected-bg: #e8e8e8;
+        --header-branding-color: #c8d8b0;
+        --header-bg: #3d5c30;
+        --header-link-color: #f0f0e8;
+        --breadcrumbs-fg: #f0f0e8;
+        --breadcrumbs-bg: #5a7a4a;
+        --darkened-bg: #f5f3ee;
+        --selected-bg: #e8edd8;
         --selected-row: #ffffc1;
         --close-button-bg: #888;
-        --link-fg: #333;
-        --link-hover-color: #000;
-        --link-selected-fg: #000;
+        --link-fg: #3d5c30;
+        --link-hover-color: #2a3f20;
+        --link-selected-fg: #2a3f20;
     }
 
     #header {
-        background: #222;
+        background: #3d5c30;
     }
 
     div#header a:link, div#header a:visited {
-        color: #fff;
+        color: #f0f0e8;
     }
 
     .module h2, .module caption, .inline-group h2 {
-        background: #444;
+        background: #5a7a4a;
         color: #fff;
     }
 
+    /* Tan/parchment sidebar and modules */
+    .module {
+        background: #faf8f3;
+        border: 1px solid #d8cdb0;
+    }
+
+    #nav-sidebar {
+        background: #f0ece0;
+    }
+
+    /* Keep form fields clean black on white */
+    input, textarea, select {
+        background: #fff !important;
+        color: #222 !important;
+        border: 1px solid #bbb !important;
+    }
+
     a:link, a:visited {
-        color: #222;
+        color: #3d5c30;
+    }
+
+    a:hover {
+        color: #2a3f20;
+    }
+
+    /* Breadcrumb bar */
+    div.breadcrumbs {
+        background: #5a7a4a;
+        color: #f0f0e8;
+    }
+
+    div.breadcrumbs a {
+        color: #c8d8b0;
+    }
+        /* Success/info messages */
+        .messagelist li {
+        color: #fff;
+    }
+
+    .messagelist li.success {
+        background-color: #3d5c30;
+        color: #fff;
+    }
+
+    .messagelist li.warning {
+        background-color: #8a6d00;
+        color: #fff;
+    }
+
+    .messagelist li.error {
+        background-color: #8a2020;
+        color: #fff;
+    }
+
+    /* Links inside messages */
+    .messagelist li a {
+        color: #c8d8b0 !important;
+        text-decoration: underline;
+    }
+
+    .messagelist li a:hover {
+        color: #fff !important;
     }
 </style>
 {% endblock %}
