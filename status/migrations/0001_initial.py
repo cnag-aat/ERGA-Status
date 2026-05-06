@@ -4,6 +4,7 @@ from django.conf import settings
 import django.core.validators
 from django.db import migrations, models
 import django.db.models.deletion
+import django_ckeditor_5.fields
 import status.models
 
 
@@ -148,6 +149,26 @@ class Migration(migrations.Migration):
             ],
             options={
                 'verbose_name_plural': 'countries',
+            },
+        ),
+        migrations.CreateModel(
+            name='Customization',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('project', models.CharField(blank=True, max_length=100, null=True)),
+                ('about', django_ckeditor_5.fields.CKEditor5Field(blank=True, max_length=2000, null=True)),
+                ('logo_filename', models.CharField(blank=True, max_length=100, null=True)),
+                ('link1_url', models.CharField(blank=True, max_length=100, null=True)),
+                ('link1_filename', models.CharField(blank=True, max_length=100, null=True)),
+                ('link2_url', models.CharField(blank=True, max_length=100, null=True)),
+                ('link2_filename', models.CharField(blank=True, max_length=100, null=True)),
+                ('link3_url', models.CharField(blank=True, max_length=100, null=True)),
+                ('link3_filename', models.CharField(blank=True, max_length=100, null=True)),
+                ('show_production_by_center', models.BooleanField(default=False)),
+                ('show_milestones', models.BooleanField(default=False)),
+            ],
+            options={
+                'verbose_name_plural': 'customizations',
             },
         ),
         migrations.CreateModel(
