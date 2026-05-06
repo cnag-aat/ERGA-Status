@@ -57,6 +57,52 @@
   </div>
 </div>
 
+<!-- Hidden trigger — base.html reloads jQuery after Bootstrap, so $.fn.modal is gone
+     by click time. Bootstrap's data-toggle delegation fires on real DOM clicks. -->
+<button type="button" id="apEditModalTrigger"
+        data-toggle="modal" data-target="#apEditModal"
+        style="display:none" aria-hidden="true"></button>
+
+<!-- Edit modal -->
+<div class="modal fade" id="apEditModal" tabindex="-1" role="dialog" aria-labelledby="apEditModalLabel" aria-hidden="true"
+     data-url-template="{% url 'assembly_project_edit' pk=0 %}">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="apEditModalLabel">Edit assembly project</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form id="apEditForm" method="post" action="">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="apStatus">Status</label>
+            <select class="form-control" id="apStatus" name="status">
+              {% for val, label in assembly_status_choices %}
+                <option value="{{ val }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="apNote">Note</label>
+            <input type="text" class="form-control" id="apNote" name="note" maxlength="300">
+          </div>
+          <div class="form-group">
+            <label for="apGenomeSize">Genome size estimate (bp)</label>
+            <input type="number" class="form-control" id="apGenomeSize" name="genome_size_estimate" min="0">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <script>
   function openNav() {
     document.getElementById("mySidebar").style.width = "460px";
@@ -67,6 +113,25 @@
     document.getElementById("mySidebar").style.width = "0";
     document.getElementById("main").style.marginLeft = "0";
   }
+
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.ap-edit-btn');
+    if (!btn) return;
+    var pk           = btn.dataset.pk;
+    var species      = btn.dataset.species;
+    var status       = btn.dataset.status;
+    var note         = btn.dataset.note;
+    var genomeSize   = btn.dataset.genomeSize;
+
+    var urlTemplate = document.getElementById('apEditModal').dataset.urlTemplate;
+    document.getElementById('apEditModalLabel').textContent = 'Edit: ' + species;
+    document.getElementById('apEditForm').action = urlTemplate.replace('/0/', '/' + pk + '/');
+    document.getElementById('apStatus').value = status;
+    document.getElementById('apNote').value = note;
+    document.getElementById('apGenomeSize').value = genomeSize;
+
+    document.getElementById('apEditModalTrigger').click();
+  });
 </script>
 
 {% endblock %}

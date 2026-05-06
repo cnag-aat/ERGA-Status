@@ -12,6 +12,8 @@ from django.contrib.admin.widgets import AdminDateWidget
 from dateutil.parser import parse
 from status.widgets import CustomDatePickerWidget
 from django_ckeditor_5.widgets import CKEditor5Widget
+from django_addanother.widgets import AddAnotherWidgetWrapper
+from django.urls import reverse_lazy
 
 
 
@@ -219,8 +221,26 @@ class TargetSpeciesAdmin(admin.ModelAdmin):
 
 admin.site.register(SubSpecies)
 
+class UserProfileAdminForm(forms.ModelForm):
+    research_group = forms.ModelChoiceField(
+        queryset=ResearchGroup.objects.all().order_by('name'),
+        widget=AddAnotherWidgetWrapper(forms.Select, reverse_lazy('create_research_group')),
+        required=False,
+    )
+    affiliation = forms.ModelMultipleChoiceField(
+        queryset=Affiliation.objects.all().order_by('affiliation'),
+        widget=AddAnotherWidgetWrapper(forms.SelectMultiple, reverse_lazy('create_affiliation')),
+        required=False,
+    )
+
+    class Meta:
+        model = UserProfile
+        fields = '__all__'
+
+
 @register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
+    form = UserProfileAdminForm
     ordering = ('-modified', )
     list_display = (
         'user',
@@ -229,10 +249,19 @@ class UserProfileAdmin(admin.ModelAdmin):
         'first_name',
         'last_name',
         'lead',
+        'research_group',
         'get_roles',
         'get_affiliations'
     )
+    list_filter = ('research_group', 'lead')
     search_fields = ['user__username','first_name','last_name']
+
+
+@register(ResearchGroup)
+class ResearchGroupAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+    ordering = ('name',)
 
 class MyUserAdmin(UserAdmin):
     def group(self, user):
@@ -441,6 +470,7 @@ class AssemblyProjectAdmin(admin.ModelAdmin):
         'status',
         'note'
     )
+    search_fields = ('species__scientific_name', 'species__tolid_prefix')
     readonly_fields=(
         'species',
     )
@@ -802,3 +832,88 @@ class CustomizationAdminForm(forms.ModelForm):
 @admin.register(Customization)
 class CustomizationAdmin(admin.ModelAdmin):
     form = CustomizationAdminForm
+    fieldsets = (
+        (None, {'fields': ('project', 'about', 'logo_filename')}),
+        ('Navigation links', {'fields': (
+            'link1_url', 'link1_filename',
+            'link2_url', 'link2_filename',
+            'link3_url', 'link3_filename',
+        )}),
+        ('Display options', {'fields': (
+            'show_production_by_center', 'show_milestones', 'show_copo',
+        )}),
+        ('Status pill colour palette', {'fields': ('pill_palette',)}),
+    )
+
+
+# ── EAR Review ────────────────────────────────────────────────────────────────
+
+class EARReviewerInline(admin.TabularInline):
+    model = EARReviewer
+    fk_name = 'review'
+    extra = 1
+    min_num = 0
+    max_num = 5
+    autocomplete_fields = ['reviewer', 'added_by']
+    readonly_fields = ['added_at']
+
+
+class EARCommentInline(admin.TabularInline):
+    model = EARComment
+    extra = 0
+    fields = ['author', 'body', 'parent', 'created_at']
+    readonly_fields = ['created_at']
+    autocomplete_fields = ['author', 'parent']
+
+
+class EARAssignmentInviteInline(admin.TabularInline):
+    model = EARAssignmentInvite
+    extra = 0
+    fields = ['user', 'role', 'status', 'created_at', 'responded_at']
+    readonly_fields = ['user', 'role', 'status', 'created_at', 'responded_at']
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(EARReview)
+class EARReviewAdmin(admin.ModelAdmin):
+    list_display = ('assembly_project', 'status', 'submitted_by', 'supervisor', 'created_at', 'updated_at')
+    list_filter = ('status',)
+    search_fields = ('assembly_project__species__scientific_name', 'submitted_by__username', 'supervisor__username')
+    autocomplete_fields = ['assembly_project', 'submitted_by', 'supervisor']
+    readonly_fields = ('created_at', 'updated_at')
+    inlines = [EARReviewerInline, EARCommentInline, EARAssignmentInviteInline]
+
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        from status import ear_review as ear_logic
+        review = form.instance
+        if not change:  # new review just created
+            ear_logic.auto_assign_reviewer(review, added_by=request.user)
+            ear_logic.notify_review_submitted(review)
+
+
+class EARAttachmentInline(admin.TabularInline):
+    model = EARAttachment
+    extra = 0
+    readonly_fields = ['uploaded_at']
+
+
+@admin.register(EARComment)
+class EARCommentAdmin(admin.ModelAdmin):
+    list_display = ('review', 'author', 'created_at')
+    list_filter = ('created_at',)
+    search_fields = ('body', 'author__username')
+    autocomplete_fields = ['review', 'author', 'parent']
+    readonly_fields = ('created_at',)
+    inlines = [EARAttachmentInline]
+
+
+@admin.register(EARAttachment)
+class EARAttachmentAdmin(admin.ModelAdmin):
+    list_display = ('comment', 'file', 'uploaded_at')
+    readonly_fields = ('uploaded_at',)

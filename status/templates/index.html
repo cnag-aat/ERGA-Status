@@ -14,22 +14,32 @@
 </div>
 
   <div class="row" style="flex">
-    <div class="col-md-6" style="flex">
-      <div style="aspect-ratio: 2">
-        <canvas id="SeqProdChart"></canvas>
-      </div>
-    </div>
-    <div class="col-md-6" style="flex">
-      <div style="aspect-ratio: 2">
-        <canvas id="TotalSeqProdChart"></canvas>
+    <div class="col-md-12">
+      <div class="card mb-1">
+        <div class="card-body">
+          {% if custom.show_milestones %}
+          <div class="col-md-6" style="flex">
+          {% else %}
+          <div class="col-md-12" style="flex">
+          {% endif %}
+              <div style="aspect-ratio: 2">
+                <canvas id="SeqProdChart"></canvas>
+              </div>
+          </div>
+          {% if custom.show_milestones %}
+          <div class="col-md-6" style="flex">
+            <div style="aspect-ratio: 2">
+              <canvas id="TotalSeqProdChart"></canvas>
+            </div>
+          </div>
+          {% endif %}
+        </div>
       </div>
     </div>
   </div>
 
-</div>
-
 <!-- Phylogenetic Chart Section -->
-<div class="row mt-4">
+<div class="row" style="flex">
   <div class="col-md-12">
     <div class="card mb-1">
       <div class="card-body">

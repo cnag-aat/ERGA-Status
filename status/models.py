@@ -192,6 +192,13 @@ gss_rank = {
     'published':7
 }
 
+PILL_PALETTE_CHOICES = [
+    ('original', 'Original (current greens)'),
+    ('bold',     'Bold Stepped (two yellows → mint → solid green)'),
+    ('tonal',    'Tonal (all pastel tints, rose-pink errors)'),
+    ('erga',     'ERGA Classic (solid fills, white text, teal/cyan)'),
+]
+
 class Customization(models.Model):
     project = models.CharField(blank=True, null=True, max_length=100)
     about = CKEditor5Field(blank=True, null=True, max_length=2000)
@@ -204,6 +211,11 @@ class Customization(models.Model):
     link3_filename = models.CharField(blank=True, null=True, max_length=100)
     show_production_by_center = models.BooleanField(default=False)
     show_milestones = models.BooleanField(default=False)
+    show_copo = models.BooleanField(default=True, help_text='Show COPO status columns and filters in the views.')
+    pill_palette = models.CharField(
+        max_length=20, choices=PILL_PALETTE_CHOICES, default='original',
+        help_text='Colour scheme for all status pills across the site.',
+    )
     class Meta:
         verbose_name_plural = 'customizations'
 
@@ -543,6 +555,18 @@ class Affiliation(models.Model):
     def __str__(self):
         return self.affiliation or str(self.id)
 
+
+class ResearchGroup(models.Model):
+    name = models.CharField(max_length=100, unique=True, verbose_name="Research group name")
+
+    class Meta:
+        verbose_name_plural = 'research groups'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
 class UserProfile(models.Model):
     user = models.ForeignKey(
             settings.AUTH_USER_MODEL,
@@ -556,6 +580,15 @@ class UserProfile(models.Model):
     lead = models.BooleanField(default=False)
     affiliation = models.ManyToManyField(Affiliation)
     orcid = models.CharField(null=True, blank=True, max_length=60, verbose_name="ORCID")
+    research_group = models.ForeignKey(
+        ResearchGroup,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        verbose_name="Research group",
+        help_text="Your research group or lab (e.g. PI surname). Used for conflict-of-interest checks in the EAR review process."
+    )
+    calling_score = models.IntegerField(default=1000, verbose_name="Calling score")
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     
@@ -1743,9 +1776,295 @@ class Publication(models.Model):
         ]
     )
     pmcid = models.CharField(max_length=30, help_text='PMCID')
- 
+
     class Meta:
         verbose_name_plural = 'publications'
 
     def __str__(self):
         return self.doi or str(self.id)
+
+
+# ── EAR Review ────────────────────────────────────────────────────────────────
+
+EAR_STATUS_CHOICES = (
+    ('submitted',          'Submitted'),
+    ('in_review',          'In review'),
+    ('reviewer_approved',  'Approved by reviewer'),
+    ('accepted',           'Accepted'),
+    ('rejected',           'Rejected'),
+    ('declined',           'Declined'),
+)
+
+
+class EARReview(models.Model):
+    assembly_project = models.OneToOneField(
+        AssemblyProject,
+        on_delete=models.CASCADE,
+        related_name='ear_review',
+        verbose_name='Assembly project'
+    )
+    submitted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='ear_submissions',
+        verbose_name='Submitted by'
+    )
+    supervisor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='ear_supervised',
+        verbose_name='Supervisor'
+    )
+    reviewers = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        through='EARReviewer',
+        through_fields=('review', 'reviewer'),
+        related_name='ear_reviews',
+        blank=True,
+        verbose_name='Reviewers'
+    )
+    ear_pdf = models.FileField(
+        upload_to='ear_pdfs/',
+        verbose_name='EAR PDF'
+    )
+    pretext_file = models.FileField(
+        upload_to='pretext/',
+        null=True,
+        blank=True,
+        verbose_name='Pretext map'
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=EAR_STATUS_CHOICES,
+        default='submitted',
+        verbose_name='Status'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'EAR review'
+        verbose_name_plural = 'EAR reviews'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"EAR: {self.assembly_project} [{self.get_status_display()}]"
+
+
+class EARReviewer(models.Model):
+    """Through model for EARReview.reviewers — tracks who added each reviewer."""
+    review = models.ForeignKey(EARReview, on_delete=models.CASCADE)
+    reviewer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='ear_reviewer_assignments'
+    )
+    added_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='ear_reviewer_additions'
+    )
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('review', 'reviewer')
+
+    def __str__(self):
+        return f"{self.reviewer} on {self.review}"
+
+
+class EARComment(models.Model):
+    review = models.ForeignKey(
+        EARReview,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Review'
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='ear_comments',
+        verbose_name='Author'
+    )
+    body = models.TextField(verbose_name='Comment')
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='replies',
+        verbose_name='Reply to'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'EAR comment'
+        verbose_name_plural = 'EAR comments'
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"Comment by {self.author} on {self.review}"
+
+
+class EARAttachment(models.Model):
+    comment = models.ForeignKey(
+        EARComment,
+        on_delete=models.CASCADE,
+        related_name='attachments',
+        verbose_name='Comment'
+    )
+    file = models.FileField(
+        upload_to='ear_attachments/',
+        verbose_name='File'
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'EAR attachment'
+        verbose_name_plural = 'EAR attachments'
+
+    def __str__(self):
+        return os.path.basename(self.file.name) if self.file else str(self.id)
+
+
+class EARAssignmentInvite(models.Model):
+    """
+    Tracks pending/responded reviewer and supervisor assignment invitations.
+    Created alongside every notify_assignment() call so the dashboard can
+    surface "pending for me" invites without token decoding.
+    The signed-token email flow is independent and unchanged.
+    """
+    ROLE_CHOICES = [
+        ('reviewer', 'Reviewer'),
+        ('supervisor', 'Supervisor'),
+    ]
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('declined', 'Declined'),
+    ]
+
+    review = models.ForeignKey(
+        EARReview,
+        on_delete=models.CASCADE,
+        related_name='invites',
+        verbose_name='Review',
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='ear_invites',
+        verbose_name='Invitee',
+    )
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, verbose_name='Role')
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='Status'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    responded_at = models.DateTimeField(null=True, blank=True, verbose_name='Responded at')
+
+    class Meta:
+        verbose_name = 'EAR assignment invite'
+        verbose_name_plural = 'EAR assignment invites'
+        unique_together = ('review', 'user', 'role')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.get_role_display()} invite: {self.user} → {self.review} [{self.get_status_display()}]"
+
+
+def _delete_file(path):
+    if path and os.path.isfile(path):
+        os.remove(path)
+
+
+# Threshold: comment attachments above this size are cleaned up on acceptance
+EAR_LARGE_ATTACHMENT_THRESHOLD = 5 * 1024 * 1024  # 5 MB
+
+
+def _purge_large_attachments(review):
+    """Delete comment attachments larger than the threshold from disk + DB."""
+    qs = EARAttachment.objects.filter(comment__review=review)
+    purged = 0
+    for att in qs:
+        if not att.file:
+            continue
+        try:
+            size = att.file.size
+        except (OSError, ValueError):
+            continue
+        if size >= EAR_LARGE_ATTACHMENT_THRESHOLD:
+            path = att.file.path
+            att.file.delete(save=False)
+            _delete_file(path)
+            att.delete()
+            purged += 1
+    return purged
+
+
+from django.db.models.signals import post_save, pre_save
+from django.dispatch import receiver
+
+@receiver(pre_save, sender=EARReview)
+def _track_status_change(sender, instance, **kwargs):
+    """Stash the previous status on the instance so post_save can detect changes."""
+    if instance.pk:
+        try:
+            instance._previous_status = EARReview.objects.get(pk=instance.pk).status
+        except EARReview.DoesNotExist:
+            instance._previous_status = None
+    else:
+        instance._previous_status = None
+
+
+EAR_TO_ASSEMBLY_STATUS = {
+    'submitted':         'UnderReview',
+    'in_review':         'UnderReview',
+    'reviewer_approved': 'Approved',
+    'accepted':          'Approved',
+    'rejected':          'UnderReview',
+    'declined':          'UnderReview',
+}
+
+
+def _sync_assembly_project_status(review):
+    """Mirror the EAR review status onto the linked AssemblyProject."""
+    target = EAR_TO_ASSEMBLY_STATUS.get(review.status)
+    if not target or not review.assembly_project_id:
+        return
+    ap = review.assembly_project
+    if ap.status != target:
+        ap.status = target
+        ap.save(update_fields=['status'])
+
+
+@receiver(post_save, sender=EARReview)
+def _on_review_save(sender, instance, created, **kwargs):
+    """
+    On creation: auto-assign supervisor (reviewer is handled by admin save_related),
+    sync the assembly project status.
+    On status change to 'accepted': delete the pretext file.
+    On status change generally: re-sync assembly project status and notify.
+    """
+    from status import ear_review as ear_logic
+
+    if created:
+        ear_logic.auto_assign_supervisor(instance)
+        _sync_assembly_project_status(instance)
+        return
+
+    previous = getattr(instance, '_previous_status', None)
+    if previous and previous != instance.status:
+        if instance.status == 'accepted':
+            if instance.pretext_file:
+                path = instance.pretext_file.path
+                instance.pretext_file.delete(save=False)
+                _delete_file(path)
+            _purge_large_attachments(instance)
+        _sync_assembly_project_status(instance)
+        ear_logic.notify_status_change(instance, previous)

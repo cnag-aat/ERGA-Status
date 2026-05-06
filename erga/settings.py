@@ -113,6 +113,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media',
                 'status.context_processors.customization',
+                'status.context_processors.dashboard_action_count',
             ],
         },
     },
@@ -253,7 +254,7 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 #EMAIL_PORT=587 # also tried port 25
 NOTIFICATIONS = True
 ACCOUNT_FORMS = {
-'signup': 'gtc.forms.CustomSignupForm',
+'signup': 'status.forms.CustomSignupForm',
 }
 
 LOGGING = {

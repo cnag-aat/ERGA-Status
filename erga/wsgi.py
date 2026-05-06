@@ -19,10 +19,10 @@ from django.core.wsgi import get_wsgi_application
 
 sys.path.append('/home/www/resistome.cnag.cat/httpdocs/incredible')
 #sys.path.append('/home/www/resistome.cnag.cat/httpdocs/a-stream/astream')
-sys.path.append('/home/www/resistome.cnag.cat/cbp')
-sys.path.append('/home/www/resistome.cnag.cat/cbp/erga')
+sys.path.append('/home/www/resistome.cnag.cat/ear-review')
+sys.path.append('/home/www/resistome.cnag.cat/ear-review/erga')
 sys.path.append('/home/www/resistome.cnag.cat/virtualenvs/incredble_venv/lib/python3.6/site-packages/')
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'erga.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'erga.settings_dev')
 
 application = get_wsgi_application()
