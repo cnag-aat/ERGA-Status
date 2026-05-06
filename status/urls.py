@@ -22,7 +22,9 @@ from status.views import SampleListView
 from status.views import OverView
 from status.views import AccessDeniedView
 from status.views import GenomeTeamsView
-from status.views import AffiliationCreateView
+from status.views import AffiliationCreateView, ResearchGroupCreateView
+from status.views import EARReviewDetailView, EARReviewListView, ear_review_comment, ear_review_create, ear_review_manage_reviewers, ear_assignment_response, DashboardView, dashboard_invite_response
+from status.views import assembly_project_edit, sequencing_edit, assembly_detail
 from status.views import AuthorsView
 from status.views import EditProfileView
 from status.views import SuccessView
@@ -45,7 +47,7 @@ urlpatterns = [
     path("species/<int:pk>/", views.species_detail, name="species_detail"),
     path("species/?scientific_name=<scientific_name>", views.species_detail, name="species_detail"),
     path("assemblies/", AssemblyListView.as_view(), name="assembly_list"),
-    # path("assemblies/?gca=<gca>", AssemblyListView.as_view(), name="assembly_list"),
+    path("assemblies/<int:pk>/", assembly_detail, name="assembly_detail"),
     path("specimens/", SpecimenListView.as_view(), name="specimen_list"),
     path("specimens/?collection=<collection>", SpecimenListView.as_view(), name="specimen_list"),
     path("specimens/<int:id>/", SpecimenListView.as_view(), name="specimen_list"),
@@ -54,6 +56,7 @@ urlpatterns = [
     path("samples/", SampleListView.as_view(), name="sample_list"),
     path("samples/<int:pk>/", views.sample_detail, name="sample_detail"),
     path("projects/", AssemblyProjectListView.as_view(), name="assembly_project_list"),
+    path("projects/<int:pk>/edit/", assembly_project_edit, name="assembly_project_edit"),
     path("projects/?species=<scientific_name>", AssemblyProjectListView.as_view(), name="assembly_project_list"),
     path("assembly_team/<int:pk>/", views.assembly_team_detail, name="assembly_team_detail"),
     path("collection_team/<int:pk>/", views.collection_team_detail, name="collection_team_detail"),
@@ -80,6 +83,7 @@ urlpatterns = [
     path("collection/", SampleCollectionListView.as_view(), name="collection_list"),
     path("sequencing/", SequencingListView.as_view(), name="sequencing_list"),
     path("sequencing/?species=<scientific_name>", SequencingListView.as_view(), name="sequencing_list"),
+    path("sequencing/<int:pk>/edit/", sequencing_edit, name="sequencing_edit"),
     path("enareads/", EnaReadsListView.as_view(), name="ena_reads_list"),
     path("enareads/?project=<project>", EnaReadsListView.as_view(), name="ena_reads_list"),
     path("reads/", ReadsListView.as_view(), name="reads_list"),
@@ -95,6 +99,15 @@ urlpatterns = [
     path('access_denied/', AccessDeniedView.as_view(), name="access_denied"),
     path('teams/', GenomeTeamsView.as_view(), name="genome_teams"),
     path('create_affiliation/', AffiliationCreateView.as_view(), name="create_affiliation"),
+    path('create_research_group/', ResearchGroupCreateView.as_view(), name="create_research_group"),
+    path('dashboard/', DashboardView.as_view(), name="dashboard"),
+    path('dashboard/invite/<int:pk>/', dashboard_invite_response, name="dashboard_invite_response"),
+    path('ear/', EARReviewListView.as_view(), name="ear_review_list"),
+    path('ear/new/', ear_review_create, name="ear_review_create"),
+    path('ear/<int:pk>/', EARReviewDetailView.as_view(), name="ear_review_detail"),
+    path('ear/<int:pk>/comment/', ear_review_comment, name="ear_review_comment"),
+    path('ear/<int:pk>/reviewers/', ear_review_manage_reviewers, name="ear_review_manage_reviewers"),
+    path('ear/assignment/<str:token>/<str:response>/', ear_assignment_response, name="ear_assignment_response"),
     path("user_profile/<int:pk>/", views.user_profile, name="user_profile"),
     path("person/<int:pk>/", views.person_detail, name="person_detail"),
     path("copo/<str:copoid>/", views.copo_record, name="copo"),

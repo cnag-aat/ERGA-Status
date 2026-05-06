@@ -20,6 +20,7 @@ from django_tables2.views import SingleTableMixin
 from django.utils.safestring import mark_safe
 from math import log
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -61,6 +62,7 @@ from status.filters import AssemblyFilter
 from status.filters import SpecimenFilter
 from status.filters import SampleFilter
 from status.filters import SampleCollectionFilter
+from status.filters import EARReviewFilter
 from braces.views import GroupRequiredMixin
 from django.db.models import OuterRef, Subquery
 from django.core.cache import cache
@@ -102,6 +104,11 @@ class AffiliationCreateView(CreatePopupMixin, CreateView):
     model = Affiliation
     template_name = 'affiliation_form.html'
     fields = ['affiliation']
+
+class ResearchGroupCreateView(CreatePopupMixin, CreateView):
+    model = ResearchGroup
+    template_name = 'research_group_form.html'
+    fields = ['name']
 
 def index(request):
     return HttpResponse("Hello, world. You're at the status index.")
@@ -313,7 +320,22 @@ class SuccessView(TemplateView):
     template_name = 'success.html'
 
 # Create your views here.
-class TargetSpeciesListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
+def _copo_hidden():
+    """True if the active customization disables COPO display."""
+    custom = Customization.objects.first()
+    return bool(custom and not custom.show_copo)
+
+
+def _drop_copo_filter(filterset):
+    """Remove the copo_status filter (and its form field) from a filterset in place."""
+    if filterset is not None and 'copo_status' in filterset.filters:
+        filterset.filters.pop('copo_status')
+        if 'form' in filterset.__dict__:
+            del filterset.__dict__['form']
+    return filterset
+
+
+class TargetSpeciesListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin,
     # permission_required = "resistome.view_sample"
     login_url = "access_denied"
     model = TargetSpecies
@@ -326,7 +348,19 @@ class TargetSpeciesListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, F
         context = super().get_context_data(**kwargs)
         context['build_page_title'] = 'GTC Species'
         return context
-    
+
+    def get_table_kwargs(self):
+        kwargs = super().get_table_kwargs()
+        if _copo_hidden():
+            kwargs['exclude'] = list(kwargs.get('exclude', [])) + ['copo_status']
+        return kwargs
+
+    def get_filterset(self, filterset_class):
+        fs = super().get_filterset(filterset_class)
+        if _copo_hidden():
+            _drop_copo_filter(fs)
+        return fs
+
     def get_queryset(self):
         return TargetSpecies.objects.exclude(goat_target_list_status = None).exclude(goat_target_list_status = '').exclude(goat_target_list_status = 'removed')
         #return TargetSpecies.objects.exclude(goat_sequencing_status = None).exclude(goat_sequencing_status = '')
@@ -402,7 +436,19 @@ class OverView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #
         data = super(OverView, self).get_context_data(*args, **kwargs)
         data['build_page_title'] = 'GTC OverView'
         return data
-    
+
+    def get_table_kwargs(self):
+        kwargs = super().get_table_kwargs()
+        if _copo_hidden():
+            kwargs['exclude'] = list(kwargs.get('exclude', [])) + ['copo_status']
+        return kwargs
+
+    def get_filterset(self, filterset_class):
+        fs = super().get_filterset(filterset_class)
+        if _copo_hidden():
+            _drop_copo_filter(fs)
+        return fs
+
     def get_queryset(self):
         latest_status = StatusUpdate.objects.filter(
             species=OuterRef("pk")
@@ -428,9 +474,36 @@ def species_detail(request, pk=None, scientific_name=None):
         sp = TargetSpecies.objects.get(scientific_name=scientific_name)
         pk = TargetSpecies.pk
     sub = SubSpecies.objects.filter(species=sp)
-    context = {"species": sp,
-               "subspecies": sub
-               }
+
+    accepted_ear = None
+    active_ear = None
+    ear_action = None
+    try:
+        ap = sp.assembly_rel
+        ear = ap.ear_review
+        if ear.status == 'accepted':
+            accepted_ear = ear
+        elif ear.status not in ('declined',):
+            active_ear = ear
+            if request.user.is_authenticated:
+                if EARAssignmentInvite.objects.filter(
+                    review=ear, user=request.user, status='pending'
+                ).exists():
+                    ear_action = 'invite_pending'
+                elif ear.status in ('submitted', 'in_review') and ear.reviewers.filter(pk=request.user.pk).exists():
+                    ear_action = 'awaiting_your_review'
+                elif ear.status == 'reviewer_approved' and ear.supervisor_id == request.user.pk:
+                    ear_action = 'awaiting_your_decision'
+    except Exception:
+        pass
+
+    context = {
+        "species": sp,
+        "subspecies": sub,
+        "accepted_ear": accepted_ear,
+        "active_ear": active_ear,
+        "ear_action": ear_action,
+    }
     response = render(request, "species_detail.html", context)
     return response
 
@@ -546,18 +619,25 @@ def person_detail(request, pk=None):
     response = render(request, "person_detail.html", context)
     return response
 
-class AssemblyProjectListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
+class AssemblyProjectListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin,
     login_url = "access_denied"
     model = AssemblyProject
     table_class = AssemblyProjectTable
     template_name = 'assemblyproject.html'
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
+
+    def get_table_kwargs(self):
+        kwargs = super().get_table_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'GTC Assembly Status'
+        context['build_page_title'] = 'ERGA-GTC Assembly Status'
+        context['assembly_status_choices'] = ASSEMBLY_STATUS_CHOICES
         return context
-    
+
     def get_queryset(self):
         queryset = super(AssemblyProjectListView, self).get_queryset()
         if 'project' in self.request.GET:
@@ -575,18 +655,25 @@ class AssemblyListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, Filter
     template_name = 'assembly.html'
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
+    def get_queryset(self):
+        if 'project' in self.request.GET:
+            return Assembly.objects.filter(project_id=self.request.GET['project'])
+        # global list: only chromosome-level primary assemblies that are in ENA
+        return Assembly.objects.filter(chromosome_level=True).exclude(
+            type__in=['Hap2', 'Endosymbiont', 'Alternate', 'MT', 'Chloroplast']
+        )
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'GTC Assemblies'
+        if 'project' in self.request.GET:
+            try:
+                project = AssemblyProject.objects.get(pk=self.request.GET['project'])
+                context['build_page_title'] = f'Assemblies — {project.species}'
+            except AssemblyProject.DoesNotExist:
+                context['build_page_title'] = 'Assemblies'
+        else:
+            context['build_page_title'] = 'ERGA-GTC Assemblies'
         return context
-    def get_queryset(self): #the following filter basically requires the assembly to be in the ENA and have a GCA and stats from NCBI. 
-        return Assembly.objects.filter(chromosome_level=True).exclude(type='Hap2').exclude(type='Endosymbiont').exclude(type='Alternate').exclude(type='MT').exclude(type='Chloroplast')
-    #     queryset = super(AssemblyListView, self).get_queryset()
-    #     if 'gca' in self.request.GET:
-    #         queryset = queryset.filter(gca=self.request.GET['gca'])
-    #         return queryset
-    #     else:
-    #         return AssemblyProject.objects.all()
 
 
 @login_required
@@ -596,6 +683,20 @@ def assembly_pipeline_detail(request, pk=None):
                }
     response = render(request, "assembly_pipeline_detail.html", context)
     return response
+
+
+@login_required
+def assembly_detail(request, pk):
+    assembly = get_object_or_404(Assembly, pk=pk)
+    ear = getattr(assembly.project, 'ear_review', None)
+    context = {
+        'assembly': assembly,
+        'ear': ear,
+        'span_gb': f"{assembly.span / 1e9:.3f}" if assembly.span else None,
+        'contig_n50_mb': f"{assembly.contig_n50 / 1e6:.3f}" if assembly.contig_n50 else None,
+        'scaffold_n50_mb': f"{assembly.scaffold_n50 / 1e6:.3f}" if assembly.scaffold_n50 else None,
+    }
+    return render(request, 'assembly_detail.html', context)
 
 class SampleCollectionListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
     # permission_required = "resistome.view_sample"
@@ -610,6 +711,18 @@ class SampleCollectionListView(LoginRequiredMixin, ExportMixin, SingleTableMixin
         context = super().get_context_data(**kwargs)
         context['build_page_title'] = 'GTC Sample Collection'
         return context
+
+    def get_table_kwargs(self):
+        kwargs = super().get_table_kwargs()
+        if _copo_hidden():
+            kwargs['exclude'] = list(kwargs.get('exclude', [])) + ['copo_status']
+        return kwargs
+
+    def get_filterset(self, filterset_class):
+        fs = super().get_filterset(filterset_class)
+        if _copo_hidden():
+            _drop_copo_filter(fs)
+        return fs
     def get_queryset(self):
         #return SampleCollection.objects.exclude(species__goat_target_list_status = None).exclude(species__goat_target_list_status = 'none').exclude(species__goat_target_list_status = '').exclude(species__goat_target_list_status = 'removed').exclude(species__goat_sequencing_status = 'none')
         return SampleCollection.objects.exclude(
@@ -667,6 +780,11 @@ class SampleListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterVi
         context = super().get_context_data(**kwargs)
         context['build_page_title'] = 'GTC GoaT Samples'
         return context
+    def get_filterset(self, filterset_class):
+        fs = super().get_filterset(filterset_class)
+        if _copo_hidden():
+            _drop_copo_filter(fs)
+        return fs
     def get_queryset(self):
         queryset = super(SampleListView, self).get_queryset().filter(suppressed=False)
         return queryset
@@ -685,7 +803,7 @@ def copo_record(request, copoid):
     #return HttpResponse(output, content_type="application/json")
     return render(request,'copo.html',{'response':resp})
     
-class SequencingListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
+class SequencingListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin,
     # permission_required = "resistome.view_sample"
     login_url = "access_denied"
     model = Sequencing
@@ -694,9 +812,22 @@ class SequencingListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, Filt
     #filterset_class = SpeciesFilter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
+
+    def get_table_kwargs(self):
+        kwargs = super().get_table_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'GTC Sequencing Status'
+        context['build_page_title'] = 'ERGA-GTC Sequencing Status'
+        context['sequencing_status_choices'] = SEQUENCING_STATUS_CHOICES
+        context['sequencing_status_fields'] = [
+            ('long_seq_status',  'Long-read Status'),
+            ('short_seq_status', 'Short-read Status'),
+            ('hic_seq_status',   'HiC Status'),
+            ('rna_seq_status',   'RNA Status'),
+        ]
         return context
 
     def get_queryset(self):
@@ -1454,258 +1585,515 @@ class FetchEARsCronJob(CronJobBase):
                         assembly_object.report = EAR_pdf
                         assembly_object.save()
 
-# --- COPO ---
-def get_copo_samples_by_taxid(taxid):
-    url = f"{COPO_URL}/sample/taxon_id/{taxid}"
-    logger.info(f"Querying COPO for taxid {taxid}")
-    try:
-        r = requests.get(url, timeout=30)
-        r.raise_for_status()
-    except Exception as e:
-        logger.error(f"COPO query failed: {e}")
-        return []
 
-    resp = r.json()
-    biosamples = []
-    for record in resp.get("data", []):
-        purpose = record.get("PURPOSE_OF_SPECIMEN", "")
-        if "BARCODING" in purpose or "RESEQUENCING" in purpose:
-            continue
-        accession = record.get("SAMPLE_ACCESSION") or record.get("biosampleAccession")
-        if accession:
-            biosamples.append({"accession": accession, "status": "accepted"})
-    return biosamples
+# ── EAR Review views ─────────────────────────────────────────────────────────
 
-# --- CBP ---
-def get_cbp_samples_by_taxid(taxid):
-    url = CBP_URL.format(taxid=taxid)
-    logger.info(f"Querying CBP portal for taxid {taxid}")
-    try:
-        r = requests.get(url, timeout=30)
-        r.raise_for_status()
-    except Exception as e:
-        logger.error(f"CBP query failed: {e}")
-        return []
+class EARReviewDetailView(LoginRequiredMixin, DetailView):
+    model = EARReview
+    template_name = 'ear_review_detail.html'
+    context_object_name = 'review'
 
-    resp = r.json()
-    biosamples = []
-    for record in resp.get("data", []):
-        accession = record.get("metadata", {}).get("External Id") or record.get("accession")
-        if accession:
-            biosamples.append({"accession": accession, "status": "accepted"})
-    return biosamples
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        review = self.object
+        user = self.request.user
+        context['build_page_title'] = f'EAR review: {review.assembly_project.species}'
 
-# --- ENA fetch ---
-def fetch_biosample_metadata(accession):
-    if not accession:
-        return None
-    url = f"{ENA_BIOSAMPLES_URL}/{accession}?format=json"
-    logger.info(f"Retrieving ENA BioSamples metadata for {accession}")
-    try:
-        r = requests.get(url, timeout=30)
-        r.raise_for_status()
-        data = r.json()
-        characteristics = flatten_characteristics(data.get("characteristics", {}))
-        return {
-            "accession": data.get("accession"),
-            "name": data.get("name"),
-            "organism": characteristics.get("organism") or data.get("organism"),
-            "tax_id": data.get("taxId"),
-            "collection_date": characteristics.get("collection date") or data.get("submitted"),
-            "country": characteristics.get("geographic location (country and/or sea)"),
-            "characteristics": characteristics
-        }
-    except Exception as e:
-        logger.warning(f"ENA BioSamples query failed for {accession}: {e}")
-        return None
-    
+        # Permission flags for the template
+        is_submitter = (user == review.submitted_by)
+        is_supervisor = (user == review.supervisor)
+        is_reviewer = review.reviewers.filter(pk=user.pk).exists()
+        context['can_post'] = is_submitter or is_supervisor or is_reviewer
+        context['is_submitter'] = is_submitter
+        context['is_supervisor'] = is_supervisor
+        context['is_reviewer'] = is_reviewer
 
-# --- Flatten characteristics with pipe-separated text handling ---
-def flatten_characteristics(characteristics):
-    flat_chars = {}
-    for key, values in characteristics.items():
-        if isinstance(values, list):
-            texts = [v.get("text") for v in values if "text" in v]
-            if not texts:
-                flat_chars[key] = None
-            elif len(texts) == 1:
-                if "|" in texts[0]:
-                    flat_chars[key] = [t.strip() for t in texts[0].split("|")]
-                else:
-                    flat_chars[key] = texts[0]
+        # Comments — flat list, ordered by creation
+        context['comments'] = (
+            review.comments
+            .select_related('author', 'parent')
+            .prefetch_related('attachments')
+            .all()
+        )
+
+        # Supervisor reviewer management: eligible candidates
+        if is_supervisor:
+            from django.contrib.auth.models import User, Group
+            current_reviewer_ids = list(review.reviewers.values_list('pk', flat=True))
+            ear_reviewer_group = Group.objects.filter(name='ear_reviewer').first()
+            if ear_reviewer_group:
+                candidates = (
+                    ear_reviewer_group.user_set
+                    .exclude(pk__in=current_reviewer_ids)
+                    .exclude(pk=review.submitted_by_id)
+                    .order_by('last_name', 'first_name', 'username')
+                )
             else:
-                all_values = []
-                for t in texts:
-                    if "|" in t:
-                        all_values.extend([x.strip() for x in t.split("|")])
-                    else:
-                        all_values.append(t)
-                flat_chars[key] = all_values
-        else:
-            flat_chars[key] = values
-    return flat_chars
+                candidates = User.objects.none()
+            context['reviewer_candidates'] = candidates
+
+        return context
 
 
-class UpdateSamplesCronJob(CronJobBase):
-    RUN_EVERY_MINS = 720  # every 12 hours
-    schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
-    code = 'status.update_samples_cron_job'
+def _can_post_on_review(user, review):
+    """A user can post on a review if they are the submitter, supervisor, or a reviewer."""
+    if not user.is_authenticated:
+        return False
+    if user == review.submitted_by or user == review.supervisor:
+        return True
+    return review.reviewers.filter(pk=user.pk).exists()
 
-    def strip_blanks(self, string_list):
-        return [s.strip() for s in string_list]
 
-    def do(self):
-        now = datetime.now()
-        one_week_ago = now - timedelta(days=7)
-        date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
-        logger.debug(f"{date_time}: Executing CBP UpdateSamplesCronJob.")
+def _is_reviewer(user, review):
+    return user.is_authenticated and review.reviewers.filter(pk=user.pk).exists()
 
-        # Determine project type from Customization
-        customization = Customization.objects.first()
-        if not customization or not customization.project:
-            logger.warning("No Customization project found. Skipping cron.")
-            return
-        project = customization.project.strip().upper()  # normalize to "ERGA" or "CBP"
 
-        updated_sample_ids = set()
+def _is_supervisor(user, review):
+    return user.is_authenticated and user == review.supervisor
 
-        # Iterate over target species
-        species_qs = TargetSpecies.objects.all().values("taxon_id", "goat_target_list_status")
-        for sp in species_qs:
-            tid = sp['taxon_id']
-            if not tid or sp["goat_target_list_status"] == "removed":
-                continue
 
-            target_species = TargetSpecies.objects.filter(taxon_id=tid).first()
-            if not target_species:
-                continue
+# action -> (allowed_roles, allowed_from_statuses, target_status, comment_required, marker)
+EAR_ACTIONS = {
+    'approve': (['reviewer'],   ['submitted', 'in_review'],                              'reviewer_approved', False, '✓ **Approved**'),
+    'reject':  (['reviewer'],   ['submitted', 'in_review', 'reviewer_approved'],         'rejected',          True,  '✗ **Rejected**'),
+    'accept':  (['supervisor'], ['reviewer_approved', 'in_review'],                      'accepted',          False, '✓ **Accepted (final)**'),
+    'decline': (['supervisor'], ['reviewer_approved'],                                   'declined',          True,  '✗ **Declined**'),
+}
 
-            # FIX: Fetch accessions from COPO or CBP depending on project,
-            # rather than only relying on accessions already stored in the DB.
-            # This ensures new samples are picked up on each run.
+
+@login_required
+def ear_review_comment(request, pk):
+    """POST handler: add a comment, optionally with a status-changing action (approve/reject/accept/decline)."""
+    from status import ear_review as ear_logic
+
+    review = get_object_or_404(EARReview, pk=pk)
+
+    if not _can_post_on_review(request.user, review):
+        messages.error(request, "You don't have permission to post on this review.")
+        return redirect('ear_review_detail', pk=pk)
+
+    if request.method != 'POST':
+        return redirect('ear_review_detail', pk=pk)
+
+    action = request.POST.get('action', 'comment')
+
+    # Validate action permissions and state transition
+    if action != 'comment':
+        if action not in EAR_ACTIONS:
+            messages.error(request, f"Unknown action: {action}")
+            return redirect('ear_review_detail', pk=pk)
+
+        roles, from_statuses, _target, comment_required, _marker = EAR_ACTIONS[action]
+
+        is_allowed = (
+            ('reviewer' in roles and _is_reviewer(request.user, review)) or
+            ('supervisor' in roles and _is_supervisor(request.user, review))
+        )
+        if not is_allowed:
+            messages.error(request, f"You don't have permission to {action} this review.")
+            return redirect('ear_review_detail', pk=pk)
+
+        if review.status not in from_statuses:
+            messages.error(
+                request,
+                f"Cannot {action} from status '{review.get_status_display()}'."
+            )
+            return redirect('ear_review_detail', pk=pk)
+
+        if comment_required and not request.POST.get('body', '').strip():
+            messages.error(request, f"A comment is required when you {action}.")
+            return redirect('ear_review_detail', pk=pk)
+
+    # Build comment body — prefix with action marker if applicable
+    user_body = request.POST.get('body', '').strip()
+    if action != 'comment':
+        marker = EAR_ACTIONS[action][4]
+        body = f"{marker}\n\n{user_body}" if user_body else marker
+    else:
+        body = user_body
+
+    if not body:
+        messages.error(request, "Comment body is empty.")
+        return redirect('ear_review_detail', pk=pk)
+
+    # Validate parent FK
+    parent_id = request.POST.get('parent') or None
+    parent = None
+    if parent_id:
+        try:
+            candidate = EARComment.objects.get(pk=parent_id)
+            if candidate.review_id == review.pk:
+                parent = candidate
+        except EARComment.DoesNotExist:
+            pass
+
+    comment = EARComment.objects.create(
+        review=review,
+        author=request.user,
+        body=body,
+        parent=parent,
+    )
+
+    for f in request.FILES.getlist('attachments'):
+        EARAttachment.objects.create(comment=comment, file=f)
+
+    # Apply status change if this was an action
+    if action != 'comment':
+        review.status = EAR_ACTIONS[action][2]
+        review.save(update_fields=['status', 'updated_at'])
+        # the post_save signal handles status_change notification + AssemblyProject sync
+
+    ear_logic.notify_new_comment(comment)
+
+    PAST_TENSE = {'approve': 'approved', 'reject': 'rejected', 'accept': 'accepted', 'decline': 'declined'}
+    if action == 'comment':
+        messages.success(request, "Comment posted.")
+    else:
+        messages.success(request, f"Review {PAST_TENSE.get(action, action + 'd')}.")
+
+    return redirect('ear_review_detail', pk=pk)
+
+
+@login_required
+def ear_review_create(request):
+    """User-facing form to submit a new EAR review."""
+    from status.forms import EARReviewCreateForm
+    from status import ear_review as ear_logic
+
+    if request.method == 'POST':
+        form = EARReviewCreateForm(request.POST, request.FILES)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.submitted_by = request.user
+            review.save()  # triggers post_save: supervisor auto-assigned, AssemblyProject status synced
+
+            # Reviewer auto-assignment (admin does this in save_related; we mirror it here)
+            ear_logic.auto_assign_reviewer(review, added_by=request.user)
+
+            # Optional initial notes become the first comment
+            initial = form.cleaned_data.get('initial_comment', '').strip()
+            if initial:
+                EARComment.objects.create(
+                    review=review,
+                    author=request.user,
+                    body=initial,
+                )
+
+            ear_logic.notify_review_submitted(review)
+
+            messages.success(
+                request,
+                f"EAR review submitted for {review.assembly_project.species}."
+            )
+            return redirect('ear_review_detail', pk=review.pk)
+    else:
+        form = EARReviewCreateForm()
+
+    return render(request, 'ear_review_form.html', {
+        'form': form,
+        'build_page_title': 'Submit EAR for review',
+    })
+
+
+class EARReviewListView(LoginRequiredMixin, SingleTableMixin, FilterView):
+    login_url = 'access_denied'
+    model = EARReview
+    table_class = EARReviewTable
+    filterset_class = EARReviewFilter
+    template_name = 'ear_review_list.html'
+    table_pagination = {'per_page': 50}
+
+    def get_queryset(self):
+        return (
+            EARReview.objects
+            .select_related('assembly_project__species', 'submitted_by')
+            .prefetch_related('reviewers')
+            .order_by('-updated_at')
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['build_page_title'] = 'EAR Reviews'
+        return context
+
+
+@login_required
+def ear_review_manage_reviewers(request, pk):
+    from django.contrib.auth.models import User, Group
+    from status import ear_review as ear_logic
+
+    review = get_object_or_404(EARReview, pk=pk)
+
+    if request.user != review.supervisor:
+        messages.error(request, "Only the supervisor can manage reviewers.")
+        return redirect('ear_review_detail', pk=pk)
+
+    action = request.POST.get('action')
+
+    if action == 'add':
+        user_id = request.POST.get('reviewer_id')
+        try:
+            user = User.objects.get(pk=user_id)
+            if not review.reviewers.filter(pk=user.pk).exists():
+                EARReviewer.objects.create(
+                    review=review,
+                    reviewer=user,
+                    added_by=request.user,
+                )
+                if review.status == 'submitted':
+                    review.status = 'in_review'
+                    review.save(update_fields=['status', 'updated_at'])
+                messages.success(request, f"{ear_logic._display_name(user)} added as reviewer.")
+            else:
+                messages.warning(request, f"{ear_logic._display_name(user)} is already a reviewer.")
+        except User.DoesNotExist:
+            messages.error(request, "User not found.")
+
+    elif action == 'remove':
+        user_id = request.POST.get('reviewer_id')
+        try:
+            user = User.objects.get(pk=user_id)
+            EARReviewer.objects.filter(review=review, reviewer=user).delete()
+            messages.success(request, f"{ear_logic._display_name(user)} removed from reviewers.")
+        except User.DoesNotExist:
+            messages.error(request, "User not found.")
+
+    return redirect('ear_review_detail', pk=pk)
+
+
+def ear_assignment_response(request, token, response):
+    """Handle Yes/No assignment confirmation links sent by email."""
+    from django.core import signing
+    from status import ear_review as ear_logic
+
+    try:
+        data = ear_logic.load_assignment_token(token)
+    except signing.BadSignature:
+        messages.error(request, "This assignment link is invalid or has expired.")
+        return redirect('ear_review_list')
+
+    review = get_object_or_404(EARReview, pk=data['review'])
+    user_id = data['user']
+    role = data['role']
+
+    if response == 'yes':
+        ear_logic.mark_invite_responded(review, user_id, role, accepted=True)
+        messages.success(request, "Thank you — your assignment has been confirmed.")
+        return redirect('ear_review_detail', pk=review.pk)
+
+    # Declined — mark invite, remove assignment, and reassign
+    ear_logic.mark_invite_responded(review, user_id, role, accepted=False)
+
+    if role == 'supervisor':
+        if review.supervisor_id == user_id:
+            review.supervisor = None
+            review.save(update_fields=['supervisor', 'updated_at'])
+            new_person = ear_logic.auto_assign_supervisor(review)
+            if new_person and new_person.email:
+                ear_logic.notify_assignment(review, new_person, 'supervisor')
+
+    elif role == 'reviewer':
+        EARReviewer.objects.filter(review=review, reviewer_id=user_id).delete()
+        new_person = ear_logic.auto_assign_reviewer(review)
+        if new_person and new_person.email:
+            ear_logic.notify_assignment(review, new_person, 'reviewer')
+
+    messages.info(request, "You have declined the assignment. A replacement has been sought.")
+    return redirect('ear_review_list')
+
+
+@login_required
+def assembly_project_edit(request, pk):
+    ap = get_object_or_404(AssemblyProject, pk=pk)
+
+    # Authorise: superuser or member of this species' assembly team
+    allowed = request.user.is_superuser or AssemblyTeam.objects.filter(
+        members__user=request.user,
+        genometeam__species=ap.species,
+    ).exists()
+
+    if not allowed:
+        messages.error(request, "You do not have permission to edit this assembly project.")
+        return redirect('assembly_project_list')
+
+    if request.method == 'POST':
+        status = request.POST.get('status', '').strip()
+        note = request.POST.get('note', '').strip()
+        genome_size_raw = request.POST.get('genome_size_estimate', '').strip()
+
+        valid_statuses = [c[0] for c in ASSEMBLY_STATUS_CHOICES]
+        if status and status in valid_statuses:
+            ap.status = status
+        if note != ap.note:
+            ap.note = note or None
+        if genome_size_raw:
             try:
-                if project == "CBP":
-                    remote_samples = get_cbp_samples_by_taxid(tid)
-                else:  # default to ERGA/COPO
-                    remote_samples = get_copo_samples_by_taxid(tid)
-            except Exception as e:
-                logger.warning(f"Failed to fetch remote samples for taxid {tid}: {e}")
-                continue
+                ap.genome_size_estimate = int(genome_size_raw)
+            except ValueError:
+                pass
+        elif genome_size_raw == '':
+            ap.genome_size_estimate = None
+        ap.save()
+        messages.success(request, f"Assembly project for {ap.species} updated.")
 
-            if not remote_samples:
-                continue
+    return redirect('assembly_project_list')
 
-            for remote_sample in remote_samples:
-                accession = remote_sample.get('accession')
-                if not accession:
-                    continue
 
-                # Only process samples that are stale or new (not yet in DB)
-                existing_sample = Sample.objects.filter(biosampleAccession=accession).first()
-                if existing_sample and existing_sample.copo_date:
-                    try:
-                        # copo_date is a CharField - parse it to check staleness
-                        from django.utils.dateparse import parse_datetime
-                        last_updated = parse_datetime(existing_sample.copo_date)
-                        # if last_updated and last_updated > one_week_ago:
-                        #     logger.debug(f"Skipping {accession} - updated recently.")
-                        #     continue
-                    except Exception:
-                        pass  # if parsing fails, proceed with update
+@login_required(login_url='access_denied')
+def sequencing_edit(request, pk):
+    seq = get_object_or_404(Sequencing, pk=pk)
 
-                # Fetch EBI metadata
-                try:
-                    metadata = fetch_biosample_metadata(accession)
-                except Exception as e:
-                    logger.warning(f"Failed to fetch EBI metadata for {accession}: {e}")
-                    continue
+    allowed = request.user.is_superuser or SequencingTeam.objects.filter(
+        members__user=request.user,
+        genometeam__species=seq.species,
+    ).exists()
 
-                if not metadata:
-                    logger.warning(f"No metadata returned for {accession}, skipping.")
-                    continue
+    if not allowed:
+        messages.error(request, "You do not have permission to edit this sequencing record.")
+        return redirect('sequencing_list')
 
-                chars = metadata.get('characteristics', {})
+    if request.method == 'POST':
+        valid_statuses = [c[0] for c in SEQUENCING_STATUS_CHOICES]
+        for field in ('long_seq_status', 'short_seq_status', 'hic_seq_status', 'rna_seq_status'):
+            val = request.POST.get(field, '').strip()
+            if val and val in valid_statuses:
+                setattr(seq, field, val)
+        note = request.POST.get('note', '').strip()
+        seq.note = note or None
+        seq.save()
+        messages.success(request, f"Sequencing record for {seq.species} updated.")
 
-                # Update or create specimen
-                specimen_record, _ = Specimen.objects.get_or_create(
-                    biosampleAccession=accession
-                )
-                specimen_record.species = target_species
-                specimen_record.specimen_id = chars.get('SPECIMEN_ID') or accession
-                specimen_record.tissue_removed_for_biobanking = (
-                    chars.get('TISSUE_REMOVED_FOR_BIOBANKING') == 'Y'
-                )
-                specimen_record.dna_removed_for_biobanking = (
-                    chars.get('DNA_REMOVED_FOR_BIOBANKING') == 'Y'
-                )
-                specimen_record.tolid = chars.get('public_name') or chars.get('tolid') or specimen_record.tolid
-                specimen_record.save()
+    return redirect('sequencing_list')
 
-                # Update or create sample
-                sample_record, _ = Sample.objects.get_or_create(
-                    biosampleAccession=accession
-                )
-                sample_record.specimen = specimen_record
-                sample_record.species = target_species
-                sample_record.tube_or_well_id = chars.get('TUBE_OR_WELL_ID')
-                sample_record.purpose_of_specimen = chars.get('PURPOSE_OF_SPECIMEN')
-                sample_record.biosampleAccession = accession
-                sample_record.copo_date = now.isoformat()  # stamp the update time
 
-                # Only update copo_status if the remote source or ENA provided one
-                remote_status = remote_sample.get('status')
-                ena_status = metadata.get('status')
-                if remote_status:
-                    sample_record.copo_status = remote_status
-                elif ena_status:
-                    sample_record.copo_status = ena_status
-                sample_record.save()
 
-                updated_sample_ids.add(sample_record.pk)
+class DashboardView(LoginRequiredMixin, TemplateView):
+    login_url = 'access_denied'
+    template_name = 'dashboard.html'
 
-                # Update FromManifest personnel
-                from_manifest_record, _ = FromManifest.objects.get_or_create(
-                    specimen=specimen_record
-                )
-                fields_mapping = [
-                    ('COLLECTED_BY', 'sample_collectors'),
-                    ('COLLECTOR_AFFILIATION', 'sample_collector_affiliations'),
-                    ('COLLECTOR_ORCID_ID', 'sample_collector_orcids'),
-                    ('IDENTIFIED_BY', 'sample_identifiers'),
-                    ('IDENTIFIER_AFFILIATION', 'sample_identifier_affiliations'),
-                    ('SAMPLE_COORDINATOR', 'sample_coordinators'),
-                    ('SAMPLE_COORDINATOR_AFFILIATION', 'sample_coordinators_affiliations'),
-                    ('SAMPLE_COORDINATOR_ORCID_ID', 'sample_coordinators_orcids'),
-                    ('PRESERVED_BY', 'sample_preservers'),
-                    ('PRESERVER_AFFILIATION', 'sample_preserver_affiliations'),
-                ]
-                for field, model_field in fields_mapping:
-                    value = chars.get(field)
-                    if value:
-                        setattr(from_manifest_record, model_field, value)
-                from_manifest_record.save()
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['build_page_title'] = 'My Dashboard'
+        context['pending_invites'] = (
+            EARAssignmentInvite.objects
+            .filter(user=self.request.user, status='pending')
+            .select_related('review__assembly_project__species', 'review__submitted_by')
+            .order_by('created_at')
+        )
+        context['ears_to_review'] = (
+            EARReview.objects
+            .filter(reviewers=self.request.user, status__in=['submitted', 'in_review'])
+            .select_related('assembly_project__species', 'submitted_by')
+            .order_by('updated_at')
+        )
+        context['ears_awaiting_decision'] = (
+            EARReview.objects
+            .filter(supervisor=self.request.user, status='reviewer_approved')
+            .select_related('assembly_project__species', 'submitted_by')
+            .order_by('updated_at')
+        )
+        context['my_submissions'] = (
+            EARReview.objects
+            .filter(submitted_by=self.request.user)
+            .exclude(status__in=['accepted', 'declined'])
+            .select_related('assembly_project__species')
+            .prefetch_related('reviewers')
+            .order_by('updated_at')
+        )
+        my_assembly_projects = (
+            AssemblyProject.objects
+            .filter(species__gt_rel__assembly_team__members__user=self.request.user)
+            .select_related('species')
+            .prefetch_related('ear_review')
+            .distinct()
+            .order_by('species__scientific_name')
+        )
+        # Annotate each project with an EAR flag for the template
+        flagged = []
+        for ap in my_assembly_projects:
+            ear = getattr(ap, 'ear_review', None)
+            if ear is None:
+                flag = None
+            elif ear.status in ('rejected', 'declined'):
+                flag = ear.get_status_display()
+            else:
+                flag = None
+            flagged.append({'project': ap, 'ear': ear, 'flag': flag})
+        context['my_assembly_projects'] = flagged
+        context['my_sequencing_tasks'] = (
+            Sequencing.objects
+            .filter(species__gt_rel__sequencing_team__members__user=self.request.user)
+            .exclude(
+                long_seq_status__in=['Done', 'Abandoned'],
+                short_seq_status__in=['Done', 'Abandoned'],
+                hic_seq_status__in=['Done', 'Abandoned'],
+                rna_seq_status__in=['Done', 'Abandoned'],
+            )
+            .select_related('species')
+            .distinct()
+            .order_by('species__scientific_name')
+        )
+        # Context for the edit modals (matches assemblyproject.html / sequencing.html)
+        context['assembly_status_choices'] = ASSEMBLY_STATUS_CHOICES
+        context['sequencing_status_choices'] = SEQUENCING_STATUS_CHOICES
+        context['sequencing_status_fields'] = [
+            ('long_seq_status',  'Long-read Status'),
+            ('short_seq_status', 'Short-read Status'),
+            ('hic_seq_status',   'HiC Status'),
+            ('rna_seq_status',   'RNA Status'),
+        ]
+        if self.request.user.is_superuser:
+            from django.conf import settings as django_settings
+            from django.utils import timezone
+            import datetime
+            threshold_days = getattr(django_settings, 'EAR_STUCK_THRESHOLD_DAYS', 7)
+            stuck_cutoff = timezone.now() - datetime.timedelta(days=threshold_days)
+            active_statuses = ['submitted', 'in_review', 'reviewer_approved']
+            context['superuser_overview'] = {
+                'open_ears': EARReview.objects.filter(status__in=active_statuses).count(),
+                'stuck_ears': EARReview.objects.filter(
+                    status__in=active_statuses,
+                    updated_at__lt=stuck_cutoff,
+                ).count(),
+                'stuck_threshold_days': threshold_days,
+                'stuck_reviews': (
+                    EARReview.objects
+                    .filter(status__in=active_statuses, updated_at__lt=stuck_cutoff)
+                    .select_related('assembly_project__species')
+                    .order_by('updated_at')
+                ),
+            }
+        return context
 
-        # COPO suppressed/offline check — only for ERGA/COPO projects
-        # CBP does not use COPO IDs so skip this block entirely for CBP
-        if project != "CBP":
-            copo_url = "https://copo-project.org/api"
-            samples_to_check = Sample.objects.filter(pk__in=updated_sample_ids)
-            for sample_record in samples_to_check:
-                copoid = sample_record.copo_id
-                if not copoid:
-                    continue
-                try:
-                    r = requests.get(
-                        f"{copo_url}/sample/copo_id/{copoid}",
-                        timeout=30
-                    )
-                    r.raise_for_status()
-                except requests.RequestException as e:
-                    logger.warning(f"COPO check failed for copo_id {copoid}: {e}")
-                    continue
-                if "COPO offline" in r.text:
-                    continue
-                resp = r.json()
-                if resp.get("number_found") is not None:
-                    sample_record.suppressed = resp["number_found"] == 0
-                    sample_record.save()
+
+@login_required
+@require_POST
+def dashboard_invite_response(request, pk):
+    """Accept or decline an EAR assignment invite from the dashboard."""
+    from status import ear_review as ear_logic
+
+    invite = get_object_or_404(EARAssignmentInvite, pk=pk, user=request.user, status='pending')
+    response = request.POST.get('response')
+    review = invite.review
+
+    if response == 'accept':
+        ear_logic.mark_invite_responded(review, request.user.pk, invite.role, accepted=True)
+        messages.success(request, f"You have accepted the {invite.get_role_display().lower()} assignment for {review.assembly_project.species}.")
+
+    elif response == 'decline':
+        ear_logic.mark_invite_responded(review, request.user.pk, invite.role, accepted=False)
+        if invite.role == 'supervisor':
+            if review.supervisor_id == request.user.pk:
+                review.supervisor = None
+                review.save(update_fields=['supervisor', 'updated_at'])
+                new_person = ear_logic.auto_assign_supervisor(review)
+                if new_person and new_person.email:
+                    ear_logic.notify_assignment(review, new_person, 'supervisor')
+        elif invite.role == 'reviewer':
+            EARReviewer.objects.filter(review=review, reviewer=request.user).delete()
+            new_person = ear_logic.auto_assign_reviewer(review)
+            if new_person and new_person.email:
+                ear_logic.notify_assignment(review, new_person, 'reviewer')
+        messages.info(request, f"You have declined the assignment. A replacement has been sought.")
+
+    return redirect('dashboard')

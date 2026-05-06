@@ -128,8 +128,14 @@ class OverviewTable(tables.Table):
     def value_scientific_name(self, value):
         return value
       
+    GOAT_LABEL_OVERRIDES = {
+        'publication_available': 'published',
+        'insdc_submitted': 'insdc_sub',
+    }
+
     def render_goat_sequencing_status(self, value, record):
-        html = '<a href="' + settings.DEFAULT_DOMAIN + 'collection/?species='+str(record.pk)+'"><span class="goat '+escape(value.replace(" ",''))+'">'+escape(value.replace("sample_",''))+'</span></a>'
+        label = self.GOAT_LABEL_OVERRIDES.get(value, value.replace("sample_", ''))
+        html = '<a href="' + settings.DEFAULT_DOMAIN + 'collection/?species='+str(record.pk)+'"><span class="status '+escape(value.replace(" ",''))+'">'+escape(label)+'</span></a>'
         return mark_safe(html)
 
     def value_goat_sequencing_status(self, value):
@@ -260,12 +266,10 @@ class TargetSpeciesTable(tables.Table):
     task = tables.ManyToManyColumn(accessor='collection_rel',verbose_name="Task")
     country = tables.ManyToManyColumn(accessor='collection_rel',verbose_name="Country")
     def render_task(self, value, record):
-        tasks = {sc.task.short_name for sc in value.all() if sc.task}
-        if not list(tasks)[0]:
-            tasks = {sc.task.name for sc in value.all() if sc.task}
+        tasks = {sc.task.short_name for sc in value.all() if sc.task and sc.task.short_name}
         return ';'.join(tasks)
     def render_country(self, value, record):
-        countries = {sc.country.name for sc in value.all() if sc.country}
+        countries = {sc.country.name for sc in value.all() if sc.country and sc.country.name}
         return ';'.join(countries)
     
     def render_scientific_name(self, value, record):
@@ -334,6 +338,10 @@ class GoaTSpeciesTable(tables.Table):
 
 class AssemblyTable(tables.Table):
     export_formats = ['csv', 'tsv']
+    detail = tables.TemplateColumn(
+        '<a href="{% url \'assembly_detail\' record.pk %}">view</a>',
+        empty_values=(), orderable=False, verbose_name=''
+    )
     project = tables.LinkColumn('assembly_project_list')
     pipeline = tables.Column(linkify=True)
     #span = tables.Column(verbose_name="Span (Gb)")
@@ -373,6 +381,7 @@ class AssemblyTable(tables.Table):
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
         exclude = ['id']
+        sequence = ('detail', '...')
 
 class AssemblyProjectTable(tables.Table):
     export_formats = ['csv', 'tsv']
@@ -380,6 +389,40 @@ class AssemblyProjectTable(tables.Table):
     status = tables.TemplateColumn('<span class="status {{record.status}}">{{record.status}}</span>',empty_values=(), verbose_name='Status')
     species = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("species.pk")}, empty_values=())
     team = tables.Column(accessor='species__gt_rel__assembly_team',linkify=True)
+    edit = tables.Column(empty_values=(), orderable=False, verbose_name='')
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        self._editable_species_pks = set()
+        self._edit_all = False
+        if self.user and self.user.is_authenticated:
+            if self.user.is_superuser:
+                self._edit_all = True
+            else:
+                self._editable_species_pks = set(
+                    AssemblyTeam.objects.filter(members__user=self.user)
+                    .values_list('genometeam__species_id', flat=True)
+                )
+
+    def render_edit(self, value, record):
+        editable = getattr(self, '_edit_all', False) or (record.species_id in self._editable_species_pks)
+        if not editable:
+            return ''
+        return format_html(
+            '<button type="button" class="btn btn-sm btn-outline-secondary ap-edit-btn" '
+            'data-pk="{}" data-species="{}" data-status="{}" '
+            'data-note="{}" data-genome-size="{}" title="Edit">'
+            '✎</button>',
+            record.pk,
+            str(record.species),
+            record.status or '',
+            record.note or '',
+            record.genome_size_estimate or '',
+        )
+
+    def value_edit(self, value, record):
+        return ''
 
     def value_status(self, value):
         return value
@@ -388,7 +431,7 @@ class AssemblyProjectTable(tables.Table):
         model = AssemblyProject
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        fields = ('species', 'team','assemblies', 'note', 'status')
+        fields = ('species', 'team', 'assemblies', 'note', 'status', 'edit')
 
 class SampleCollectionTable(tables.Table):
     export_formats = ['csv', 'tsv']
@@ -429,7 +472,46 @@ class SequencingTable(tables.Table):
     species = tables.LinkColumn("species_detail", kwargs={"pk": tables.A("species.pk")}, empty_values=())
     team = tables.Column(accessor='species__gt_rel__sequencing_team',linkify=True)
     reads = tables.TemplateColumn('<a href="{% url \'ena_reads_list\' %}?project={{record.pk}}">ENA reads</a></br></br><a href="{% url \'reads_list\' %}?project={{record.pk}}">GTC reads</a>',empty_values=(), verbose_name='Reads')
-    recipe = tables.TemplateColumn('<a href="{% url \'recipe_detail\'  record.recipe.pk %}">{{record.recipe}}</a>',empty_values=(), verbose_name='Recipe')
+    recipe = tables.TemplateColumn('{% if record.recipe %}<a href="{% url \'recipe_detail\' record.recipe.pk %}">{{record.recipe}}</a>{% endif %}',empty_values=(), verbose_name='Recipe')
+    edit = tables.Column(empty_values=(), orderable=False, verbose_name='')
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        self._editable_species_pks = set()
+        self._edit_all = False
+        if self.user and self.user.is_authenticated:
+            if self.user.is_superuser:
+                self._edit_all = True
+            else:
+                self._editable_species_pks = set(
+                    SequencingTeam.objects.filter(members__user=self.user)
+                    .values_list('genometeam__species_id', flat=True)
+                )
+
+    def render_edit(self, value, record):
+        editable = getattr(self, '_edit_all', False) or (record.species_id in self._editable_species_pks)
+        if not editable:
+            return ''
+        return format_html(
+            '<button type="button" class="btn btn-sm btn-outline-secondary seq-edit-btn" '
+            'data-pk="{}" data-species="{}" '
+            'data-long-status="{}" data-short-status="{}" '
+            'data-hic-status="{}" data-rna-status="{}" '
+            'data-note="{}" title="Edit">'
+            '✎</button>',
+            record.pk,
+            str(record.species),
+            record.long_seq_status or '',
+            record.short_seq_status or '',
+            record.hic_seq_status or '',
+            record.rna_seq_status or '',
+            record.note or '',
+        )
+
+    def value_edit(self, value, record):
+        return ''
+
     def value_genomic_seq_status(self, value):
         return value
     def value_hic_seq_status(self, value):
@@ -441,7 +523,7 @@ class SequencingTable(tables.Table):
         model = Sequencing
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
-        fields = ('species', 'team', 'recipe', 'note', 'reads', 'long_seq_status','short_seq_status','hic_seq_status','rna_seq_status')
+        fields = ('species', 'team', 'recipe', 'note', 'reads', 'long_seq_status','short_seq_status','hic_seq_status','rna_seq_status', 'edit')
 
 class RunTable(tables.Table):
     export_formats = ['csv', 'tsv','xls']
@@ -1030,3 +1112,63 @@ class StatusUpdateTable(tables.Table):
         template_name = "django_tables2/bootstrap4.html"
         paginate = {"per_page": 100}
         fields = ('species', 'process','status','note','timestamp')
+
+
+class EARReviewTable(tables.Table):
+    species = tables.Column(
+        accessor='assembly_project__species__scientific_name',
+        verbose_name='Species',
+        order_by='assembly_project__species__scientific_name',
+    )
+    submitted_by = tables.Column(
+        accessor='submitted_by__username',
+        verbose_name='Submitted by',
+    )
+    status = tables.TemplateColumn(
+        '<span class="ear-status ear-status-{{ record.status }}">{{ record.get_status_display }}</span>',
+        verbose_name='Status',
+        order_by='status',
+    )
+    reviewers = tables.Column(
+        empty_values=(),
+        verbose_name='Reviewers',
+        orderable=False,
+    )
+    updated_at = tables.DateTimeColumn(format='Y-m-d', verbose_name='Updated')
+    detail = tables.TemplateColumn(
+        '''<a href="{% url 'ear_review_detail' record.pk %}" class="btn btn-sm btn-outline-secondary">View</a>
+        {% if record.status == 'accepted' and record.ear_pdf %}
+        &nbsp;<a href="{{ record.ear_pdf.url }}" target="_blank" class="btn btn-sm btn-outline-success" title="Download accepted EAR PDF"><i class="fas fa-file-pdf"></i> PDF</a>
+        {% endif %}''',
+        empty_values=(),
+        verbose_name='',
+        orderable=False,
+    )
+
+    def render_submitted_by(self, value, record):
+        u = record.submitted_by
+        if not u:
+            return '—'
+        try:
+            p = u.userprofile
+            name = ' '.join(filter(None, [p.first_name, p.last_name]))
+            return name or u.username
+        except Exception:
+            return u.get_full_name() or u.username
+
+    def render_reviewers(self, value, record):
+        names = []
+        for u in record.reviewers.all():
+            try:
+                p = u.userprofile
+                name = ' '.join(filter(None, [p.first_name, p.last_name]))
+                names.append(name or u.username)
+            except Exception:
+                names.append(u.get_full_name() or u.username)
+        return ', '.join(names) if names else '—'
+
+    class Meta:
+        model = EARReview
+        template_name = 'django_tables2/bootstrap4.html'
+        paginate = {'per_page': 50}
+        fields = ('species', 'submitted_by', 'reviewers', 'status', 'updated_at', 'detail')

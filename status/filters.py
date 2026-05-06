@@ -343,3 +343,31 @@ class SampleCollectionFilter(django_filters.FilterSet):
     #         Q(biosampleAccession=value)
     #     )
 
+
+
+class EARReviewFilter(django_filters.FilterSet):
+    assembly_project__species__scientific_name = django_filters.CharFilter(
+        lookup_expr='icontains',
+        label='Species',
+    )
+    status = django_filters.ChoiceFilter(
+        choices=[('', 'All statuses')] + [
+            ('submitted', 'Submitted'),
+            ('in_review', 'In review'),
+            ('reviewer_approved', 'Reviewer approved'),
+            ('accepted', 'Accepted'),
+            ('rejected', 'Rejected'),
+            ('declined', 'Declined'),
+        ],
+        empty_label=None,
+        label='Status',
+    )
+    submitted_by__username = django_filters.CharFilter(
+        lookup_expr='icontains',
+        label='Submitted by',
+    )
+
+    class Meta:
+        from status.models import EARReview
+        model = EARReview
+        fields = ['assembly_project__species__scientific_name', 'status', 'submitted_by__username']

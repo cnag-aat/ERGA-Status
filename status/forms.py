@@ -25,6 +25,13 @@ class CustomSignupForm(SignupForm):
     middle_name = forms.CharField(max_length=60, label='Middle Name',required=False)
     last_name = forms.CharField(max_length=60, label='Last Name')
     orcid = forms.CharField(max_length=60, label='ORCID',required=False)
+    research_group = forms.ModelChoiceField(
+        queryset=ResearchGroup.objects.all().order_by('name'),
+        widget=AddAnotherWidgetWrapper(forms.Select, reverse_lazy('create_research_group')),
+        required=False,
+        label='Research group',
+        help_text='Your research group or lab (e.g. PI surname). Select an existing entry or add a new one. Used for conflict-of-interest checks in the EAR review process.'
+    )
     affiliation = forms.ModelMultipleChoiceField(
         queryset=Affiliation.objects.all().order_by('affiliation'),
         widget=AddAnotherWidgetWrapper(forms.SelectMultiple,reverse_lazy('create_affiliation')),
@@ -52,6 +59,7 @@ class CustomSignupForm(SignupForm):
         profile.middle_name = self.cleaned_data['middle_name']
         profile.last_name = self.cleaned_data['last_name']
         profile.orcid = self.cleaned_data['orcid'].replace("https://orcid.org/",'')
+        profile.research_group = self.cleaned_data['research_group']
         profile.lead = self.cleaned_data['lead']
         profile.save()
         profile.affiliation.set(self.cleaned_data['affiliation'])
@@ -63,19 +71,19 @@ class CustomSignupForm(SignupForm):
 class ProfileUpdateForm(ModelForm):
     class Meta:
         model = UserProfile
-        exclude = ('user',)
-    # first_name = forms.CharField(max_length=30, label='First Name')
-    # middle_name = forms.CharField(max_length=30, label='Middle Name',required=False)
-    # last_name = forms.CharField(max_length=30, label='Last Name')
-    # orcid = forms.CharField(max_length=30, label='ORCID',required=False)
+        exclude = ('user', 'calling_score')
     affiliation = forms.ModelMultipleChoiceField(
         queryset=Affiliation.objects.all().order_by('affiliation'),
-        widget=AddAnotherWidgetWrapper(forms.SelectMultiple,reverse_lazy('create_affiliation')),
+        widget=AddAnotherWidgetWrapper(forms.SelectMultiple, reverse_lazy('create_affiliation')),
         required=True
     )
-
-    # roles = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple,choices=ROLE_CHOICES)
-    # lead =forms.BooleanField(widget=forms.CheckboxInput,required=False)
+    research_group = forms.ModelChoiceField(
+        queryset=ResearchGroup.objects.all().order_by('name'),
+        widget=AddAnotherWidgetWrapper(forms.Select, reverse_lazy('create_research_group')),
+        required=False,
+        label='Research group',
+        help_text='Your research group or lab (e.g. PI surname). Select an existing entry or add a new one.'
+    )
 # class NewSpeciesForm(ModelForm):
 #     class Meta:
 #         model = TargetSpecies
@@ -91,3 +99,65 @@ class NewSpeciesListForm(ModelForm):
         # widgets = {
         #     'taxon_id': forms.TextInput(attrs={'class':'form-control'})
         # }
+
+
+class EARReviewCreateForm(forms.ModelForm):
+    initial_comment = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'rows': 4,
+            'class': 'form-control',
+            'placeholder': 'Anything reviewers should know about this assembly upfront…',
+        }),
+        required=False,
+        label='Initial notes (optional)',
+    )
+
+    class Meta:
+        model = EARReview
+        fields = ('assembly_project', 'ear_pdf', 'pretext_file')
+        widgets = {
+            'assembly_project': forms.Select(attrs={'class': 'form-control'}),
+            'ear_pdf': forms.ClearableFileInput(attrs={
+                'class': 'form-control-file',
+                'accept': 'application/pdf,.pdf',
+            }),
+            'pretext_file': forms.ClearableFileInput(attrs={
+                'class': 'form-control-file',
+                'accept': '.pretext',
+            }),
+        }
+        help_texts = {
+            'assembly_project': 'Pick the assembly project this EAR is for.',
+            'ear_pdf': 'The EAR report (PDF).',
+            'pretext_file': 'The main Pretext contact map. Additional pretext files (hap2, alternate thresholds) can be uploaded as attachments to comments.',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Only show assembly projects that don't already have an EAR review
+        self.fields['assembly_project'].queryset = (
+            AssemblyProject.objects
+            .filter(ear_review__isnull=True)
+            .order_by('species__scientific_name')
+        )
+        # Pretext is nullable at model level (so post-acceptance delete works) but required to submit
+        self.fields['pretext_file'].required = True
+
+
+class EARCommentForm(forms.ModelForm):
+    parent = forms.ModelChoiceField(
+        queryset=EARComment.objects.all(),
+        required=False,
+        widget=forms.HiddenInput(),
+    )
+
+    class Meta:
+        model = EARComment
+        fields = ('body', 'parent')
+        widgets = {
+            'body': forms.Textarea(attrs={
+                'rows': 4,
+                'class': 'form-control',
+                'placeholder': 'Write a comment…',
+            }),
+        }

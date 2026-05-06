@@ -57,6 +57,48 @@
   </div>
 </div>
 
+<button type="button" id="seqEditModalTrigger"
+        data-toggle="modal" data-target="#seqEditModal"
+        style="display:none" aria-hidden="true"></button>
+
+<!-- Sequencing edit modal -->
+<div class="modal fade" id="seqEditModal" tabindex="-1" role="dialog" aria-labelledby="seqEditModalLabel" aria-hidden="true"
+     data-url-template="{% url 'sequencing_edit' pk=0 %}">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="seqEditModalLabel">Edit sequencing record</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form id="seqEditForm" method="post" action="">
+        {% csrf_token %}
+        <div class="modal-body">
+          {% for field_id, label in sequencing_status_fields %}
+          <div class="form-group">
+            <label for="{{ field_id }}">{{ label }}</label>
+            <select class="form-control seq-status-select" id="{{ field_id }}" name="{{ field_id }}">
+              {% for val, display in sequencing_status_choices %}
+                <option value="{{ val }}">{{ display }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          {% endfor %}
+          <div class="form-group">
+            <label for="seqNote">Note</label>
+            <input type="text" class="form-control" id="seqNote" name="note" maxlength="300">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <script>
   function openNav() {
     document.getElementById("mySidebar").style.width = "460px";
@@ -67,6 +109,20 @@
     document.getElementById("mySidebar").style.width = "0";
     document.getElementById("main").style.marginLeft = "0";
   }
+
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.seq-edit-btn');
+    if (!btn) return;
+    var urlTemplate = document.getElementById('seqEditModal').dataset.urlTemplate;
+    document.getElementById('seqEditModalLabel').textContent = 'Edit: ' + btn.dataset.species;
+    document.getElementById('seqEditForm').action = urlTemplate.replace('/0/', '/' + btn.dataset.pk + '/');
+    document.getElementById('long_seq_status').value  = btn.dataset.longStatus;
+    document.getElementById('short_seq_status').value = btn.dataset.shortStatus;
+    document.getElementById('hic_seq_status').value   = btn.dataset.hicStatus;
+    document.getElementById('rna_seq_status').value   = btn.dataset.rnaStatus;
+    document.getElementById('seqNote').value           = btn.dataset.note;
+    document.getElementById('seqEditModalTrigger').click();
+  });
 </script>
 
 {% endblock %}

@@ -113,6 +113,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media',
                 'status.context_processors.customization',
+                'status.context_processors.dashboard_action_count',
             ],
         },
     },

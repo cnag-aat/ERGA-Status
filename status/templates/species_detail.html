@@ -31,6 +31,33 @@
           <tr><td>IUCN Red List Status:</td><td>{{ species.iucn_code }}</br></td></tr>
           <tr><td>IUCN Web Page:</td><td> <a href="{{ species.iucn_url }}">{{ species.iucn_url }}</a></br></td></tr>
           {% endif %}
+          {% if accepted_ear %}
+          <tr>
+            <td>EAR Report:</td>
+            <td>
+              <a href="{{ accepted_ear.ear_pdf.url }}" target="_blank">
+                <i class="fas fa-file-pdf"></i> Download EAR PDF
+              </a>
+              &nbsp;
+              <a href="{% url 'ear_review_detail' accepted_ear.pk %}" class="text-muted small">(review)</a>
+            </td>
+          </tr>
+          {% endif %}
+          {% if active_ear %}
+          <tr>
+            <td>EAR Review:</td>
+            <td>
+              <a href="{% url 'ear_review_detail' active_ear.pk %}">{{ active_ear.get_status_display }}</a>
+              {% if ear_action == 'invite_pending' %}
+                <span class="badge badge-warning ml-1">Invite pending — respond on dashboard</span>
+              {% elif ear_action == 'awaiting_your_review' %}
+                <span class="badge badge-danger ml-1">Awaiting your review</span>
+              {% elif ear_action == 'awaiting_your_decision' %}
+                <span class="badge badge-danger ml-1">Awaiting your decision</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endif %}
         </table>
       </div>
     </div>
