@@ -84,6 +84,9 @@ from .aggregates import GroupConcat
 
 # Create a logger for your app
 logger = logging.getLogger('status')
+COPO_URL = "https://copo-project.org/api"
+CBP_URL = "https://dades.biogenoma.cat/api/biosamples?taxid__in={taxid}"
+ENA_BIOSAMPLES_URL = "https://www.ebi.ac.uk/biosamples/samples"
 
 def month_matching(date_str):
     try:
@@ -343,7 +346,7 @@ class TargetSpeciesListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, F
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Species'
+        context['build_page_title'] = 'GTC Species'
         return context
 
     def get_table_kwargs(self):
@@ -379,7 +382,7 @@ class GoaTListView(ExportMixin, SingleTableMixin, FilterView):
         context = super().get_context_data(**kwargs)
         # Add in a QuerySet of all the books
         context["last_updated"] = TargetSpecies.objects.order_by('-date_updated')[:1].get().date_updated
-        context['build_page_title'] = 'ERGA-GTC GoaT List'
+        context['build_page_title'] = 'GTC GoaT List'
         return context
 
     def get_queryset(self):
@@ -431,7 +434,7 @@ class OverView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #
 
     def get_context_data(self, *args, **kwargs):
         data = super(OverView, self).get_context_data(*args, **kwargs)
-        data['build_page_title'] = 'ERGA-GTC OverView'
+        data['build_page_title'] = 'GTC OverView'
         return data
 
     def get_table_kwargs(self):
@@ -706,7 +709,7 @@ class SampleCollectionListView(LoginRequiredMixin, ExportMixin, SingleTableMixin
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Sample Collection'
+        context['build_page_title'] = 'GTC Sample Collection'
         return context
 
     def get_table_kwargs(self):
@@ -740,7 +743,7 @@ class SpecimenListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, Filter
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Specimens'
+        context['build_page_title'] = 'GTC Specimens'
         return context
     
     def get_queryset(self):
@@ -775,7 +778,7 @@ class SampleListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterVi
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC GoaT Samples'
+        context['build_page_title'] = 'GTC GoaT Samples'
         return context
     def get_filterset(self, filterset_class):
         fs = super().get_filterset(filterset_class)
@@ -847,7 +850,7 @@ class SequencingDetailView(LoginRequiredMixin, DetailView): #LoginRequiredMixin,
     table_pagination = {"per_page": 100}
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Sequencing'
+        context['build_page_title'] = 'GTC Sequencing'
         return context
 
 class RunListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
@@ -867,7 +870,7 @@ class RunListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Runs'
+        context['build_page_title'] = 'GTC Runs'
         return context
 
 class EnaRunListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
@@ -887,7 +890,7 @@ class EnaRunListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterVi
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC ENA Runs'
+        context['build_page_title'] = 'GTC ENA Runs'
         return context
        
 class ReadsListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView): #LoginRequiredMixin, 
@@ -901,7 +904,7 @@ class ReadsListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterVie
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Read Data'
+        context['build_page_title'] = 'GTC Read Data'
         return context
     
     def get_queryset(self):
@@ -931,7 +934,7 @@ class EnaReadsListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, Filter
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Read Data'
+        context['build_page_title'] = 'GTC Read Data'
         return context
     
     def get_queryset(self):
@@ -974,7 +977,7 @@ class AnnotationListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, Filt
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Annotations'
+        context['build_page_title'] = 'GTC Annotations'
         return context
     def get_queryset(self):
         return Annotation.objects.exclude(species__goat_target_list_status = None).exclude(species__goat_target_list_status = 'none').exclude(species__goat_target_list_status = '').exclude(species__goat_target_list_status = 'removed').exclude(species__goat_sequencing_status = 'none')
@@ -990,7 +993,7 @@ class CommunityAnnotationListView(LoginRequiredMixin, ExportMixin, SingleTableMi
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Community Annotations'
+        context['build_page_title'] = 'GTC Community Annotations'
         return context
     def get_queryset(self):
         return CommunityAnnotation.objects.exclude(species__goat_target_list_status = None).exclude(species__goat_target_list_status = 'none').exclude(species__goat_target_list_status = '').exclude(species__goat_target_list_status = 'removed').exclude(species__goat_sequencing_status = 'none')
@@ -999,7 +1002,7 @@ class CommunityAnnotationListView(LoginRequiredMixin, ExportMixin, SingleTableMi
 class AccessDeniedView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Access Denied'
+        context['build_page_title'] = 'GTC Access Denied'
         return context
     template_name = 'denied.html'
 
@@ -1014,7 +1017,7 @@ class GenomeTeamsView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterV
     table_pagination = {"per_page": 100}
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Genome Teams'
+        context['build_page_title'] = 'GTC Genome Teams'
         return context
     def get_queryset(self):
         return GenomeTeam.objects.exclude(species__goat_target_list_status = None).exclude(species__goat_target_list_status = 'none').exclude(species__goat_target_list_status = '').exclude(species__goat_target_list_status = 'removed') #.exclude(species__goat_sequencing_status = 'none')
@@ -1038,7 +1041,7 @@ class AuthorsView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView)
     table_pagination = {"per_page": 100}
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Authors'
+        context['build_page_title'] = 'GTC Authors'
         return context
 
 class EditProfileView(FormView):
@@ -1050,7 +1053,7 @@ class EditProfileView(FormView):
     success_url = reverse_lazy('success')
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Edit Profile'
+        context['build_page_title'] = 'GTC Edit Profile'
         return context
 
     def get_form(self, form_class = ProfileUpdateForm):
@@ -1080,7 +1083,7 @@ class LogView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterView):
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Log'
+        context['build_page_title'] = 'GTC Log'
         return context
 
     # def get_queryset(self):
@@ -1100,7 +1103,7 @@ class SpeciesLogView(LoginRequiredMixin, ExportMixin, SingleTableMixin, FilterVi
     export_formats = ['csv', 'tsv','xlsx','json']
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Species Log'
+        context['build_page_title'] = 'GTC Species Log'
         return context
 
     def get_queryset(self):
@@ -1122,12 +1125,12 @@ class NewSpeciesListView(GroupRequiredMixin, LoginRequiredMixin, FormView):#Grou
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['build_page_title'] = 'ERGA-GTC Upload Species List'
+        context['build_page_title'] = 'GTC Upload Species List'
         return context
 
     def form_valid(self, form):
         gtls_options = ['waiting_list', 'none', 'long_list', 'other_priority', 'family_representative','removed']
-        gss_options = ['none', 'in_collection', 'sample_collected', 'sample_acquired', 'data_generation', 'in_assembly', 'insdc_open', 'publication_available' ]
+        gss_options = ['none', 'in_collection', 'sample_collected', 'sample_acquired', 'data_generation', 'in_assembly','insdc_submitted', 'insdc_open', 'published', 'publication_available' ]
         messages.info(self.request, "Adding...") 
         # form.instance.tag = "bge"
         form.save()
@@ -1383,7 +1386,7 @@ class NewSpeciesListView(GroupRequiredMixin, LoginRequiredMixin, FormView):#Grou
 def recipe_detail(request, pk=None):
     recipe = Recipe.objects.get(pk=pk)
     context = {"recipe": recipe,
-               'build_page_title':'ERGA-GTC Recipe'
+               'build_page_title':'GTC Recipe'
                }
     response = render(request, "recipe_detail.html", context)
     return response
@@ -1394,7 +1397,7 @@ def sample_detail(request, pk=None):
     site_url = settings.DEFAULT_DOMAIN
     context = {"sample": sample,
                "site_url": site_url,
-               'build_page_title':'ERGA-GTC Sample'
+               'build_page_title':'GTC Sample'
                }
     response = render(request, "sample_detail.html", context)
     return response
@@ -1430,143 +1433,6 @@ class SpeciesSaveCronJob(CronJobBase):
 
 # logger = logging.getLogger(__name__)
 
-class UpdateSamplesCronJob(CronJobBase):
-    RUN_EVERY_MINS = 720  # every 12 hours
-    schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
-    code = 'status.update_samples_cron_job'  # a unique code
-
-    def strip_blanks(self, string_list):
-        endtrimmed = [re.sub(r'\s+$', '', name) for name in string_list]
-        both_trimmed = [re.sub(r'^\s+', '', name) for name in endtrimmed]
-        return both_trimmed
-
-    def do(self):
-        now = datetime.now()
-        one_week_ago = now - timedelta(days=7)
-        date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
-        logger.debug(f"{date_time}: Executing UpdateSamplesCronJob.")
-
-        logging.getLogger("requests").setLevel(logging.WARNING)
-        logging.getLogger('urllib3').setLevel(logging.CRITICAL)
-
-        copo_url = "https://copo-project.org/api"
-
-        # Query all species
-        species_qs = TargetSpecies.objects.all().values("taxon_id", "goat_target_list_status")
-        for sp in species_qs:
-            if sp['taxon_id'] is None or sp["goat_target_list_status"] == "removed":
-                continue
-            tid = sp['taxon_id']
-
-            # Check if samples exist and are stale (>1 week)
-            stale_samples = Sample.objects.filter(species__taxon_id=tid, updated_at__lte=one_week_ago)
-            if not stale_samples.exists():
-                continue
-
-            # Fetch COPO data
-            try:
-                copo_taxid_response = requests.get(f"{copo_url}/sample/taxon_id/{tid}")
-                copo_taxid_response.raise_for_status()
-                copo_taxid_json = copo_taxid_response.json()
-                num_samples = copo_taxid_json.get("number_found", 0)
-                data = copo_taxid_json.get("data", [])
-            except requests.RequestException:
-                logger.debug(f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')}: Error fetching COPO taxid {tid}")
-                continue
-
-            if num_samples == 0:
-                continue
-
-            best_copo_status = 'rejected'
-            for copo_record in data:
-                copo_id = copo_record.get('copo_id')
-                logger.debug(f"{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')}: Getting copo_id {copo_id}")
-                try:
-                    copo_sample_response = requests.get(f"{copo_url}/sample/copo_id/{copo_id}/")
-                    copo_sample_response.raise_for_status()
-                    copo_sample_json = copo_sample_response.json()
-                    num_found = copo_sample_json.get('number_found', 0)
-                    if num_found != 1:
-                        continue
-                    sample_data = copo_sample_json['data'][0]
-                except requests.RequestException:
-                    continue
-
-                # Skip if not relevant project
-                primary_biogenome_project = sample_data.get('PRIMARY_BIOGENOME_PROJECT')
-                tol_project = sample_data.get('tol_project', '')
-                associated_tol_project = sample_data.get('associated_tol_project', '')
-                if not primary_biogenome_project:
-                    continue
-                if ('ERGA-BGE' not in primary_biogenome_project and
-                    'ERGA' not in tol_project and
-                    'BGE' not in tol_project and
-                    'ERGA' not in associated_tol_project and
-                    'BGE' not in associated_tol_project):
-                    continue
-
-                # Skip if sample already up-to-date
-                biosample_accession = sample_data.get('biosampleAccession')
-                specimen_record = Specimen.objects.filter(biosampleAccession=biosample_accession,
-                                                          updated_at__gt=one_week_ago).first()
-                if specimen_record:
-                    continue  # fresh, skip
-
-                # Update specimen
-                specimen_record, _ = Specimen.objects.get_or_create(tolid=sample_data.get('public_name'))
-                specimen_record.species = TargetSpecies.objects.filter(taxon_id=tid).first()
-                specimen_record.specimen_id = sample_data.get('SPECIMEN_ID')
-                specimen_record.tissue_removed_for_biobanking = sample_data.get('TISSUE_REMOVED_FOR_BIOBANKING') == 'Y'
-                specimen_record.dna_removed_for_biobanking = sample_data.get('DNA_REMOVED_FOR_BIOBANKING') == 'Y'
-                specimen_record.biosampleAccession = biosample_accession
-                specimen_record.save()
-
-                # Update sample
-                sample_record, _ = Sample.objects.get_or_create(copo_id=copo_id)
-                sample_record.species = specimen_record.species
-                sample_record.specimen = specimen_record
-                sample_record.biosampleAccession = biosample_accession
-                sample_record.copo_status = sample_data.get('status')
-                sample_record.save()
-
-                # Parse pipe-separated fields for FromManifest personnel
-                from_manifest_record, _ = FromManifest.objects.get_or_create(specimen=specimen_record)
-                for field, model_field in [
-                    ('COLLECTED_BY', 'sample_collectors'),
-                    ('COLLECTOR_AFFILIATION', 'sample_collector_affiliations'),
-                    ('COLLECTOR_ORCID_ID', 'sample_collector_orcids'),
-                    ('IDENTIFIED_BY', 'sample_identifiers'),
-                    ('IDENTIFIER_AFFILIATION', 'sample_identifier_affiliations'),
-                    ('SAMPLE_COORDINATOR', 'sample_coordinators'),
-                    ('SAMPLE_COORDINATOR_AFFILIATION', 'sample_coordinators_affiliations'),
-                    ('SAMPLE_COORDINATOR_ORCID_ID', 'sample_coordinators_orcids'),
-                    ('PRESERVED_BY', 'sample_preservers'),
-                    ('PRESERVER_AFFILIATION', 'sample_preserver_affiliations'),
-                ]:
-                    value = sample_data.get(field)
-                    if value:
-                        setattr(from_manifest_record, model_field, value)
-                        parsed_list = self.strip_blanks(value.split('|'))
-                        # You can optionally link Person/Affiliation objects here as before
-                from_manifest_record.save()
-
-        # COPO suppressed/offline check for stale samples
-        for sample_record in Sample.objects.filter(updated_at__lte=one_week_ago):
-            copoid = sample_record.copo_id
-            if not copoid:
-                continue
-            try:
-                r = requests.get(f"{copo_url}/sample/copo_id/{copoid}")
-                r.raise_for_status()
-            except requests.RequestException as e:
-                logger.warning(f"Failed to fetch COPO sample {copoid}: {e}")
-                continue
-            if "COPO offline" in r.text:
-                continue
-            resp = r.json()
-            if resp.get("number_found") is not None:
-                sample_record.suppressed = resp["number_found"] == 0
-                sample_record.save()
 
 class FetchEARsCronJob(CronJobBase):
     RUN_EVERY_MINS = 480 # every 8 hours

@@ -36,6 +36,7 @@ class OverviewTable(tables.Table):
     #tasks = tables.Column(verbose_name='Tasks',orderable=False)
     seq_center = tables.Column(accessor='gt_rel__sequencing_team__name',verbose_name='LR Center')
     hic_center = tables.Column(accessor='gt_rel__hic_team__name',verbose_name='Hi-C Center')
+    sample_handling_team = tables.Column(accessor='gt_rel__sample_handling_team__name',verbose_name='Sample Team')
     assembly_team = tables.Column(accessor='gt_rel__assembly_team__name',verbose_name='Assembly Team')
     copo_status = tables.Column(verbose_name='COPO',attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     recipe = tables.Column(accessor='sequencing_rel.recipe',verbose_name='LR',attrs={"td": {"class": "seq_col"},"th": {"class": "seq_col"}})
@@ -232,10 +233,24 @@ class OverviewTable(tables.Table):
     class Meta:
         model = TargetSpecies
         template_name = "django_tables2/bootstrap4.html"
-        #orderable = False
-        #paginate = {"per_page": 100}
-        # fields = ('tolid_prefix', 'scientific_name','genomic_sample_status','hic_sample_status','rna_sample_status','genomic_seq_status','hic_seq_status','rna_seq_status','assembly_status','curation_status','annotation_status','submission_status')
-        fields = ('scientific_name','tolid_prefix','taxon_class','genome_size_update','seq_center','recipe','hic_center','assembly_team','goat_sequencing_status','copo_status','long_seq_status','short_seq_status','hic_seq_status','rna_seq_status','assembly_status','annotation_status','pmcid','assembly_rank','notes','date','log')
+        # Use the union of all possible fields as the default
+        fields = ('scientific_name','tolid_prefix','taxon_class','genome_size_update','sample_handling_team',
+                  'seq_center','recipe','hic_center','assembly_team','goat_sequencing_status',
+                  'copo_status','long_seq_status','short_seq_status','hic_seq_status',
+                  'rna_seq_status','assembly_status','annotation_status','pmcid',
+                  'assembly_rank','notes','date','log')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        try:
+            is_erga = Customization.objects.first().project == "ERGA"
+        except Exception:
+            is_erga = False
+        if is_erga:
+            self.columns.hide('sample_handling_team')
+        else:
+            self.columns.hide('copo_status')
+
 
 class TargetSpeciesTable(tables.Table):
     export_formats = ['csv', 'tsv']
@@ -436,7 +451,10 @@ class SampleCollectionTable(tables.Table):
     taxon_id = tables.Column(accessor='species__taxon_id')
         
     def render_task(self, value, record):
-        return value.short_name
+        if value.short_name:
+            return value.short_name
+        if value.name:
+            return value.name
     
     class Meta:
         model = SampleCollection
@@ -581,7 +599,7 @@ class EnaReadsTable(tables.Table):
         threshmet = 1.0
         css_class = '<i class="fas fa-ban fa-lg"></i>'
         if (rs.recipe):
-            if(rs.recipe.hifi_target == 0):
+            if(not rs.recipe.hifi_target or rs.recipe.hifi_target == 0):
                 if(int(value)>0):
                     css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
             else:
@@ -598,7 +616,7 @@ class EnaReadsTable(tables.Table):
                         css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
 
         #cov = int(value)/rs.species.genome_size_update_update if int(value) else ""
-        if (value == 0 or rs.recipe.hifi_target == 0):
+        if (value == 0 or not rs.recipe or rs.recipe.hifi_target == 0):
             return ''
         else:
             return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "</span>")
@@ -614,7 +632,7 @@ class EnaReadsTable(tables.Table):
         threshmet = 1.0
         css_class = '<i class="fas fa-ban fa-lg"></i>'
         if (rs.recipe):
-            if(rs.recipe.hic_target == 0):
+            if(not rs.recipe.hic_target or rs.recipe.hic_target == 0):
                 if(int(value)>0):
                     css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
             else:
@@ -631,7 +649,7 @@ class EnaReadsTable(tables.Table):
                         css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
 
         #cov = int(value)/rs.species.genome_size_update if int(value) else ""
-        if (value == 0 or rs.recipe.hic_target == 0):
+        if (value == 0 or not rs.recipe or rs.recipe.hic_target == 0):
             return ''
         else:
             return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "</span>")
@@ -647,7 +665,7 @@ class EnaReadsTable(tables.Table):
         threshmet = 1.0
         css_class = '<i class="fas fa-ban fa-lg"></i>'
         if (rs.recipe):
-            if(rs.recipe.short_target == 0):
+            if(not rs.recipe.short_target or rs.recipe.short_target == 0):
                 if(int(value)>0):
                     css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
             else:
@@ -664,7 +682,7 @@ class EnaReadsTable(tables.Table):
                         css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
 
         #cov = int(value)/rs.species.genome_size_update if int(value) else ""
-        if (value == 0 or rs.recipe.short_target == 0):
+        if (value == 0 or not rs.recipe or rs.recipe.short_target == 0):
             return ''
         else:
             return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "</span>")
@@ -679,7 +697,7 @@ class EnaReadsTable(tables.Table):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
         css_class = '<i class="fas fa-ban fa-lg"></i>'
-        if (rs.recipe and (rs.recipe.rna_target >  0)):
+        if (rs.recipe and rs.recipe.rna_target and (rs.recipe.rna_target >  0)):
             threshmet = int(value/1000000)/(rs.recipe.rna_target)
             css_class = '<i class="fas fa-battery-empty fa-lg empty-color"></i>'
             if(threshmet > 0.25):
@@ -691,7 +709,7 @@ class EnaReadsTable(tables.Table):
             if(threshmet >= 1.0):
                 css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
 
-        if (value == 0 or rs.recipe.rna_target == 0):
+        if (value == 0 or not rs.recipe or not rs.recipe.rna_target or rs.recipe.rna_target == 0):
             return ''
         else:
             return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000) + "</span>")
@@ -707,7 +725,7 @@ class EnaReadsTable(tables.Table):
         threshmet = 1.0
         css_class = '<i class="fas fa-ban fa-lg"></i>'
         if (rs.recipe):
-            if(rs.recipe.ont_target == 0):
+            if(not rs.recipe or not rs.recipe.ont_target or rs.recipe.ont_target == 0):
                 if(int(value)>0):
                     css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
             else:
@@ -724,7 +742,7 @@ class EnaReadsTable(tables.Table):
                         css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
 
         #cov = int(value)/rs.species.genome_size_update
-        if (value == 0 or rs.recipe.ont_target == 0):
+        if (value == 0 or not rs.recipe or rs.recipe.ont_target == 0):
             return ''
         else:
             return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) +"</span>")
@@ -745,19 +763,19 @@ class EnaReadsTable(tables.Table):
 class ReadsTable(tables.Table):
     project = tables.LinkColumn('sequencing_list')
     seq_center = tables.Column(accessor='project__species__gt_rel__sequencing_team__name',verbose_name='Center')
-    ont_yield = tables.Column(verbose_name="ONT (Gb)",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
+    ont_yield = SummingColumn(verbose_name="ONT (Gb)",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     ont_cov = tables.Column(verbose_name="ONT (x)",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     ont_ena = tables.Column(verbose_name="ENA",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
-    hifi_yield = tables.Column(verbose_name="HiFi (Gb)")
+    hifi_yield = SummingColumn(verbose_name="HiFi (Gb)")
     hifi_cov = tables.Column(verbose_name="HiFi (x)")
     hifi_ena = tables.Column(verbose_name="ENA")
-    short_yield = tables.Column(verbose_name="Illumina (Gb)",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
+    short_yield = SummingColumn(verbose_name="Illumina (Gb)",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     short_cov = tables.Column(verbose_name="Illumina (x)",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     short_ena = tables.Column(verbose_name="ENA",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
-    hic_yield = tables.Column(verbose_name="Hi-C (Gb)")
+    hic_yield = SummingColumn(verbose_name="Hi-C (Gb)")
     hic_cov = tables.Column(verbose_name="Hi-C (x)")
     hic_ena = tables.Column(verbose_name="ENA")
-    rnaseq_pe = tables.Column(verbose_name="RNA-seq (MPE)",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
+    rnaseq_pe = SummingColumn(verbose_name="RNA-seq (MPE)",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     rnaseq_ena = tables.Column(verbose_name="ENA",attrs={"td": {"class": "sample_col"},"th": {"class": "sample_col"}})
     runs = tables.TemplateColumn('<a href="{% url \'runs_list\' %}?project={{record.project.pk}}&sort=read_type">{{record.project}}</a>',empty_values=(), verbose_name='Runs')
 
@@ -792,24 +810,29 @@ class ReadsTable(tables.Table):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
         css_class = '<i class="fas fa-ban fa-lg"></i>'
-        if (rs.recipe.hifi_target >  0):
-            threshmet = int(value)/(rs.recipe.hifi_target * rs.species.genome_size_update)
-            css_class = '<i class="fas fa-battery-empty fa-lg empty-color"></i>'
-            if(threshmet > 0.25):
-                css_class = '<i class="fas fa-battery-quarter fa-lg quarter-color"></i>'
-            if(threshmet > 0.5):
-                css_class = '<i class="fas fa-battery-half fa-lg half-color"></i>'
-            if(threshmet > 0.75):
-                css_class = '<i class="fas fa-battery-three-quarters fa-lg threequarters-color"></i>'
-            if(threshmet >= 1.0):
-                css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
+        if (rs.recipe):
+            if(not rs.recipe.hifi_target or rs.recipe.hifi_target == 0):
+                if(int(value)>0):
+                    css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
+            else:
+                if (rs.recipe.hifi_target >  0):
+                    threshmet = int(value)/(rs.recipe.hifi_target * rs.species.genome_size_update)
+                    css_class = '<i class="fas fa-battery-empty fa-lg empty-color"></i>'
+                    if(threshmet > 0.25):
+                        css_class = '<i class="fas fa-battery-quarter fa-lg quarter-color"></i>'
+                    if(threshmet > 0.5):
+                        css_class = '<i class="fas fa-battery-half fa-lg half-color"></i>'
+                    if(threshmet > 0.75):
+                        css_class = '<i class="fas fa-battery-three-quarters fa-lg threequarters-color"></i>'
+                    if(threshmet >= 1.0):
+                        css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
 
-        cov = int(value)/rs.species.genome_size_update
-        if (value == 0 and rs.recipe.hifi_target == 0):
+        #cov = int(value)/rs.species.genome_size_update_update if int(value) else ""
+        if (value == 0 or not rs.recipe or rs.recipe.hifi_target == 0):
             return ''
         else:
             return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "</span>")
-
+        
     def value_hifi_yield(self, value):
         return value
 
@@ -817,23 +840,22 @@ class ReadsTable(tables.Table):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
         css_class = '<i class="fas fa-ban fa-lg"></i>'
-        if (rs.recipe.hic_target >  0):
-            threshmet = int(value)/(rs.recipe.hic_target * rs.species.genome_size_update)
-            css_class = '<i class="fas fa-battery-empty fa-lg empty-color"></i>'
-            if(threshmet > 0.25):
-                css_class = '<i class="fas fa-battery-quarter fa-lg quarter-color"></i>'
-            if(threshmet > 0.5):
-                css_class = '<i class="fas fa-battery-half fa-lg half-color"></i>'
-            if(threshmet > 0.75):
-                css_class = '<i class="fas fa-battery-three-quarters fa-lg threequarters-color"></i>'
-            if(threshmet >= 1.0):
-                css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
-
-        cov = int(value)/rs.species.genome_size_update
-        if (value == 0 and rs.recipe.hic_target == 0):
-            return ''
-        else:
-            return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "</span>")
+        if (rs.recipe):
+            if(not rs.recipe.hic_target or rs.recipe.hic_target == 0):
+                if(int(value)>0):
+                    css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
+            else:
+                if (rs.recipe.hic_target >  0):
+                    threshmet = int(value)/(rs.recipe.hic_target * rs.species.genome_size_update)
+                    css_class = '<i class="fas fa-battery-empty fa-lg empty-color"></i>'
+                    if(threshmet > 0.25):
+                        css_class = '<i class="fas fa-battery-quarter fa-lg quarter-color"></i>'
+                    if(threshmet > 0.5):
+                        css_class = '<i class="fas fa-battery-half fa-lg half-color"></i>'
+                    if(threshmet > 0.75):
+                        css_class = '<i class="fas fa-battery-three-quarters fa-lg threequarters-color"></i>'
+                    if(threshmet >= 1.0):
+                        css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
 
     def value_hic_yield(self, value):
         return value
@@ -842,20 +864,25 @@ class ReadsTable(tables.Table):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
         css_class = '<i class="fas fa-ban fa-lg"></i>'
-        if (rs.recipe.short_target >  0):
-            threshmet = int(value)/(rs.recipe.short_target * rs.species.genome_size_update)
-            css_class = '<i class="fas fa-battery-empty fa-lg empty-color"></i>'
-            if(threshmet > 0.25):
-                css_class = '<i class="fas fa-battery-quarter fa-lg quarter-color"></i>'
-            if(threshmet > 0.5):
-                css_class = '<i class="fas fa-battery-half fa-lg half-color"></i>'
-            if(threshmet > 0.75):
-                css_class = '<i class="fas fa-battery-three-quarters fa-lg threequarters-color"></i>'
-            if(threshmet >= 1.0):
-                css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
+        if (rs.recipe):
+            if(not rs.recipe.short_target or rs.recipe.short_target == 0):
+                if(int(value)>0):
+                    css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
+            else:
+                if (rs.recipe.short_target >  0):
+                    threshmet = int(value)/(rs.recipe.short_target * rs.species.genome_size_update)
+                    css_class = '<i class="fas fa-battery-empty fa-lg empty-color"></i>'
+                    if(threshmet > 0.25):
+                        css_class = '<i class="fas fa-battery-quarter fa-lg quarter-color"></i>'
+                    if(threshmet > 0.5):
+                        css_class = '<i class="fas fa-battery-half fa-lg half-color"></i>'
+                    if(threshmet > 0.75):
+                        css_class = '<i class="fas fa-battery-three-quarters fa-lg threequarters-color"></i>'
+                    if(threshmet >= 1.0):
+                        css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
 
-        cov = int(value)/rs.species.genome_size_update
-        if (value == 0 and rs.recipe.short_target == 0):
+        #cov = int(value)/rs.species.genome_size_update if int(value) else ""
+        if (value == 0 or not rs.recipe or rs.recipe.short_target == 0):
             return ''
         else:
             return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) + "</span>")
@@ -867,8 +894,8 @@ class ReadsTable(tables.Table):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
         css_class = '<i class="fas fa-ban fa-lg"></i>'
-        if (rs.recipe.rna_target >  0):
-            threshmet = int(value)/(rs.recipe.rna_target)
+        if (rs.recipe and rs.recipe.rna_target and (rs.recipe.rna_target >  0)):
+            threshmet = int(value/1000000)/(rs.recipe.rna_target)
             css_class = '<i class="fas fa-battery-empty fa-lg empty-color"></i>'
             if(threshmet > 0.25):
                 css_class = '<i class="fas fa-battery-quarter fa-lg quarter-color"></i>'
@@ -879,7 +906,7 @@ class ReadsTable(tables.Table):
             if(threshmet >= 1.0):
                 css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
 
-        if (value == 0 and rs.recipe.rna_target == 0):
+        if (value == 0 or not rs.recipe or not rs.recipe.rna_target or rs.recipe.rna_target == 0):
             return ''
         else:
             return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000) + "</span>")
@@ -891,23 +918,22 @@ class ReadsTable(tables.Table):
         rs = Sequencing.objects.get(pk=record.project.pk)
         threshmet = 1.0
         css_class = '<i class="fas fa-ban fa-lg"></i>'
-        if (rs.recipe.ont_target >  0):
-            threshmet = int(value)/(rs.recipe.ont_target * rs.species.genome_size_update)
-            css_class = '<i class="fas fa-battery-empty fa-lg empty-color"></i>'
-            if(threshmet > 0.25):
-                css_class = '<i class="fas fa-battery-quarter fa-lg quarter-color"></i>'
-            if(threshmet > 0.5):
-                css_class = '<i class="fas fa-battery-half fa-lg half-color"></i>'
-            if(threshmet > 0.75):
-                css_class = '<i class="fas fa-battery-three-quarters fa-lg threequarters-color"></i>'
-            if(threshmet >= 1.0):
-                css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
-
-        cov = int(value)/rs.species.genome_size_update
-        if (value == 0 and rs.recipe.ont_target == 0):
-            return ''
-        else:
-            return mark_safe(css_class + "<span>&nbsp;{:.1f}".format(value/1000000000) +"</span>")
+        if (rs.recipe):
+            if(not rs.recipe or not rs.recipe.ont_target or rs.recipe.ont_target == 0):
+                if(int(value)>0):
+                    css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
+            else:
+                if (rs.recipe.ont_target >  0):
+                    threshmet = int(value)/(rs.recipe.ont_target * rs.species.genome_size_update)
+                    css_class = '<i class="fas fa-battery-empty fa-lg empty-color"></i>'
+                    if(threshmet > 0.25):
+                        css_class = '<i class="fas fa-battery-quarter fa-lg quarter-color"></i>'
+                    if(threshmet > 0.5):
+                        css_class = '<i class="fas fa-battery-half fa-lg half-color"></i>'
+                    if(threshmet > 0.75):
+                        css_class = '<i class="fas fa-battery-three-quarters fa-lg threequarters-color"></i>'
+                    if(threshmet >= 1.0):
+                        css_class = '<i class="fas fa-battery-full fa-lg full-color"></i>'
 
     def value_ont_yield(self, value):
         return value

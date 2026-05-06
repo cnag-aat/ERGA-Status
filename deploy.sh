@@ -8,6 +8,6 @@ source /home/talioto/setup_cbp.sh
 # cp /home/www/resistome.cnag.cat/erga-dev/status/*py /home/www/resistome.cnag.cat/erga/status/
 # cp /home/www/resistome.cnag.cat/erga-dev/status/templates/*html /home/www/resistome.cnag.cat/erga/status/templates/
 # cp /home/www/resistome.cnag.cat/erga-dev/status/templates/status/*html /home/www/resistome.cnag.cat/erga/status/templates/status/
-python3 manage.py makemigrations
-python3 manage.py migrate
+python3 manage.py makemigrations status
+python3 manage.py migrate status
 sudo /usr/bin/systemctl restart httpd
