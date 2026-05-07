@@ -1,0 +1,63 @@
+/* ── Palette: Bold Stepped ──────────────────────────────────────────
+   Two yellows for early stages; mint → medium green → solid dark
+   green for the processing ramp. Curating moved to L4 (darker green).
+   Solid dark green for all terminal done states.
+   Solid red for all errors.
+   ─────────────────────────────────────────────────────────────────── */
+
+/* Gray — listed / not started */
+.none, .long_list, .Long_Listed, .waiting_list, .None {
+  background-color: #e9ecef; color: #495057; border-color: #adb5bd;
+}
+
+/* Gray — cancelled / paused / deprioritised */
+.Abandoned, .paused, .cancelled,
+.other_priority, .removed, .family_representative {
+  background-color: #dee2e6; color: #6c757d; border-color: #adb5bd;
+}
+
+/* L1 — light yellow (sample collected / received) */
+.sample_collected, .Collecting, .Collected, .Received, .in_collection {
+  background-color: #fef9c3; color: #854d0e; border-color: #ca8a04;
+}
+
+/* L2 — amber yellow (sample acquired / prep / extraction) */
+.sample_acquired, .Prep, .Extracted, .Pending, .Resampling, .Sampling {
+  background-color: #fde68a; color: #92400e; border-color: #b45309;
+}
+
+/* L3 — mint / light green (assembling, scaffolding, sequencing) */
+.data_generation, .Processing, .Sequencing, .TopUp,
+.Assembling, .Scaffolding, .Contigs, .Scaffolds, .Annotating {
+  background-color: #d1fae5; color: #065f46; border-color: #34d399;
+}
+
+/* L4 — medium green same hue (curating → under review → approved) */
+.Curating, .in_assembly, .Done, .UnderReview, .Approved, .Sent {
+  background-color: #6ee7b7; color: #064e3b; border-color: #10b981;
+}
+
+/* L5 — solid dark green, white text (submitted / published / done) */
+.insdc_open, .insdc_submitted, .publication_available,
+.published, .Submitted, .COPO, .Accepted {
+  background-color: #198754; color: #ffffff; border-color: #157347;
+}
+
+/* External */
+.External { background-color: #0d6efd; color: #ffffff; border-color: #0a58ca; }
+
+/* Error / rejected */
+.Rejected, .Issue { background-color: #dc3545; color: #ffffff; border-color: #b02a37; }
+
+/* ── EAR review status ── */
+.ear-status-submitted         { background: #e9ecef; color: #6c757d; border-color: #adb5bd; }
+.ear-status-in_review         { background: #fde68a; color: #92400e; border-color: #b45309; }
+.ear-status-reviewer_approved { background: #6ee7b7; color: #064e3b; border-color: #10b981; }
+.ear-status-accepted          { background: #198754; color: #ffffff; border-color: #157347; }
+.ear-status-rejected          { background: #dc3545; color: #ffffff; border-color: #b02a37; }
+.ear-status-declined          { background: #dc3545; color: #ffffff; border-color: #b02a37; }
+
+/* ── EARReviewer invite status ── */
+.ear-assign-pending  { background: #fde68a; color: #92400e; border-color: #b45309; }
+.ear-assign-accepted { background: #198754; color: #ffffff; border-color: #157347; }
+.ear-assign-declined { background: #dc3545; color: #ffffff; border-color: #b02a37; }

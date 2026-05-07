@@ -114,9 +114,10 @@ class EARReviewCreateForm(forms.ModelForm):
 
     class Meta:
         model = EARReview
-        fields = ('assembly_project', 'ear_pdf', 'pretext_file')
+        fields = ('assembly_project', 'contig_level_assembly', 'ear_pdf', 'pretext_file')
         widgets = {
             'assembly_project': forms.Select(attrs={'class': 'form-control'}),
+            'contig_level_assembly': forms.CheckboxInput(attrs={'class': 'form-check-input', 'id': 'id_contig_level_assembly'}),
             'ear_pdf': forms.ClearableFileInput(attrs={
                 'class': 'form-control-file',
                 'accept': 'application/pdf,.pdf',
@@ -124,6 +125,7 @@ class EARReviewCreateForm(forms.ModelForm):
             'pretext_file': forms.ClearableFileInput(attrs={
                 'class': 'form-control-file',
                 'accept': '.pretext',
+                'id': 'id_pretext_file',
             }),
         }
         help_texts = {
@@ -133,15 +135,35 @@ class EARReviewCreateForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-        # Only show assembly projects that don't already have an EAR review
-        self.fields['assembly_project'].queryset = (
-            AssemblyProject.objects
-            .filter(ear_review__isnull=True)
-            .order_by('species__scientific_name')
-        )
+        qs = AssemblyProject.objects.filter(ear_review__isnull=True)
+        if user is not None:
+            # Restrict to projects where the submitter is an assembly team member
+            from status.models import AssemblyTeam
+            species_ids = (
+                AssemblyTeam.objects
+                .filter(members__user=user)
+                .values_list('genometeam__species_id', flat=True)
+            )
+            qs = qs.filter(species_id__in=species_ids)
+        self.fields['assembly_project'].queryset = qs.order_by('species__scientific_name')
         # Pretext is nullable at model level (so post-acceptance delete works) but required to submit
         self.fields['pretext_file'].required = True
+
+    def clean(self):
+        cleaned_data = super().clean()
+        contig_level = cleaned_data.get('contig_level_assembly')
+        pretext = cleaned_data.get('pretext_file')
+        if contig_level:
+            # Pretext is optional for contig-level assemblies — clear any spurious required error
+            self.fields['pretext_file'].required = False
+            if 'pretext_file' in self._errors:
+                del self._errors['pretext_file']
+                cleaned_data['pretext_file'] = None
+        elif not pretext:
+            self.add_error('pretext_file', 'A Pretext map is required for chromosome-level assemblies.')
+        return cleaned_data
 
 
 class EARCommentForm(forms.ModelForm):

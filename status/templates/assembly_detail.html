@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% load static %}
+{% load bootstrap4 %}
+
+{% block page_content %}
+<style>
+  .status-banner {
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 0;
+  }
+  .status-submitted          { background: #e3f0d8; color: #3d5c30; border: 1px solid #5a7a4a; }
+  .status-in_review          { background: #fff7d6; color: #6e5800; border: 1px solid #c9a900; }
+  .status-reviewer_approved  { background: #d8e6f8; color: #1e3f6e; border: 1px solid #5a7eb5; }
+  .status-accepted           { background: #c8e6b0; color: #2a3f20; border: 1px solid #3d5c30; }
+  .status-rejected           { background: #f8d8d8; color: #6e1e1e; border: 1px solid #b55a5a; }
+  .status-declined           { background: #f8d8d8; color: #6e1e1e; border: 1px solid #b55a5a; }
+  .meta-block dt { color: #555; font-weight: 600; }
+  .meta-block dd { margin-bottom: 0.4rem; }
+  .section-card {
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+</style>
+
+<div class="container my-4">
+
+  <div class="mb-3">
+    <a href="{% url 'assembly_list' %}?project={{ assembly.project.pk }}">&larr; All assemblies for {{ assembly.project.species }}</a>
+  </div>
+
+  <h2>{{ assembly.project.species }} &mdash; {{ assembly.type }} assembly</h2>
+  {% if assembly.description %}
+    <p class="text-muted">{{ assembly.description }}</p>
+  {% endif %}
+
+  <div class="row">
+
+    <!-- Assembly stats -->
+    <div class="col-md-6">
+      <div class="section-card">
+        <h5>Assembly statistics</h5>
+        <dl class="meta-block row">
+
+          <dt class="col-sm-5">Type</dt>
+          <dd class="col-sm-7">{{ assembly.type }}</dd>
+
+          <dt class="col-sm-5">Version</dt>
+          <dd class="col-sm-7">{{ assembly.version }}</dd>
+
+          <dt class="col-sm-5">Pipeline</dt>
+          <dd class="col-sm-7">
+            {% if assembly.pipeline %}
+              <a href="{% url 'assembly_pipeline_detail' assembly.pipeline.pk %}">{{ assembly.pipeline }}</a>
+            {% else %}—{% endif %}
+          </dd>
+
+          <dt class="col-sm-5">Chromosome-level</dt>
+          <dd class="col-sm-7">
+            {% if assembly.chromosome_level is None %}—
+            {% elif assembly.chromosome_level %}Yes{% else %}No{% endif %}
+          </dd>
+
+          <dt class="col-sm-5">% placed</dt>
+          <dd class="col-sm-7">
+            {% if assembly.percent_placed %}{{ assembly.percent_placed }}%{% else %}—{% endif %}
+          </dd>
+
+          <dt class="col-sm-5">Span</dt>
+          <dd class="col-sm-7">{% if span_gb %}{{ span_gb }} Gb{% else %}—{% endif %}</dd>
+
+          <dt class="col-sm-5">Contig N50</dt>
+          <dd class="col-sm-7">{% if contig_n50_mb %}{{ contig_n50_mb }} Mb{% else %}—{% endif %}</dd>
+
+          <dt class="col-sm-5">Scaffold N50</dt>
+          <dd class="col-sm-7">{% if scaffold_n50_mb %}{{ scaffold_n50_mb }} Mb{% else %}—{% endif %}</dd>
+
+          <dt class="col-sm-5">BUSCO</dt>
+          <dd class="col-sm-7">
+            {% if assembly.busco %}
+              {{ assembly.busco }}
+              {% if assembly.busco_db %}<small class="text-muted">({{ assembly.busco_db }}{% if assembly.busco_version %} v{{ assembly.busco_version }}{% endif %})</small>{% endif %}
+            {% else %}—{% endif %}
+          </dd>
+
+          <dt class="col-sm-5">QV</dt>
+          <dd class="col-sm-7">{% if assembly.qv %}{{ assembly.qv }}{% else %}—{% endif %}</dd>
+
+          <dt class="col-sm-5">Last updated</dt>
+          <dd class="col-sm-7">{% if assembly.last_updated %}{{ assembly.last_updated }}{% else %}—{% endif %}</dd>
+
+        </dl>
+      </div>
+    </div>
+
+    <!-- Accessions & links -->
+    <div class="col-md-6">
+      <div class="section-card">
+        <h5>Accessions</h5>
+        <dl class="meta-block row">
+
+          <dt class="col-sm-5">ENA Study</dt>
+          <dd class="col-sm-7">
+            {% if assembly.accession %}
+              <a href="https://www.ebi.ac.uk/ena/browser/view/{{ assembly.accession }}" target="_blank">{{ assembly.accession }}</a>
+            {% else %}—{% endif %}
+          </dd>
+
+          <dt class="col-sm-5">GCA</dt>
+          <dd class="col-sm-7">
+            {% if assembly.gca %}
+              <a href="https://www.ebi.ac.uk/ena/browser/view/{{ assembly.gca }}" target="_blank">{{ assembly.gca }}</a>
+            {% else %}—{% endif %}
+          </dd>
+
+          <dt class="col-sm-5">Report</dt>
+          <dd class="col-sm-7">
+            {% if assembly.report %}
+              <a href="{{ assembly.report }}" target="_blank">open report</a>
+            {% else %}—{% endif %}
+          </dd>
+
+        </dl>
+
+        {% if assembly.options %}
+          <h6 class="mt-3">Pipeline options</h6>
+          <pre class="small bg-light p-2 rounded">{{ assembly.options }}</pre>
+        {% endif %}
+      </div>
+
+      <!-- EAR quick reference -->
+      <div class="section-card">
+        <h5>EAR Review
+          <a href="{% url 'assembly_project_list' %}?project={{ assembly.project.pk }}"
+             class="small text-muted ml-2" title="Assembly project">project</a>
+        </h5>
+        {% if ear %}
+          <div class="mb-3">
+            <span class="status-banner status-{{ ear.status }}">{{ ear.get_status_display }}</span>
+          </div>
+          <dl class="meta-block row">
+
+            <dt class="col-sm-5">Submitted by</dt>
+            <dd class="col-sm-7">{{ ear.submitted_by|default:"—" }}</dd>
+
+            <dt class="col-sm-5">Submitted</dt>
+            <dd class="col-sm-7">{{ ear.created_at|date:"Y-m-d" }}</dd>
+
+            <dt class="col-sm-5">Supervisor</dt>
+            <dd class="col-sm-7">{{ ear.supervisor|default:"(not assigned)" }}</dd>
+
+            <dt class="col-sm-5">Reviewers</dt>
+            <dd class="col-sm-7">
+              {% for r in ear.reviewers.all %}
+                {{ r.get_full_name|default:r.username }}{% if not forloop.last %}<br>{% endif %}
+              {% empty %}
+                <span class="text-muted">(none assigned)</span>
+              {% endfor %}
+            </dd>
+
+            <dt class="col-sm-5">EAR PDF</dt>
+            <dd class="col-sm-7">
+              {% if ear.ear_pdf %}
+                <a href="{{ ear.ear_pdf.url }}" target="_blank">download</a>
+              {% else %}—{% endif %}
+            </dd>
+
+            {% if ear.pretext_file %}
+              <dt class="col-sm-5">Pretext map</dt>
+              <dd class="col-sm-7"><a href="{{ ear.pretext_file.url }}" target="_blank">download</a></dd>
+            {% endif %}
+
+          </dl>
+          <a href="{% url 'ear_review_detail' ear.pk %}" class="btn btn-sm btn-outline-primary">Full EAR review &rarr;</a>
+        {% else %}
+          <p class="text-muted mb-0">No EAR review submitted for this assembly project.</p>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}

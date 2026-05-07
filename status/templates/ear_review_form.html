@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% load static %}
+{% load bootstrap4 %}
+
+{% block page_content %}
+<style>
+  .upload-hint {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 0.25rem;
+  }
+  .form-section {
+    background: #faf8f3;
+    border: 1px solid #d4e8c8;
+    border-radius: 6px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .form-section h5 {
+    color: #3d5c30;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #d4e8c8;
+    padding-bottom: 0.5rem;
+  }
+</style>
+
+<div class="container my-4" style="max-width: 780px;">
+
+  <h2>{{ build_page_title|default:"Submit EAR for Review" }}</h2>
+  <p class="text-muted mb-4">
+    Upload your ERGA Assembly Report PDF and Pretext contact map to kick off the review process.
+    A supervisor and reviewer will be assigned automatically.
+  </p>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <div class="form-section">
+      <h5>Assembly project</h5>
+      {% bootstrap_field form.assembly_project %}
+    </div>
+
+    <div class="form-section">
+      <h5>Files</h5>
+
+      <div class="form-group">
+        <div class="form-check">
+          {{ form.contig_level_assembly }}
+          <label class="form-check-label font-weight-bold" for="id_contig_level_assembly">
+            Contig-level assembly
+          </label>
+        </div>
+        <small class="form-text text-muted">
+          Check this if the assembly has no Hi-C scaffolding (contig-level only). The Pretext map upload will then be optional.
+        </small>
+        {% if form.contig_level_assembly.errors %}
+          <div class="invalid-feedback d-block">{{ form.contig_level_assembly.errors }}</div>
+        {% endif %}
+      </div>
+
+      {% bootstrap_field form.ear_pdf %}
+      <p class="upload-hint">PDF format. Max 50 MB.</p>
+
+      <div id="pretext-section">
+        {% bootstrap_field form.pretext_file %}
+        <p class="upload-hint">
+          The main Pretext contact map (.pretext). Typically 100–300 MB — large uploads may take a minute.
+          This file is deleted automatically when the review is accepted.
+          Additional Pretext files (hap2, alternate thresholds) can be attached to comments after submission.
+        </p>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h5>Initial notes <small class="text-muted font-weight-normal">(optional)</small></h5>
+      {% bootstrap_field form.initial_comment %}
+      <p class="upload-hint">Anything reviewers should know about this assembly upfront.</p>
+    </div>
+
+    <div class="d-flex" style="gap: 0.75rem;">
+      <button type="submit" class="btn btn-success px-4">
+        <i class="fas fa-paper-plane"></i> Submit for review
+      </button>
+      <a href="javascript:history.back()" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+  </form>
+
+</div>
+
+<script>
+(function () {
+  var checkbox = document.getElementById('id_contig_level_assembly');
+  var section = document.getElementById('pretext-section');
+  var input = document.getElementById('id_pretext_file');
+
+  function toggle() {
+    if (checkbox.checked) {
+      section.style.opacity = '0.5';
+      if (input) input.removeAttribute('required');
+    } else {
+      section.style.opacity = '1';
+      if (input) input.setAttribute('required', 'required');
+    }
+  }
+
+  checkbox.addEventListener('change', toggle);
+  toggle();  // apply on page load (handles back-navigation / server-side re-render with checked state)
+})();
+</script>
+{% endblock %}

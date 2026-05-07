@@ -3,3 +3,4 @@ erga/.env
 *.pyc
 erga_stream_dev-20230302-152834.sql
 erga_stream_dev.sql
+deploy.sh
