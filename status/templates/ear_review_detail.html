@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% load static %}
+{% load bootstrap4 %}
+
+{% block page_content %}
+<style>
+  .status-banner {
+    padding: 1rem 1.25rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+  }
+  .status-submitted          { background: #e3f0d8; color: #3d5c30; border: 1px solid #5a7a4a; }
+  .status-in_review          { background: #fff7d6; color: #6e5800; border: 1px solid #c9a900; }
+  .status-reviewer_approved  { background: #d8e6f8; color: #1e3f6e; border: 1px solid #5a7eb5; }
+  .status-accepted           { background: #c8e6b0; color: #2a3f20; border: 1px solid #3d5c30; }
+  .status-rejected           { background: #f8d8d8; color: #6e1e1e; border: 1px solid #b55a5a; }
+  .status-declined           { background: #f8d8d8; color: #6e1e1e; border: 1px solid #b55a5a; }
+
+  .comment-card {
+    border-left: 3px solid #5a7a4a;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    background: #faf8f3;
+  }
+  .comment-card.reply {
+    margin-left: 2.5rem;
+    border-left-color: #c8d8b0;
+  }
+  .comment-meta {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+  }
+  .comment-attachments {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+  }
+  .comment-attachments img {
+    max-width: 240px;
+    margin: 4px;
+    border: 1px solid #ddd;
+  }
+  .meta-block dt { color: #555; font-weight: 600; }
+  .meta-block dd { margin-bottom: 0.5rem; }
+</style>
+
+<div class="container my-4">
+
+  <h2>EAR Review: {{ review.assembly_project.species }}</h2>
+
+  <div class="status-banner status-{{ review.status }}">
+    Status: {{ review.get_status_display }}
+  </div>
+
+  <div class="row">
+    <div class="col-md-7">
+      <h4>Submission details</h4>
+      <dl class="meta-block row">
+        <dt class="col-sm-4">Assembly project</dt>
+        <dd class="col-sm-8">{{ review.assembly_project }}</dd>
+
+        <dt class="col-sm-4">Submitted by</dt>
+        <dd class="col-sm-8">{{ review.submitted_by|default:"—" }}</dd>
+
+        <dt class="col-sm-4">Supervisor</dt>
+        <dd class="col-sm-8">{{ review.supervisor|default:"(not yet assigned)" }}</dd>
+
+        <dt class="col-sm-4">Reviewers</dt>
+        <dd class="col-sm-8">
+          {% for r in review.reviewers.all %}
+            {{ r.get_full_name|default:r.username }}
+            {% if is_supervisor %}
+              <form method="post" action="{% url 'ear_review_manage_reviewers' review.pk %}" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="remove">
+                <input type="hidden" name="reviewer_id" value="{{ r.pk }}">
+                <button type="submit" class="btn btn-link btn-sm text-danger p-0 ml-1"
+                        title="Remove reviewer"
+                        onclick="return confirm('Remove {{ r.get_full_name|default:r.username }} from reviewers?')">
+                  &times;
+                </button>
+              </form>
+            {% endif %}
+            {% if not forloop.last %}<br>{% endif %}
+          {% empty %}
+            <span class="text-muted">(none assigned)</span>
+          {% endfor %}
+
+          {% if is_supervisor and reviewer_candidates %}
+            <form method="post" action="{% url 'ear_review_manage_reviewers' review.pk %}" class="form-inline mt-2">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="add">
+              <select name="reviewer_id" class="form-control form-control-sm mr-2" style="max-width:220px;">
+                <option value="">— add reviewer —</option>
+                {% for u in reviewer_candidates %}
+                  <option value="{{ u.pk }}">{{ u.get_full_name|default:u.username }}</option>
+                {% endfor %}
+              </select>
+              <button type="submit" class="btn btn-sm btn-outline-success">Add</button>
+            </form>
+          {% elif is_supervisor %}
+            <p class="text-muted small mt-1 mb-0">No other eligible reviewers available.</p>
+          {% endif %}
+        </dd>
+
+        <dt class="col-sm-4">Submitted</dt>
+        <dd class="col-sm-8">{{ review.created_at|date:"Y-m-d H:i" }}</dd>
+
+        <dt class="col-sm-4">Last update</dt>
+        <dd class="col-sm-8">{{ review.updated_at|date:"Y-m-d H:i" }}</dd>
+      </dl>
+    </div>
+
+    <div class="col-md-5">
+      <h4>Files</h4>
+      <ul class="list-unstyled">
+        {% if review.ear_pdf %}
+          <li>
+            <a href="{{ review.ear_pdf.url }}" target="_blank">
+              <i class="fas fa-file-pdf"></i> EAR PDF
+            </a>
+          </li>
+        {% endif %}
+        {% if review.pretext_file %}
+          <li>
+            <a href="{{ review.pretext_file.url }}">
+              <i class="fas fa-download"></i> Pretext map
+            </a>
+            <small class="text-muted d-block">(deleted automatically when accepted)</small>
+          </li>
+        {% else %}
+          {% if review.status == 'accepted' %}
+            <li class="text-muted"><em>Pretext file removed (review accepted)</em></li>
+          {% endif %}
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+
+  <hr>
+
+  <h4>Discussion ({{ comments|length }})</h4>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  {% for comment in comments %}
+    <div class="comment-card{% if comment.parent %} reply{% endif %}" id="comment-{{ comment.pk }}">
+      <div class="comment-meta">
+        <strong>{{ comment.author.get_full_name|default:comment.author.username|default:"unknown" }}</strong>
+        · {{ comment.created_at|date:"Y-m-d H:i" }}
+        {% if comment.parent %}
+          · <em class="text-muted">in reply to {{ comment.parent.author.get_full_name|default:comment.parent.author.username }}</em>
+        {% endif %}
+        {% if can_post %}
+          · <a href="#comment-form" onclick="setReplyParent({{ comment.pk }}, '{{ comment.author.get_full_name|default:comment.author.username|escapejs }}')">Reply</a>
+        {% endif %}
+      </div>
+      <div class="comment-body">{{ comment.body|linebreaks }}</div>
+      {% if comment.attachments.all %}
+        <div class="comment-attachments">
+          {% for att in comment.attachments.all %}
+            {% with name=att.file.name %}
+              {% if name|lower|slice:"-4:" == ".png" or name|lower|slice:"-4:" == ".jpg" or name|lower|slice:"-5:" == ".jpeg" or name|lower|slice:"-4:" == ".gif" %}
+                <a href="{{ att.file.url }}" target="_blank"><img src="{{ att.file.url }}" alt=""></a>
+              {% else %}
+                <a href="{{ att.file.url }}"><i class="fas fa-paperclip"></i> {{ name }}</a><br>
+              {% endif %}
+            {% endwith %}
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  {% empty %}
+    <p class="text-muted"><em>No comments yet.</em></p>
+  {% endfor %}
+
+  {% if can_post %}
+    <div class="card mt-4" id="comment-form">
+      <div class="card-body">
+        <h5 class="card-title">Add a comment</h5>
+        <div id="reply-banner" class="alert alert-secondary py-1 px-2 mb-2" style="display:none;">
+          Replying to <span id="reply-target"></span>
+          <a href="#" onclick="clearReplyParent(); return false;" class="float-right">cancel</a>
+        </div>
+        <form method="post" action="{% url 'ear_review_comment' review.pk %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="hidden" name="parent" id="parent-input" value="">
+          <div class="form-group">
+            <textarea name="body" id="body-input" rows="4" class="form-control" placeholder="Write a comment…"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="attachments" class="small text-muted">Attachments (screenshots, savestate files, etc.)</label>
+            <input type="file" name="attachments" id="attachments" multiple class="form-control-file">
+          </div>
+
+          <div class="d-flex flex-wrap" style="gap: 0.5rem;">
+            <button type="submit" name="action" value="comment" class="btn btn-primary">
+              Comment
+            </button>
+
+            {# Reviewer actions #}
+            {% if is_reviewer %}
+              {% if review.status == 'submitted' or review.status == 'in_review' %}
+                <button type="submit" name="action" value="approve" class="btn btn-success"
+                        title="Approve this review">
+                  ✓ Approve
+                </button>
+              {% endif %}
+              {% if review.status == 'submitted' or review.status == 'in_review' or review.status == 'reviewer_approved' %}
+                <button type="submit" name="action" value="reject" class="btn btn-danger"
+                        title="Reject this review (comment required)">
+                  ✗ Reject
+                </button>
+              {% endif %}
+            {% endif %}
+
+            {# Supervisor actions #}
+            {% if is_supervisor %}
+              {% if review.status == 'reviewer_approved' or review.status == 'in_review' %}
+                <button type="submit" name="action" value="accept" class="btn btn-success"
+                        title="Accept the review (final)">
+                  ✓ Accept (final)
+                </button>
+              {% endif %}
+              {% if review.status == 'reviewer_approved' %}
+                <button type="submit" name="action" value="decline" class="btn btn-warning"
+                        title="Decline reviewer's approval (comment required)">
+                  ✗ Decline
+                </button>
+              {% endif %}
+            {% endif %}
+          </div>
+          <small class="text-muted d-block mt-2">
+            Reject and Decline require a comment explaining the decision.
+          </small>
+        </form>
+      </div>
+    </div>
+    <script>
+      function setReplyParent(commentId, authorName) {
+        document.getElementById('parent-input').value = commentId;
+        document.getElementById('reply-target').textContent = authorName;
+        document.getElementById('reply-banner').style.display = 'block';
+        document.getElementById('body-input').focus();
+      }
+      function clearReplyParent() {
+        document.getElementById('parent-input').value = '';
+        document.getElementById('reply-banner').style.display = 'none';
+      }
+    </script>
+  {% else %}
+    <p class="text-muted mt-4"><em>You can view this discussion but cannot post.</em></p>
+  {% endif %}
+
+</div>
+{% endblock %}

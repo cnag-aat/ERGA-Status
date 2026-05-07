@@ -1860,6 +1860,11 @@ class EARReview(models.Model):
         blank=True,
         verbose_name='Pretext map'
     )
+    contig_level_assembly = models.BooleanField(
+        default=False,
+        verbose_name='Contig-level assembly',
+        help_text='Check if this is a contig-level assembly (no Hi-C scaffolding). Pretext map upload is then optional.'
+    )
     status = models.CharField(
         max_length=20,
         choices=EAR_STATUS_CHOICES,

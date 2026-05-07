@@ -1,0 +1,44 @@
+/* ── Palette: Tonal ─────────────────────────────────────────────────
+   All tinted pastel backgrounds — no solid dark fills.
+   L5/done uses vivid mint tint (#86efac). Errors use rose-pink.
+   ─────────────────────────────────────────────────────────────────── */
+
+.none, .long_list, .Long_Listed, .waiting_list, .None {
+  background-color: #f8f9fa; color: #6c757d; border-color: #ced4da;
+}
+.Abandoned, .paused, .cancelled,
+.other_priority, .removed, .family_representative {
+  background-color: #f3f4f6; color: #6b7280; border-color: #d1d5db;
+}
+.sample_collected, .Collecting, .Collected, .Received, .in_collection {
+  background-color: #fef3c7; color: #92400e; border-color: #d97706;
+}
+.sample_acquired, .Prep, .Extracted, .Pending, .Resampling, .Sampling {
+  background-color: #f7fee7; color: #365314; border-color: #84cc16;
+}
+.data_generation, .Processing, .Sequencing, .TopUp,
+.Assembling, .Scaffolding, .Contigs, .Scaffolds, .Curating, .Annotating {
+  background-color: #dcfce7; color: #14532d; border-color: #22c55e;
+}
+.in_assembly, .Done, .UnderReview, .Approved, .Sent {
+  background-color: #bbf7d0; color: #14532d; border-color: #16a34a;
+}
+.insdc_open, .insdc_submitted, .publication_available,
+.published, .Submitted, .COPO, .Accepted {
+  background-color: #86efac; color: #14532d; border-color: #15803d;
+}
+.External { background-color: #e8eaf6; color: #283593; border-color: #7986cb; }
+.Rejected, .Issue { background-color: #fce4ec; color: #880e4f; border-color: #e91e63; }
+
+/* ── EAR review status ── */
+.ear-status-submitted         { background: #f8f9fa; color: #6c757d; border-color: #ced4da; }
+.ear-status-in_review         { background: #fef3c7; color: #92400e; border-color: #d97706; }
+.ear-status-reviewer_approved { background: #bbf7d0; color: #14532d; border-color: #16a34a; }
+.ear-status-accepted          { background: #86efac; color: #14532d; border-color: #15803d; }
+.ear-status-rejected          { background: #fce4ec; color: #880e4f; border-color: #e91e63; }
+.ear-status-declined          { background: #fce4ec; color: #880e4f; border-color: #e91e63; }
+
+/* ── EARReviewer invite status ── */
+.ear-assign-pending  { background: #fef3c7; color: #92400e; border-color: #d97706; }
+.ear-assign-accepted { background: #86efac; color: #14532d; border-color: #15803d; }
+.ear-assign-declined { background: #fce4ec; color: #880e4f; border-color: #e91e63; }

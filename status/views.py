@@ -1761,7 +1761,7 @@ def ear_review_create(request):
     from status import ear_review as ear_logic
 
     if request.method == 'POST':
-        form = EARReviewCreateForm(request.POST, request.FILES)
+        form = EARReviewCreateForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
             review = form.save(commit=False)
             review.submitted_by = request.user
@@ -1787,7 +1787,7 @@ def ear_review_create(request):
             )
             return redirect('ear_review_detail', pk=review.pk)
     else:
-        form = EARReviewCreateForm()
+        form = EARReviewCreateForm(user=request.user)
 
     return render(request, 'ear_review_form.html', {
         'form': form,

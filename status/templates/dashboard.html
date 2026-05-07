@@ -1,0 +1,414 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block header %}
+<link rel="stylesheet" href="/static/css/sidebar.css">
+{% endblock %}
+
+{% block page_content %}
+<div class="container-fluid mt-4">
+  <h2>My Dashboard</h2>
+
+  {% if pending_invites %}
+  <div class="card mb-4">
+    <div class="card-header font-weight-bold">Pending assignment invites</div>
+    <div class="card-body p-0">
+      <table class="table table-sm table-hover mb-0">
+        <thead class="thead-light">
+          <tr>
+            <th>Species</th>
+            <th>Role</th>
+            <th>Submitted by</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for invite in pending_invites %}
+          <tr>
+            <td>
+              <a href="{% url 'assembly_project_list' %}?project={{ invite.review.assembly_project.pk }}">
+                {{ invite.review.assembly_project.species }}
+              </a>
+              &nbsp;<a href="{% url 'ear_review_detail' invite.review.pk %}" class="btn btn-xs btn-outline-secondary py-0 px-1" style="font-size:0.75rem;">EAR</a>
+            </td>
+            <td>{{ invite.get_role_display }}</td>
+            <td>{{ invite.review.submitted_by.get_full_name|default:invite.review.submitted_by.username }}</td>
+            <td class="text-right">
+              <form method="post" action="{% url 'dashboard_invite_response' invite.pk %}" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="response" value="accept">
+                <button type="submit" class="btn btn-sm btn-success">Accept</button>
+              </form>
+              <form method="post" action="{% url 'dashboard_invite_response' invite.pk %}" class="d-inline ml-1">
+                {% csrf_token %}
+                <input type="hidden" name="response" value="decline">
+                <button type="submit" class="btn btn-sm btn-outline-danger">Decline</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if ears_to_review %}
+  <div class="card mb-4">
+    <div class="card-header font-weight-bold">EARs to review</div>
+    <div class="card-body p-0">
+      <table class="table table-sm table-hover mb-0">
+        <thead class="thead-light">
+          <tr>
+            <th>Species</th>
+            <th>Status</th>
+            <th>Submitted by</th>
+            <th>Last updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for review in ears_to_review %}
+          <tr>
+            <td>
+              <a href="{% url 'assembly_project_list' %}?project={{ review.assembly_project.pk }}">
+                {{ review.assembly_project.species }}
+              </a>
+              &nbsp;<a href="{% url 'ear_review_detail' review.pk %}" class="btn btn-xs btn-outline-secondary py-0 px-1" style="font-size:0.75rem;">EAR</a>
+            </td>
+            <td><span class="ear-status ear-status-{{ review.status }}">{{ review.get_status_display }}</span></td>
+            <td>{{ review.submitted_by.get_full_name|default:review.submitted_by.username }}</td>
+            <td>{{ review.updated_at|date:"Y-m-d" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if ears_awaiting_decision %}
+  <div class="card mb-4">
+    <div class="card-header font-weight-bold">EARs awaiting my decision</div>
+    <div class="card-body p-0">
+      <table class="table table-sm table-hover mb-0">
+        <thead class="thead-light">
+          <tr>
+            <th>Species</th>
+            <th>Submitted by</th>
+            <th>Last updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for review in ears_awaiting_decision %}
+          <tr>
+            <td>
+              <a href="{% url 'assembly_project_list' %}?project={{ review.assembly_project.pk }}">
+                {{ review.assembly_project.species }}
+              </a>
+              &nbsp;<a href="{% url 'ear_review_detail' review.pk %}" class="btn btn-xs btn-outline-secondary py-0 px-1" style="font-size:0.75rem;">EAR</a>
+            </td>
+            <td>{{ review.submitted_by.get_full_name|default:review.submitted_by.username }}</td>
+            <td>{{ review.updated_at|date:"Y-m-d" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if my_submissions %}
+  <div class="card mb-4">
+    <div class="card-header font-weight-bold">My EAR submissions</div>
+    <div class="card-body p-0">
+      <table class="table table-sm table-hover mb-0">
+        <thead class="thead-light">
+          <tr>
+            <th>Species</th>
+            <th>Status</th>
+            <th>Supervisor</th>
+            <th>Reviewer(s)</th>
+            <th>Last updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for review in my_submissions %}
+          <tr>
+            <td>
+              <a href="{% url 'assembly_project_list' %}?project={{ review.assembly_project.pk }}">
+                {{ review.assembly_project.species }}
+              </a>
+              &nbsp;<a href="{% url 'ear_review_detail' review.pk %}" class="btn btn-xs btn-outline-secondary py-0 px-1" style="font-size:0.75rem;">EAR</a>
+            </td>
+            <td><span class="ear-status ear-status-{{ review.status }}">{{ review.get_status_display }}</span></td>
+            <td>{{ review.supervisor.get_full_name|default:review.supervisor.username|default:"—" }}</td>
+            <td>
+              {% for r in review.reviewers.all %}
+                {{ r.get_full_name|default:r.username }}{% if not forloop.last %}, {% endif %}
+              {% empty %}—{% endfor %}
+            </td>
+            <td>{{ review.updated_at|date:"Y-m-d" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if my_assembly_projects %}
+  <div class="card mb-4">
+    <div class="card-header font-weight-bold">My assembly projects</div>
+    <div class="card-body p-0">
+      <table class="table table-sm table-hover mb-0">
+        <thead class="thead-light">
+          <tr>
+            <th>Species</th>
+            <th>Assembly status</th>
+            <th>EAR status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in my_assembly_projects %}
+          <tr>
+            <td>
+              <a href="{% url 'assembly_project_list' %}?project={{ item.project.pk }}">
+                {{ item.project.species }}
+              </a>
+            </td>
+            <td><span class="status {{ item.project.status }}">{{ item.project.get_status_display }}</span></td>
+            <td>
+              {% if item.flag %}
+                <span class="badge badge-warning">{{ item.flag }}</span>
+              {% elif item.ear %}
+                <a href="{% url 'ear_review_detail' item.ear.pk %}">
+                  <span class="ear-status ear-status-{{ item.ear.status }}">{{ item.ear.get_status_display }}</span>
+                </a>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td class="text-right">
+              <button type="button" class="btn btn-sm btn-outline-secondary ap-edit-btn"
+                      data-pk="{{ item.project.pk }}"
+                      data-species="{{ item.project.species }}"
+                      data-status="{{ item.project.status|default_if_none:'' }}"
+                      data-note="{{ item.project.note|default_if_none:'' }}"
+                      data-genome-size="{{ item.project.genome_size_estimate|default_if_none:'' }}"
+                      title="Edit">✎</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if my_sequencing_tasks %}
+  <div class="card mb-4">
+    <div class="card-header font-weight-bold">My sequencing tasks</div>
+    <div class="card-body p-0">
+      <table class="table table-sm table-hover mb-0">
+        <thead class="thead-light">
+          <tr>
+            <th>Species</th>
+            <th>Long-read</th>
+            <th>Short-read</th>
+            <th>Hi-C</th>
+            <th>RNA</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for seq in my_sequencing_tasks %}
+          <tr>
+            <td>
+              <a href="{% url 'sequencing_list' %}?species={{ seq.species.pk }}">
+                {{ seq.species }}
+              </a>
+            </td>
+            <td><span class="status {{ seq.long_seq_status }}">{{ seq.long_seq_status }}</span></td>
+            <td><span class="status {{ seq.short_seq_status }}">{{ seq.short_seq_status }}</span></td>
+            <td><span class="status {{ seq.hic_seq_status }}">{{ seq.hic_seq_status }}</span></td>
+            <td><span class="status {{ seq.rna_seq_status }}">{{ seq.rna_seq_status }}</span></td>
+            <td class="text-right">
+              <button type="button" class="btn btn-sm btn-outline-secondary seq-edit-btn"
+                      data-pk="{{ seq.pk }}"
+                      data-species="{{ seq.species }}"
+                      data-long-status="{{ seq.long_seq_status|default_if_none:'' }}"
+                      data-short-status="{{ seq.short_seq_status|default_if_none:'' }}"
+                      data-hic-status="{{ seq.hic_seq_status|default_if_none:'' }}"
+                      data-rna-status="{{ seq.rna_seq_status|default_if_none:'' }}"
+                      data-note="{{ seq.note|default_if_none:'' }}"
+                      title="Edit">✎</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if superuser_overview %}
+  <div class="card mb-4 border-secondary">
+    <div class="card-header font-weight-bold">System overview</div>
+    <div class="card-body">
+      <p class="mb-1">Open EARs: <strong>{{ superuser_overview.open_ears }}</strong></p>
+      <p class="mb-2">
+        Stuck EARs (no activity &gt; {{ superuser_overview.stuck_threshold_days }} days):
+        <strong>{{ superuser_overview.stuck_ears }}</strong>
+      </p>
+      {% if superuser_overview.stuck_reviews %}
+      <table class="table table-sm table-hover mb-0">
+        <thead class="thead-light">
+          <tr><th>Species</th><th>Status</th><th>Last updated</th></tr>
+        </thead>
+        <tbody>
+          {% for review in superuser_overview.stuck_reviews %}
+          <tr>
+            <td>
+              <a href="{% url 'assembly_project_list' %}?project={{ review.assembly_project.pk }}">{{ review.assembly_project.species }}</a>
+              &nbsp;<a href="{% url 'ear_review_detail' review.pk %}" class="btn btn-xs btn-outline-secondary py-0 px-1" style="font-size:0.75rem;">EAR</a>
+            </td>
+            <td><span class="ear-status ear-status-{{ review.status }}">{{ review.get_status_display }}</span></td>
+            <td>{{ review.updated_at|date:"Y-m-d" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if not pending_invites and not ears_to_review and not ears_awaiting_decision and not my_submissions and not my_assembly_projects and not my_sequencing_tasks and not superuser_overview %}
+  <p class="text-muted">No action items at the moment.</p>
+  {% endif %}
+
+</div>
+
+{# ─── Assembly project edit modal ──────────────────────────────── #}
+{% if my_assembly_projects %}
+<button type="button" id="apEditModalTrigger"
+        data-toggle="modal" data-target="#apEditModal"
+        style="display:none" aria-hidden="true"></button>
+
+<div class="modal fade" id="apEditModal" tabindex="-1" role="dialog" aria-labelledby="apEditModalLabel" aria-hidden="true"
+     data-url-template="{% url 'assembly_project_edit' pk=0 %}">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="apEditModalLabel">Edit assembly project</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form id="apEditForm" method="post" action="">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="apStatus">Status</label>
+            <select class="form-control" id="apStatus" name="status">
+              {% for val, label in assembly_status_choices %}
+                <option value="{{ val }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="apNote">Note</label>
+            <input type="text" class="form-control" id="apNote" name="note" maxlength="300">
+          </div>
+          <div class="form-group">
+            <label for="apGenomeSize">Genome size estimate (bp)</label>
+            <input type="number" class="form-control" id="apGenomeSize" name="genome_size_estimate" min="0">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{# ─── Sequencing edit modal ──────────────────────────────────── #}
+{% if my_sequencing_tasks %}
+<button type="button" id="seqEditModalTrigger"
+        data-toggle="modal" data-target="#seqEditModal"
+        style="display:none" aria-hidden="true"></button>
+
+<div class="modal fade" id="seqEditModal" tabindex="-1" role="dialog" aria-labelledby="seqEditModalLabel" aria-hidden="true"
+     data-url-template="{% url 'sequencing_edit' pk=0 %}">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="seqEditModalLabel">Edit sequencing record</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form id="seqEditForm" method="post" action="">
+        {% csrf_token %}
+        <div class="modal-body">
+          {% for field_id, label in sequencing_status_fields %}
+          <div class="form-group">
+            <label for="{{ field_id }}">{{ label }}</label>
+            <select class="form-control seq-status-select" id="{{ field_id }}" name="{{ field_id }}">
+              {% for val, display in sequencing_status_choices %}
+                <option value="{{ val }}">{{ display }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          {% endfor %}
+          <div class="form-group">
+            <label for="seqNote">Note</label>
+            <input type="text" class="form-control" id="seqNote" name="note" maxlength="300">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<script>
+  document.addEventListener('click', function(e) {
+    var apBtn = e.target.closest('.ap-edit-btn');
+    if (apBtn) {
+      var modal = document.getElementById('apEditModal');
+      if (!modal) return;
+      var urlTemplate = modal.dataset.urlTemplate;
+      document.getElementById('apEditModalLabel').textContent = 'Edit: ' + apBtn.dataset.species;
+      document.getElementById('apEditForm').action = urlTemplate.replace('/0/', '/' + apBtn.dataset.pk + '/');
+      document.getElementById('apStatus').value = apBtn.dataset.status;
+      document.getElementById('apNote').value = apBtn.dataset.note;
+      document.getElementById('apGenomeSize').value = apBtn.dataset.genomeSize;
+      document.getElementById('apEditModalTrigger').click();
+      return;
+    }
+    var seqBtn = e.target.closest('.seq-edit-btn');
+    if (seqBtn) {
+      var modal = document.getElementById('seqEditModal');
+      if (!modal) return;
+      var urlTemplate = modal.dataset.urlTemplate;
+      document.getElementById('seqEditModalLabel').textContent = 'Edit: ' + seqBtn.dataset.species;
+      document.getElementById('seqEditForm').action = urlTemplate.replace('/0/', '/' + seqBtn.dataset.pk + '/');
+      document.getElementById('long_seq_status').value  = seqBtn.dataset.longStatus;
+      document.getElementById('short_seq_status').value = seqBtn.dataset.shortStatus;
+      document.getElementById('hic_seq_status').value   = seqBtn.dataset.hicStatus;
+      document.getElementById('rna_seq_status').value   = seqBtn.dataset.rnaStatus;
+      document.getElementById('seqNote').value          = seqBtn.dataset.note;
+      document.getElementById('seqEditModalTrigger').click();
+    }
+  });
+</script>
+{% endblock %}
