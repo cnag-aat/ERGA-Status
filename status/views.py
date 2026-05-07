@@ -1616,6 +1616,10 @@ class EARReviewDetailView(LoginRequiredMixin, DetailView):
             .all()
         )
 
+        # PDF replace permission and version history
+        context['can_replace_pdf'] = _can_replace_pdf(user, review)
+        context['pdf_versions'] = review.pdf_versions.select_related('uploaded_by').all()
+
         # Supervisor reviewer management: eligible candidates
         if is_supervisor:
             from django.contrib.auth.models import User, Group
@@ -2000,6 +2004,33 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             .prefetch_related('reviewers')
             .order_by('updated_at')
         )
+
+        # Reviews where a new PDF was uploaded (by someone else) after the user's last comment
+        from django.db.models import Q, F, OuterRef, Subquery
+        from status.models import EARPdfVersion, EARComment as _EARComment
+        _latest_pdf_subq = EARPdfVersion.objects.filter(
+            review=OuterRef('pk'),
+        ).exclude(
+            uploaded_by=self.request.user,
+        ).order_by('-uploaded_at').values('uploaded_at')[:1]
+        _latest_comment_subq = _EARComment.objects.filter(
+            review=OuterRef('pk'),
+            author=self.request.user,
+            is_system=False,
+        ).order_by('-created_at').values('created_at')[:1]
+        context['ear_pdf_updates'] = (
+            EARReview.objects
+            .filter(Q(supervisor=self.request.user) | Q(reviewers=self.request.user))
+            .annotate(
+                latest_pdf=Subquery(_latest_pdf_subq),
+                latest_comment=Subquery(_latest_comment_subq),
+            )
+            .filter(latest_pdf__isnull=False)
+            .exclude(latest_comment__gte=F('latest_pdf'))
+            .distinct()
+            .select_related('assembly_project__species', 'submitted_by')
+            .order_by('updated_at')
+        )
         my_assembly_projects = (
             AssemblyProject.objects
             .filter(species__gt_rel__assembly_team__members__user=self.request.user)
@@ -2097,3 +2128,62 @@ def dashboard_invite_response(request, pk):
         messages.info(request, f"You have declined the assignment. A replacement has been sought.")
 
     return redirect('dashboard')
+
+
+def _can_replace_pdf(user, review):
+    if not user.is_authenticated:
+        return False
+    if user.is_superuser:
+        return True
+    return AssemblyTeam.objects.filter(
+        members__user=user,
+        genometeam__species=review.assembly_project.species,
+    ).exists()
+
+
+@login_required
+def ear_review_replace_pdf(request, pk):
+    from status.forms import EARPdfReplaceForm
+    from status import ear_review as ear_logic
+    from django.db import transaction
+
+    review = get_object_or_404(EARReview, pk=pk)
+
+    if not _can_replace_pdf(request.user, review):
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden()
+
+    if request.method != 'POST':
+        return redirect('ear_review_detail', pk=pk)
+
+    form = EARPdfReplaceForm(request.POST, request.FILES)
+    if not form.is_valid():
+        messages.error(request, 'Invalid submission: ' + ' '.join(
+            e for errors in form.errors.values() for e in errors
+        ))
+        return redirect('ear_review_detail', pk=pk)
+
+    note = form.cleaned_data.get('note', '').strip()
+
+    with transaction.atomic():
+        review.pdf_versions.update(is_current=False)
+        new_version = EARPdfVersion.objects.create(
+            review=review,
+            file=form.cleaned_data['ear_pdf'],
+            uploaded_by=request.user,
+            is_current=True,
+            note=note,
+        )
+        review.ear_pdf = new_version.file
+        review.save(update_fields=['ear_pdf', 'updated_at'])
+        body = 'Replaced the EAR PDF' + (f': {note}' if note else '')
+        EARComment.objects.create(
+            review=review,
+            author=request.user,
+            body=body,
+            is_system=True,
+        )
+
+    ear_logic.notify_pdf_replaced(review, request.user, note)
+    messages.success(request, 'EAR PDF replaced successfully.')
+    return redirect('ear_review_detail', pk=pk)

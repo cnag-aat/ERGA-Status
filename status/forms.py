@@ -166,6 +166,31 @@ class EARReviewCreateForm(forms.ModelForm):
         return cleaned_data
 
 
+class EARPdfReplaceForm(forms.Form):
+    ear_pdf = forms.FileField(
+        label='Replacement EAR PDF',
+        widget=forms.ClearableFileInput(attrs={
+            'class': 'form-control-file',
+            'accept': 'application/pdf,.pdf',
+        }),
+    )
+    note = forms.CharField(
+        max_length=255,
+        required=False,
+        label='Note (optional)',
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Briefly describe what changed in this version…',
+        }),
+    )
+
+    def clean_ear_pdf(self):
+        f = self.cleaned_data['ear_pdf']
+        if f and not f.name.lower().endswith('.pdf'):
+            raise forms.ValidationError('Only PDF files are accepted.')
+        return f
+
+
 class EARCommentForm(forms.ModelForm):
     parent = forms.ModelChoiceField(
         queryset=EARComment.objects.all(),

@@ -23,7 +23,7 @@ from status.views import OverView
 from status.views import AccessDeniedView
 from status.views import GenomeTeamsView
 from status.views import AffiliationCreateView, ResearchGroupCreateView
-from status.views import EARReviewDetailView, EARReviewListView, ear_review_comment, ear_review_create, ear_review_manage_reviewers, ear_assignment_response, DashboardView, dashboard_invite_response
+from status.views import EARReviewDetailView, EARReviewListView, ear_review_comment, ear_review_create, ear_review_manage_reviewers, ear_assignment_response, DashboardView, dashboard_invite_response, ear_review_replace_pdf
 from status.views import assembly_project_edit, sequencing_edit, assembly_detail
 from status.views import AuthorsView
 from status.views import EditProfileView
@@ -107,6 +107,7 @@ urlpatterns = [
     path('ear/<int:pk>/', EARReviewDetailView.as_view(), name="ear_review_detail"),
     path('ear/<int:pk>/comment/', ear_review_comment, name="ear_review_comment"),
     path('ear/<int:pk>/reviewers/', ear_review_manage_reviewers, name="ear_review_manage_reviewers"),
+    path('ear/<int:pk>/replace-pdf/', ear_review_replace_pdf, name="ear_review_replace_pdf"),
     path('ear/assignment/<str:token>/<str:response>/', ear_assignment_response, name="ear_assignment_response"),
     path("user_profile/<int:pk>/", views.user_profile, name="user_profile"),
     path("person/<int:pk>/", views.person_detail, name="person_detail"),

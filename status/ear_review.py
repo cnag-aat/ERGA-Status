@@ -270,8 +270,10 @@ def mark_invite_responded(review, user, role, accepted):
 
 
 def notify_assignment(review, user, role):
-    """Send a 'you have been assigned' email with Yes/No confirmation links."""
+    """Create the invite record and, if the user has an email, send an assignment notification."""
     create_or_refresh_invite(review, user, role)
+    if not user.email:
+        return
     species = review.assembly_project.species if review.assembly_project else 'unknown species'
     submitter = _display_name(review.submitted_by)
     detail_url = f"{settings.DEFAULT_DOMAIN.rstrip('/')}/ear/{review.pk}/"
@@ -334,6 +336,31 @@ def notify_new_comment(comment):
     # Don't notify the commenter
     if comment.author and comment.author.email:
         recipients.discard(comment.author.email)
+
+    _send(subject, body, list(recipients))
+
+
+def notify_pdf_replaced(review, actor, note):
+    """Email supervisor and reviewers (excluding the actor) when the EAR PDF is replaced."""
+    species = review.assembly_project.species if review.assembly_project else 'unknown species'
+    actor_name = _display_name(actor)
+    detail_url = f"{settings.DEFAULT_DOMAIN.rstrip('/')}/ear/{review.pk}/"
+
+    subject = f"[ERGA-GTC] EAR PDF updated for {species}"
+    body = (
+        f"{actor_name} uploaded a new version of the EAR PDF for {species}.\n\n"
+        + (f"Note: {note}\n\n" if note else "")
+        + f"View the review: {detail_url}\n"
+    )
+
+    recipients = set()
+    if review.supervisor and review.supervisor.email:
+        recipients.add(review.supervisor.email)
+    for r in review.reviewers.all():
+        if r.email:
+            recipients.add(r.email)
+    if actor and actor.email:
+        recipients.discard(actor.email)
 
     _send(subject, body, list(recipients))
 

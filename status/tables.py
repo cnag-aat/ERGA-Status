@@ -267,7 +267,7 @@ class TargetSpeciesTable(tables.Table):
     country = tables.ManyToManyColumn(accessor='collection_rel',verbose_name="Country")
     def render_task(self, value, record):
         tasks = {sc.task.short_name for sc in value.all() if sc.task and sc.task.short_name}
-        return ';'.join(tasks)
+        return ';'.join(t for t in tasks if t is not None)
     def render_country(self, value, record):
         countries = {sc.country.name for sc in value.all() if sc.country and sc.country.name}
         return ';'.join(countries)
@@ -451,11 +451,12 @@ class SampleCollectionTable(tables.Table):
     taxon_id = tables.Column(accessor='species__taxon_id')
         
     def render_task(self, value, record):
-        if value.short_name:
+        if value and value.short_name:
             return value.short_name
-        if value.name:
+        if value and value.name:
             return value.name
-    
+        return ''
+
     class Meta:
         model = SampleCollection
         template_name = "django_tables2/bootstrap4.html"

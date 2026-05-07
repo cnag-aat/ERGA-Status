@@ -117,6 +117,42 @@
   </div>
   {% endif %}
 
+  {% if ear_pdf_updates %}
+  <div class="card mb-4">
+    <div class="card-header font-weight-bold">
+      <i class="fas fa-sync-alt"></i> EARs with updated PDF
+      <span class="badge badge-warning ml-1">{{ ear_pdf_updates|length }}</span>
+    </div>
+    <div class="card-body p-0">
+      <table class="table table-sm table-hover mb-0">
+        <thead class="thead-light">
+          <tr>
+            <th>Species</th>
+            <th>Status</th>
+            <th>Submitted by</th>
+            <th>Last updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for review in ear_pdf_updates %}
+          <tr>
+            <td>
+              <a href="{% url 'assembly_project_list' %}?project={{ review.assembly_project.pk }}">
+                {{ review.assembly_project.species }}
+              </a>
+              &nbsp;<a href="{% url 'ear_review_detail' review.pk %}" class="btn btn-xs btn-outline-secondary py-0 px-1" style="font-size:0.75rem;">EAR</a>
+            </td>
+            <td><span class="ear-status ear-status-{{ review.status }}">{{ review.get_status_display }}</span></td>
+            <td>{{ review.submitted_by.get_full_name|default:review.submitted_by.username }}</td>
+            <td>{{ review.updated_at|date:"Y-m-d" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
   {% if my_submissions %}
   <div class="card mb-4">
     <div class="card-header font-weight-bold">My EAR submissions</div>
@@ -284,7 +320,7 @@
   </div>
   {% endif %}
 
-  {% if not pending_invites and not ears_to_review and not ears_awaiting_decision and not my_submissions and not my_assembly_projects and not my_sequencing_tasks and not superuser_overview %}
+  {% if not pending_invites and not ears_to_review and not ears_awaiting_decision and not ear_pdf_updates and not my_submissions and not my_assembly_projects and not my_sequencing_tasks and not superuser_overview %}
   <p class="text-muted">No action items at the moment.</p>
   {% endif %}
 

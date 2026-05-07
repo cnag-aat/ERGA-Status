@@ -1879,6 +1879,10 @@ class EARReview(models.Model):
         verbose_name_plural = 'EAR reviews'
         ordering = ['-created_at']
 
+    @property
+    def current_pdf_version(self):
+        return self.pdf_versions.filter(is_current=True).first()
+
     def __str__(self):
         return f"EAR: {self.assembly_project} [{self.get_status_display()}]"
 
@@ -1929,6 +1933,7 @@ class EARComment(models.Model):
         related_name='replies',
         verbose_name='Reply to'
     )
+    is_system = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -2005,6 +2010,33 @@ class EARAssignmentInvite(models.Model):
 
     def __str__(self):
         return f"{self.get_role_display()} invite: {self.user} → {self.review} [{self.get_status_display()}]"
+
+
+class EARPdfVersion(models.Model):
+    review = models.ForeignKey(
+        EARReview,
+        on_delete=models.CASCADE,
+        related_name='pdf_versions',
+        verbose_name='Review',
+    )
+    file = models.FileField(upload_to='ear_pdfs/versions/', verbose_name='File')
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name='ear_pdf_versions',
+        verbose_name='Uploaded by',
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    note = models.CharField(max_length=255, blank=True, verbose_name='Note')
+    is_current = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = 'EAR PDF version'
+        verbose_name_plural = 'EAR PDF versions'
+        ordering = ['-uploaded_at']
+
+    def __str__(self):
+        return f"PDF v{self.pk} for {self.review} ({'current' if self.is_current else 'superseded'})"
 
 
 def _delete_file(path):

@@ -43,6 +43,14 @@
   }
   .meta-block dt { color: #555; font-weight: 600; }
   .meta-block dd { margin-bottom: 0.5rem; }
+  .comment-card.system-comment {
+    background: #f4f4f4;
+    border-left-color: #aaa;
+    color: #666;
+    font-style: italic;
+  }
+  .version-list { font-size: 0.9rem; }
+  .version-list li { padding: 0.2rem 0; }
 </style>
 
 <div class="container my-4">
@@ -120,6 +128,18 @@
             <a href="{{ review.ear_pdf.url }}" target="_blank">
               <i class="fas fa-file-pdf"></i> EAR PDF
             </a>
+            {% if pdf_versions|length > 1 %}
+              <span class="badge badge-warning ml-1">Updated</span>
+            {% endif %}
+            {% if can_replace_pdf %}
+              {# Hidden real trigger button — workaround for jQuery modal conflict (CLAUDE.md gotcha #3) #}
+              <button id="replace-pdf-trigger" data-toggle="modal" data-target="#replacePdfModal"
+                      style="display:none;"></button>
+              <button type="button" class="btn btn-sm btn-outline-secondary ml-2"
+                      onclick="document.getElementById('replace-pdf-trigger').click()">
+                <i class="fas fa-sync-alt"></i> Replace EAR
+              </button>
+            {% endif %}
           </li>
         {% endif %}
         {% if review.pretext_file %}
@@ -135,8 +155,69 @@
           {% endif %}
         {% endif %}
       </ul>
+
+      {% if pdf_versions %}
+        <details class="mt-2">
+          <summary class="small text-muted" style="cursor:pointer;">
+            PDF version history ({{ pdf_versions|length }})
+          </summary>
+          <ul class="version-list list-unstyled mt-1 ml-2">
+            {% for v in pdf_versions %}
+              <li>
+                <a href="{{ v.file.url }}" target="_blank">
+                  <i class="fas fa-file-pdf"></i>
+                  {{ v.uploaded_at|date:"Y-m-d H:i" }}
+                </a>
+                — {{ v.uploaded_by.get_full_name|default:v.uploaded_by.username }}
+                {% if v.is_current %}
+                  <span class="badge badge-success">current</span>
+                {% endif %}
+                {% if v.note %}
+                  <br><small class="text-muted ml-3">{{ v.note }}</small>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        </details>
+      {% endif %}
     </div>
   </div>
+
+  {# Replace EAR PDF modal #}
+  {% if can_replace_pdf %}
+  <div class="modal fade" id="replacePdfModal" tabindex="-1" role="dialog"
+       aria-labelledby="replacePdfModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="replacePdfModalLabel">Replace EAR PDF</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form method="post" action="{% url 'ear_review_replace_pdf' review.pk %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="id_replace_ear_pdf">Replacement EAR PDF <span class="text-danger">*</span></label>
+              <input type="file" name="ear_pdf" id="id_replace_ear_pdf"
+                     class="form-control-file" accept="application/pdf,.pdf" required>
+            </div>
+            <div class="form-group">
+              <label for="id_replace_note">Note (optional)</label>
+              <input type="text" name="note" id="id_replace_note" class="form-control"
+                     placeholder="Briefly describe what changed in this version…" maxlength="255">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Upload new PDF</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endif %}
 
   <hr>
 
@@ -149,14 +230,18 @@
   {% endif %}
 
   {% for comment in comments %}
-    <div class="comment-card{% if comment.parent %} reply{% endif %}" id="comment-{{ comment.pk }}">
+    <div class="comment-card{% if comment.parent %} reply{% endif %}{% if comment.is_system %} system-comment{% endif %}" id="comment-{{ comment.pk }}">
       <div class="comment-meta">
-        <strong>{{ comment.author.get_full_name|default:comment.author.username|default:"unknown" }}</strong>
+        {% if comment.is_system %}
+          <i class="fas fa-sync-alt"></i> <em>System</em>
+        {% else %}
+          <strong>{{ comment.author.get_full_name|default:comment.author.username|default:"unknown" }}</strong>
+        {% endif %}
         · {{ comment.created_at|date:"Y-m-d H:i" }}
         {% if comment.parent %}
           · <em class="text-muted">in reply to {{ comment.parent.author.get_full_name|default:comment.parent.author.username }}</em>
         {% endif %}
-        {% if can_post %}
+        {% if can_post and not comment.is_system %}
           · <a href="#comment-form" onclick="setReplyParent({{ comment.pk }}, '{{ comment.author.get_full_name|default:comment.author.username|escapejs }}')">Reply</a>
         {% endif %}
       </div>
