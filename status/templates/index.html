@@ -22,8 +22,19 @@
           {% else %}
           <div class="col-md-12" style="flex">
           {% endif %}
-              <div style="aspect-ratio: 2">
+              <div style="height: 80px;">
                 <canvas id="SeqProdChart"></canvas>
+              </div>
+              <div style="height: 80px; margin-top: 0.25rem;">
+                <canvas id="SeqCountChart"></canvas>
+              </div>
+              <div id="SeqChartLegend" style="display:flex; flex-wrap:wrap; gap:0 16px; margin-top:0.5rem; font-size:0.78rem;"></div>
+              <div id="chart-color-swatches" aria-hidden="true" style="display:none">
+                <span class="status Submitted"   id="swatch-assembled"></span>
+                <span class="status in_assembly" id="swatch-assembling"></span>
+                <span class="status Sequencing"  id="swatch-sequencing"></span>
+                <span class="status Collected"   id="swatch-collected"></span>
+                <span class="status none"        id="swatch-notcollected"></span>
               </div>
           </div>
           {% if custom.show_milestones %}
@@ -102,87 +113,122 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
   
 <script>
-  const ctx = document.getElementById('SeqProdChart');
+  (function() {
+    var dpr = Math.max(window.devicePixelRatio || 1, 2);
 
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: {{ centers|safe }},
-      datasets: [
-        {
-        label: 'Assembly done',
-        data: {{ assembly_done|safe }},
-        borderWidth: 1,
-        backgroundColor: [
-          'rgb(0, 135, 163, 1)'
-          ],
-        },
-        {
-        label: 'Assembling',
-        data: {{ assembling|safe }},
-        borderWidth: 1,
-        backgroundColor: [
-          'rgb(0, 159, 196, 1)'
-          ],
-        },
-        {
-        label: 'Sequencing done',
-        data: {{ seq_done|safe }},
-        borderWidth: 1,
-        backgroundColor: [
-          'rgb(0, 159, 160, 1)'
-          ],
-        },
-        {
-        label: 'Sequencing',
-        data: {{ sequencing|safe }},
-        borderWidth: 1,
-        backgroundColor: [
-          'rgb(0, 159, 131, 1)'
+    function swatchColor(id) {
+      var el = document.getElementById(id);
+      var cs = window.getComputedStyle(el);
+      return { bg: cs.backgroundColor, border: cs.borderColor };
+    }
+    var COLORS = {
+      assembled:    swatchColor('swatch-assembled'),
+      assembling:   swatchColor('swatch-assembling'),
+      sequencing:   swatchColor('swatch-sequencing'),
+      collected:    swatchColor('swatch-collected'),
+      notCollected: swatchColor('swatch-notcollected'),
+    };
 
-          ],
-        },
-        {
-        label: 'Collected',
-        data: {{ collected|safe }},
-        borderWidth: 1,
-        backgroundColor: [
-          'rgb(153, 152, 125, 1)'
-          ],
-        },
-        {
-        label: 'Not collected',
-        data: {{ not_collected|safe }},
-        borderWidth: 1,
-        backgroundColor: [
-          'rgb(192, 192, 192, 1)'
-          ],
+    function makeDatasets(values) {
+      var keys = ['assembled','assembling','sequencing','collected','notCollected'];
+      var labels = ['≥ Assembled','≥ In assembly','≥ In sequencing','≥ Collected','Not collected'];
+      return keys.map(function(k, i) {
+        return {
+          label: labels[i],
+          data: [values[i]],
+          backgroundColor: COLORS[k].bg,
+          borderColor: COLORS[k].border,
+          borderWidth: 1,
+        };
+      });
+    }
+
+    function makeTooltipCallback(total, unit, decimals) {
+      return function(ctx) {
+        var seg = ctx.parsed.x;
+        var cumul = 0;
+        for (var i = 0; i <= ctx.datasetIndex; i++) {
+          cumul += ctx.chart.data.datasets[i].data[0];
         }
-    ]
-    },
-    options: {
-      plugins: {
-        title: {
-          display: true,
-          text: 'Sequencing Production'
+        var pct = total > 0 ? (cumul / total * 100).toFixed(1) : '0.0';
+        var fmt = decimals ? seg.toFixed(2) : seg;
+        var fmtC = decimals ? cumul.toFixed(2) : Math.round(cumul);
+        return ctx.dataset.label + ': ' + fmt + ' ' + unit + '  |  cumulative: ' + fmtC + ' ' + unit + ' (' + pct + '%)';
+      };
+    }
+
+    // ── Gb bar ────────────────────────────────────────────────────────────
+    var gbVals = [
+      {{ total_assembly_done|safe }},
+      {{ total_assembling|safe }} + {{ total_seq_done|safe }},
+      {{ total_sequencing|safe }},
+      {{ total_collected|safe }},
+      {{ total_not_collected|safe }},
+    ];
+    var gbTotal = gbVals.reduce(function(a, b) { return a + b; }, 0);
+
+    new Chart(document.getElementById('SeqProdChart'), {
+      type: 'bar',
+      data: { labels: ['Gb'], datasets: makeDatasets(gbVals) },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        devicePixelRatio: dpr,
+        plugins: {
+          title: { display: true, text: 'Genome Span (Gb)', font: { size: 12 }, padding: { bottom: 4 } },
+          tooltip: { callbacks: { label: makeTooltipCallback(gbTotal, 'Gb', true) } },
+          legend: { display: false },
         },
-      },
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        x: {
-          stacked: true,
-        },
-        y: {
-          stacked: true,
-          title: {
-            display: true,
-            text: "Genome Span (Gb)"
-          }
+        scales: {
+          x: { stacked: true, title: { display: true, text: 'Gb' } },
+          y: { stacked: true, display: false },
         }
       }
+    });
+
+    // ── Species count bar ─────────────────────────────────────────────────
+    var cntVals = [
+      {{ total_assembly_done_count|default:0 }},
+      {{ total_assembling_count|default:0 }} + {{ total_seq_done_count|default:0 }},
+      {{ total_sequencing_count|default:0 }},
+      {{ total_collected_count|default:0 }},
+      {{ total_not_collected_count|default:0 }},
+    ];
+    var cntTotal = cntVals.reduce(function(a, b) { return a + b; }, 0);
+
+    new Chart(document.getElementById('SeqCountChart'), {
+      type: 'bar',
+      data: { labels: ['Species'], datasets: makeDatasets(cntVals) },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        devicePixelRatio: dpr,
+        plugins: {
+          title: { display: true, text: 'Species Count', font: { size: 12 }, padding: { bottom: 4 } },
+          tooltip: { callbacks: { label: makeTooltipCallback(cntTotal, 'spp', false) } },
+          legend: { display: false },
+        },
+        scales: {
+          x: { stacked: true, title: { display: true, text: 'Species' } },
+          y: { stacked: true, display: false },
+        }
+      }
+    });
+    // ── Shared HTML legend ────────────────────────────────────────────────
+    var legendEl = document.getElementById('SeqChartLegend');
+    if (legendEl) {
+      var keys = ['assembled','assembling','sequencing','collected','notCollected'];
+      var labels = ['≥ Assembled','≥ In assembly','≥ In sequencing','≥ Collected','Not collected'];
+      keys.forEach(function(k, i) {
+        var item = document.createElement('span');
+        item.style.cssText = 'display:inline-flex; align-items:center; gap:4px; white-space:nowrap;';
+        item.innerHTML = '<span style="display:inline-block;width:12px;height:12px;background:' + COLORS[k].bg + ';border:1px solid ' + COLORS[k].border + ';border-radius:2px;"></span>' + labels[i];
+        legendEl.appendChild(item);
+      });
     }
-  });
+  })();
 
   const totalctx = document.getElementById('TotalSeqProdChart');
   var tad = {{ total_assembly_done|safe }};

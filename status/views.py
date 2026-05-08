@@ -238,6 +238,12 @@ def home(request):
     total_assembling_span = 0
     total_assembly_done_span = 0
     total_assembly_dropped_span = 0
+    total_not_collected_count = 0
+    total_collected_count = 0
+    total_sequencing_count = 0
+    total_seq_done_count = 0
+    total_assembling_count = 0
+    total_assembly_done_count = 0
         #.filter(sequencing_rel__long_seq_status='Done')
     allqueryset = TargetSpecies.objects.all().exclude(goat_target_list_status = None).exclude(goat_target_list_status = '').exclude(goat_target_list_status = 'removed')
 
@@ -248,6 +254,7 @@ def home(request):
                 sp.genome_size_update = 0;
             if (sp.assembly_rel and sp.assembly_rel.status in assembly_done_set):
                     total_assembly_done_span += sp.genome_size_update
+                    total_assembly_done_count += 1
             else:
 
                 if (sp.assembly_rel and sp.assembly_rel.status in dropped_set):
@@ -255,19 +262,24 @@ def home(request):
                 else:
                     if ((sp.assembly_rel.status in in_assembly_set) and (sp.sequencing_rel.long_seq_status in seq_done_set) and (sp.sequencing_rel.hic_seq_status in seq_done_set)):
                         total_assembling_span += sp.genome_size_update
+                        total_assembling_count += 1
                     else:
                         if ((sp.sequencing_rel.long_seq_status in seq_done_set) and (sp.sequencing_rel.hic_seq_status in seq_done_set)):
                             total_seq_done_span += sp.genome_size_update
-                        else: 
+                            total_seq_done_count += 1
+                        else:
                             if ((sp.sequencing_rel.long_seq_status in in_production_set) or (sp.sequencing_rel.hic_seq_status in in_production_set) or (sp.sequencing_rel.long_seq_status in seq_done_set) or (sp.sequencing_rel.hic_seq_status in seq_done_set)):
                                 total_sequencing_span += sp.genome_size_update
+                                total_sequencing_count += 1
                             else:
                                 if ((sp.goat_sequencing_status == 'sample_collected') or (sp.goat_sequencing_status == 'sample_acquired')):
                                     total_collected_span += sp.genome_size_update
+                                    total_collected_count += 1
                                 else:
                                     total_not_collected_span += sp.genome_size_update
+                                    total_not_collected_count += 1
 
-                         
+
     # goat_sequencing_status
     total_not_collected_span = total_not_collected_span/1000000000
     total_collected_span = total_collected_span/1000000000
@@ -306,13 +318,19 @@ def home(request):
         'seq_done': seq_done,
         'assembling': assembling,
         'assembly_done': assembly_done,
-        'total_not_collected': total_not_collected_span,  
+        'total_not_collected': total_not_collected_span,
         'total_collected': total_collected_span,
         'total_sequencing': total_sequencing_span,
         'total_seq_done': total_seq_done_span,
         'total_assembling': total_assembling_span,
         'total_assembly_done': total_assembly_done_span,
         'total_assembly_dropped': total_assembly_dropped_span,
+        'total_not_collected_count': total_not_collected_count,
+        'total_collected_count': total_collected_count,
+        'total_sequencing_count': total_sequencing_count,
+        'total_seq_done_count': total_seq_done_count,
+        'total_assembling_count': total_assembling_count,
+        'total_assembly_done_count': total_assembly_done_count,
         'phylo_data': json.dumps(phylo_data)
     })
 
