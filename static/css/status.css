@@ -9,7 +9,7 @@
   text-align: center;
   white-space: nowrap;
   border: 1px solid transparent;
-  width: 170px;       /* uniform width — fits widest status text */
+  width: 120px;       /* uniform width — fits widest status text */
   box-sizing: border-box;
 }
 
@@ -32,9 +32,9 @@
 .Long_Listed,
 .waiting_list,
 .None {
-  background-color: #f0f0f0;
-  color: #606060;
-  border-color: #c0c0c0;
+  background-color: #e9ecef;
+  color: #6c757d;
+  border-color: #ced4da;
 }
 
 /* ── Neutral / cancelled ────────────────────────────────────────── */
@@ -44,35 +44,35 @@
 .other_priority,
 .removed,
 .family_representative {
-  background-color: #f0f0f0;
-  color: #808080;
-  border-color: #c0c0c0;
+  background-color: #e9ecef;
+  color: #6c757d;
+  border-color: #ced4da;
 }
 
-/* ── Level 1 — Yellow / amber (collection started) ──────────────── */
+/* ── Level 1 — lime-cream (collection started) ───────────────────── */
 .sample_collected,
 .Collecting,
 .Collected,
 .Received,
 .in_collection {
-  background-color: #fff7d6;
-  color: #6e5800;
-  border-color: #c9a900;
+  background-color: #d9ed92;
+  color: #184e77;
+  border-color: #b5cc70;
 }
 
-/* ── Level 2 — Yellow-green (sample/data ready) ─────────────────── */
+/* ── Level 2 — light-green-2 (sample/data ready) ────────────────── */
 .sample_acquired,
 .Prep,
 .Extracted,
 .Pending,
 .Resampling,
 .Sampling {
-  background-color: #eef5d0;
-  color: #4a6020;
-  border-color: #90b028;
+  background-color: #99d98c;
+  color: #184e77;
+  border-color: #76c893;
 }
 
-/* ── Level 3 — Light green (active processing) ───────────────────── */
+/* ── Level 3 — ocean-mist (active processing) ───────────────────── */
 .data_generation,
 .Processing,
 .Sequencing,
@@ -83,23 +83,23 @@
 .Scaffolds,
 .Curating,
 .Annotating {
-  background-color: #d8eecc;
-  color: #2a5018;
-  border-color: #5a9040;
+  background-color: #52b69a;
+  color: #ffffff;
+  border-color: #34a0a4;
 }
 
-/* ── Level 4 — Medium green (near completion) ────────────────────── */
+/* ── Level 4 — bondi-blue (near completion) ─────────────────────── */
 .in_assembly,
 .Done,
 .UnderReview,
 .Approved,
 .Sent {
-  background-color: #c8e6b0;
-  color: #2a3f20;
-  border-color: #3d6030;
+  background-color: #168aad;
+  color: #ffffff;
+  border-color: #1a759f;
 }
 
-/* ── Level 5 — Dark green (complete / published) ─────────────────── */
+/* ── Level 5 — baltic-blue (complete / published) ───────────────── */
 .insdc_open,
 .insdc_submitted,
 .publication_available,
@@ -107,38 +107,38 @@
 .Submitted,
 .COPO,
 .Accepted {
-  background-color: #a8d890;
-  color: #1a3010;
-  border-color: #2d5020;
+  background-color: #1e6091;
+  color: #ffffff;
+  border-color: #184e77;
 }
 
 /* ── Blue — external / special ───────────────────────────────────── */
 .External {
-  background-color: #d8e6f8;
-  color: #1e3f6e;
-  border-color: #5a7eb5;
+  background-color: #1e6091;
+  color: #ffffff;
+  border-color: #184e77;
 }
 
 /* ── Red — error / rejected ─────────────────────────────────────── */
 .Rejected,
 .Issue {
-  background-color: #f8d8d8;
-  color: #6e1e1e;
-  border-color: #b55a5a;
+  background-color: #D2042D;
+  color: #ffffff;
+  border-color: #a0001f;
 }
 
 /* ── EAR review status pills ─────────────────────────────────────── */
-.ear-status-submitted         { background: #e3f0d8; color: #3d5c30; border-color: #5a7a4a; }
-.ear-status-in_review         { background: #fff7d6; color: #6e5800; border-color: #c9a900; }
-.ear-status-reviewer_approved { background: #d8e6f8; color: #1e3f6e; border-color: #5a7eb5; }
-.ear-status-accepted          { background: #c8e6b0; color: #2a3f20; border-color: #3d5c30; }
-.ear-status-rejected          { background: #f8d8d8; color: #6e1e1e; border-color: #b55a5a; }
-.ear-status-declined          { background: #f8d8d8; color: #6e1e1e; border-color: #b55a5a; }
+.ear-status-submitted         { background: #e9ecef; color: #6c757d; border-color: #ced4da; }
+.ear-status-in_review         { background: #99d98c; color: #184e77; border-color: #76c893; }
+.ear-status-reviewer_approved { background: #168aad; color: #ffffff; border-color: #1a759f; }
+.ear-status-accepted          { background: #1e6091; color: #ffffff; border-color: #184e77; }
+.ear-status-rejected          { background: #D2042D; color: #ffffff; border-color: #a0001f; }
+.ear-status-declined          { background: #D2042D; color: #ffffff; border-color: #a0001f; }
 
 /* ── EARReviewer assignment-status pills ─────────────────────────── */
-.ear-assign-pending  { background: #fff7d6; color: #6e5800; border-color: #c9a900; }
-.ear-assign-accepted { background: #a8d890; color: #1a3010; border-color: #2d5020; }
-.ear-assign-declined { background: #f8d8d8; color: #6e1e1e; border-color: #b55a5a; }
+.ear-assign-pending  { background: #99d98c; color: #184e77; border-color: #76c893; }
+.ear-assign-accepted { background: #1e6091; color: #ffffff; border-color: #184e77; }
+.ear-assign-declined { background: #D2042D; color: #ffffff; border-color: #a0001f; }
 
 /* ── Table layout helpers ────────────────────────────────────────── */
 .table td {

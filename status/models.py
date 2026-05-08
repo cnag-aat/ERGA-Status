@@ -200,10 +200,10 @@ gss_rank = {
 }
 
 PILL_PALETTE_CHOICES = [
-    ('original', 'Original (current greens)'),
     ('bold',     'Bold Stepped (two yellows → mint → solid green)'),
     ('tonal',    'Tonal (all pastel tints, rose-pink errors)'),
     ('erga',     'ERGA Classic (solid fills, white text, teal/cyan)'),
+    ('meadow',   'Meadow Green (lime-cream → ocean-mist → baltic-blue)'),
 ]
 
 class Customization(models.Model):
@@ -221,7 +221,7 @@ class Customization(models.Model):
     show_milestones = models.BooleanField(default=False)
     show_copo = models.BooleanField(default=True, help_text='Show COPO status columns and filters in the views.')
     pill_palette = models.CharField(
-        max_length=20, choices=PILL_PALETTE_CHOICES, default='original',
+        max_length=20, choices=PILL_PALETTE_CHOICES, default='meadow',
         help_text='Colour scheme for all status pills across the site.',
     )
     class Meta:

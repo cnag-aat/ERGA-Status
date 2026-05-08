@@ -10,7 +10,7 @@ Active feature briefs: `EAR_REVIEW_BRIEF.md` (core EAR review), `REPLACE_PDF_BRI
 |------|-------|
 | Project dir | `/home/www/resistome.cnag.cat/ear-review/` |
 | Dev DB | `cbp_dev` (MariaDB) |
-| Dev settings | `erga/settings_dev.py` |
+| Settings | `erga/settings.py` (single module; environment-specific values come from `erga/.env` — see `erga/.env.template`) |
 | Dev URL | `https://genomes.cnag.cat/cbp-dev` |
 | venv | `/home/www/resistome.cnag.cat/virtualenvs/incredble_venv` |
 | Reload | `touch erga/wsgi.py` |
@@ -19,10 +19,10 @@ Active feature briefs: `EAR_REVIEW_BRIEF.md` (core EAR review), `REPLACE_PDF_BRI
 
 ```bash
 source /home/www/resistome.cnag.cat/virtualenvs/incredble_venv/bin/activate
-python manage.py check --settings=erga.settings_dev
-python manage.py makemigrations --settings=erga.settings_dev
-python manage.py migrate --settings=erga.settings_dev
-python manage.py collectstatic --settings=erga.settings_dev --noinput
+python manage.py check --settings=erga.settings
+python manage.py makemigrations --settings=erga.settings
+python manage.py migrate --settings=erga.settings
+python manage.py collectstatic --settings=erga.settings --noinput
 ```
 
 ## Working rules
@@ -55,7 +55,7 @@ python manage.py collectstatic --settings=erga.settings_dev --noinput
 | `status/templates/` | Templates |
 | `status/admin.py` | Admin — `EARReviewAdmin.save_related` triggers `auto_assign_reviewer` |
 | `status/context_processors.py` | `dashboard_action_count` — 3 COUNT queries, skipped for anon users |
-| `erga/settings_dev.py` | Dev overrides incl. `EAR_STUCK_THRESHOLD_DAYS = 7` |
+| `erga/settings.py` | |
 
 ## Data model
 
@@ -154,11 +154,10 @@ assembly.project.ear_review  # may raise RelatedObjectDoesNotExist — use getat
 
 5. **`EARReviewer` through model requires `through_fields`.** Omitting it causes Django to complain about ambiguous FK when there are multiple FKs to the same model.
 
-6. **Pretext file is nullable at model level** (not enforced by `blank=False`) so post-acceptance deletion doesn't break validation. Required-on-creation is enforced at the form level only.
 
 7. **`AssemblyListView` global queryset** filters for chromosome-level primaries only (`chromosome_level=True`, excludes Hap2/Alternate/MT/Chloroplast/Endosymbiont). When `?project=<pk>` is passed, all assembly types for that project are returned instead.
 
-8. **`tables.py render_task` returns None → site crash.** Two `render_task` methods in `status/tables.py` can return/produce `None`, causing `TypeError: sequence item 0: expected str instance, NoneType found` on any page that renders those tables (species list, sample collection). Always filter None defensively: `';'.join(t for t in tasks if t is not None)` and always return `''` as a fallback instead of falling off the end of the method.
+
 
 9. **`populate() isn't reentrant` — restart Apache, not just wsgi.py.** When the mod_wsgi daemon starts, its 15 default threads race to execute `wsgi.py` concurrently, two of them calling `django.setup()` simultaneously. The second call raises `RuntimeError: populate() isn't reentrant`, leaving the daemon process permanently broken (same PID fails on every subsequent request — visible in `~/logs/server.error.log`). `touch erga/wsgi.py` alone does NOT fix this because it only schedules a reload; the stuck process keeps serving (and failing) requests. **Fix: `sudo systemctl restart httpd`** — this kills the stuck process and starts fresh. To prevent recurrence, `WSGIDaemonProcess cbp-dev-site` in the Apache config should have `threads=1` added (safe for dev).
 

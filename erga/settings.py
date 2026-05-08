@@ -169,7 +169,8 @@ DATE_INPUT_FORMATS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-STATIC_ROOT = '/home/www/resistome.cnag.cat/incredible/deployment/static'
+STATIC_ROOT = config('STATIC_ROOT', default='/home/www/resistome.cnag.cat/incredible/deployment/static')
+STATICFILES_DIRS = [config('STATICFILES_SOURCE', default=os.path.join(PROJECT_DIR, 'static'))]
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',

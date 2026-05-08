@@ -1,0 +1,57 @@
+/* ── Palette: Meadow Green ──────────────────────────────────────────
+   Progress: lime-cream → light-green-2 → ocean-mist → bondi-blue → baltic-blue
+   (#d9ed92 → #99d98c → #52b69a → #168aad → #1e6091)
+   Dark text on light stages; white text on medium/dark stages.
+   Gray for no-value; red for failures/warnings.
+   ─────────────────────────────────────────────────────────────────── */
+
+.none, .long_list, .Long_Listed, .waiting_list, .None {
+  background-color: #e9ecef; color: #6c757d; border-color: #ced4da;
+}
+.Abandoned, .paused, .cancelled,
+.other_priority, .removed, .family_representative {
+  background-color: #e9ecef; color: #6c757d; border-color: #ced4da;
+}
+
+/* Stage 1 — lime-cream */
+.sample_collected, .Collecting, .Collected, .Received, .in_collection {
+  background-color: #d9ed92; color: #184e77; border-color: #b5cc70;
+}
+
+/* Stage 2 — light-green-2 */
+.sample_acquired, .Prep, .Extracted, .Pending, .Resampling, .Sampling {
+  background-color: #99d98c; color: #184e77; border-color: #76c893;
+}
+
+/* Stage 3 — ocean-mist */
+.data_generation, .Processing, .Sequencing, .TopUp,
+.Assembling, .Scaffolding, .Contigs, .Scaffolds, .Curating, .Annotating {
+  background-color: #52b69a; color: #ffffff; border-color: #34a0a4;
+}
+
+/* Stage 4 — bondi-blue */
+.in_assembly, .Done, .UnderReview, .Approved, .Sent {
+  background-color: #168aad; color: #ffffff; border-color: #1a759f;
+}
+
+/* Stage 5 — baltic-blue (fully done) */
+.insdc_open, .insdc_submitted, .publication_available,
+.published, .Submitted, .COPO, .Accepted {
+  background-color: #1e6091; color: #ffffff; border-color: #184e77;
+}
+
+.External { background-color: #1e6091; color: #ffffff; border-color: #184e77; }
+.Rejected, .Issue { background-color: #D2042D; color: #ffffff; border-color: #a0001f; }
+
+/* ── EAR review status ── */
+.ear-status-submitted         { background: #e9ecef; color: #6c757d; border-color: #ced4da; }
+.ear-status-in_review         { background: #99d98c; color: #184e77; border-color: #76c893; }
+.ear-status-reviewer_approved { background: #168aad; color: #ffffff; border-color: #1a759f; }
+.ear-status-accepted          { background: #1e6091; color: #ffffff; border-color: #184e77; }
+.ear-status-rejected          { background: #D2042D; color: #ffffff; border-color: #a0001f; }
+.ear-status-declined          { background: #D2042D; color: #ffffff; border-color: #a0001f; }
+
+/* ── EARReviewer invite status ── */
+.ear-assign-pending  { background: #99d98c; color: #184e77; border-color: #76c893; }
+.ear-assign-accepted { background: #1e6091; color: #ffffff; border-color: #184e77; }
+.ear-assign-declined { background: #D2042D; color: #ffffff; border-color: #a0001f; }
