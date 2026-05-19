@@ -202,6 +202,7 @@
               <label for="id_replace_ear_pdf">Replacement EAR PDF <span class="text-danger">*</span></label>
               <input type="file" name="ear_pdf" id="id_replace_ear_pdf"
                      class="form-control-file" accept="application/pdf,.pdf" required>
+              <div id="replace-pdf-file-error" class="text-danger small mt-1" style="display:none"></div>
             </div>
             <div class="form-group">
               <label for="id_replace_note">Note (optional)</label>
@@ -343,4 +344,24 @@
   {% endif %}
 
 </div>
+
+{% if can_replace_pdf %}
+<script>
+  document.querySelector('#replacePdfModal form').addEventListener('submit', function(e) {
+    var input = document.getElementById('id_replace_ear_pdf');
+    if (!input.files.length) return;
+    e.preventDefault();
+    var form = this;
+    var file = input.files[0];
+    var reader = new FileReader();
+    reader.onload = function() { form.submit(); };
+    reader.onerror = function() {
+      var err = document.getElementById('replace-pdf-file-error');
+      err.textContent = 'Cannot read the selected file. Is it stored in a cloud folder (OneDrive, iCloud, Dropbox) that is not currently synced?';
+      err.style.display = 'block';
+    };
+    reader.readAsArrayBuffer(file.slice(0, 1024));
+  });
+</script>
+{% endif %}
 {% endblock %}
