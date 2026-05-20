@@ -63,6 +63,8 @@ from status.filters import SpecimenFilter
 from status.filters import SampleFilter
 from status.filters import SampleCollectionFilter
 from status.filters import EARReviewFilter
+from status.filters import SequencingFilter
+from status.filters import AssemblyProjectFilter
 from braces.views import GroupRequiredMixin
 from django.db.models import OuterRef, Subquery
 from django.core.cache import cache
@@ -641,6 +643,7 @@ class AssemblyProjectListView(LoginRequiredMixin, ExportMixin, SingleTableMixin,
     login_url = "access_denied"
     model = AssemblyProject
     table_class = AssemblyProjectTable
+    filterset_class = AssemblyProjectFilter
     template_name = 'assemblyproject.html'
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
@@ -827,7 +830,7 @@ class SequencingListView(LoginRequiredMixin, ExportMixin, SingleTableMixin, Filt
     model = Sequencing
     table_class = SequencingTable
     template_name = 'sequencing.html'
-    #filterset_class = SpeciesFilter
+    filterset_class = SequencingFilter
     table_pagination = {"per_page": 100}
     export_formats = ['csv', 'tsv','xlsx','json']
 

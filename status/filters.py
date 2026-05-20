@@ -10,6 +10,8 @@ from status.models import SequencingTeam
 from status.models import AssemblyTeam
 from status.models import Task
 from status.models import Assembly
+from status.models import AssemblyProject
+from status.models import Sequencing
 from status.models import Specimen
 from status.models import Sample
 from status.models import SampleCollection
@@ -345,10 +347,55 @@ class SampleCollectionFilter(django_filters.FilterSet):
 
 
 
+class SequencingFilter(django_filters.FilterSet):
+    species__scientific_name = django_filters.CharFilter(
+        lookup_expr='icontains',
+        label='Species',
+    )
+    species__gt_rel__sequencing_team = django_filters.ModelChoiceFilter(
+        label='Sequencing Team',
+        queryset=SequencingTeam.objects.all(),
+    )
+
+    class Meta:
+        model = Sequencing
+        fields = [
+            'species__scientific_name',
+            'species__gt_rel__sequencing_team',
+            'long_seq_status',
+            'short_seq_status',
+            'hic_seq_status',
+            'rna_seq_status',
+        ]
+
+
+class AssemblyProjectFilter(django_filters.FilterSet):
+    species__scientific_name = django_filters.CharFilter(
+        lookup_expr='icontains',
+        label='Species',
+    )
+    species__gt_rel__assembly_team = django_filters.ModelChoiceFilter(
+        label='Assembly Team',
+        queryset=AssemblyTeam.objects.all(),
+    )
+
+    class Meta:
+        model = AssemblyProject
+        fields = [
+            'species__scientific_name',
+            'species__gt_rel__assembly_team',
+            'status',
+        ]
+
+
 class EARReviewFilter(django_filters.FilterSet):
     assembly_project__species__scientific_name = django_filters.CharFilter(
         lookup_expr='icontains',
         label='Species',
+    )
+    assembly_project__species__gt_rel__assembly_team = django_filters.ModelChoiceFilter(
+        label='Assembly Team',
+        queryset=AssemblyTeam.objects.all(),
     )
     status = django_filters.ChoiceFilter(
         choices=[('', 'All statuses')] + [
@@ -370,4 +417,9 @@ class EARReviewFilter(django_filters.FilterSet):
     class Meta:
         from status.models import EARReview
         model = EARReview
-        fields = ['assembly_project__species__scientific_name', 'status', 'submitted_by__username']
+        fields = [
+            'assembly_project__species__scientific_name',
+            'assembly_project__species__gt_rel__assembly_team',
+            'status',
+            'submitted_by__username',
+        ]
