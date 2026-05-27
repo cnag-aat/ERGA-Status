@@ -23,7 +23,7 @@ from status.views import OverView
 from status.views import AccessDeniedView
 from status.views import GenomeTeamsView
 from status.views import AffiliationCreateView, ResearchGroupCreateView
-from status.views import EARReviewDetailView, EARReviewListView, ear_review_comment, ear_review_create, ear_review_manage_reviewers, ear_assignment_response, DashboardView, dashboard_invite_response, ear_review_replace_pdf
+from status.views import EARReviewDetailView, EARReviewListView, ear_review_comment, ear_review_create, ear_review_manage_reviewers, ear_assignment_response, DashboardView, dashboard_invite_response, ear_review_replace_pdf, ear_comment_edit, ear_comment_delete
 from status.views import assembly_project_edit, sequencing_edit, assembly_detail
 from status.views import AuthorsView
 from status.views import EditProfileView
@@ -106,6 +106,8 @@ urlpatterns = [
     path('ear/new/', ear_review_create, name="ear_review_create"),
     path('ear/<int:pk>/', EARReviewDetailView.as_view(), name="ear_review_detail"),
     path('ear/<int:pk>/comment/', ear_review_comment, name="ear_review_comment"),
+    path('ear/comment/<int:pk>/edit/', ear_comment_edit, name="ear_comment_edit"),
+    path('ear/comment/<int:pk>/delete/', ear_comment_delete, name="ear_comment_delete"),
     path('ear/<int:pk>/reviewers/', ear_review_manage_reviewers, name="ear_review_manage_reviewers"),
     path('ear/<int:pk>/replace-pdf/', ear_review_replace_pdf, name="ear_review_replace_pdf"),
     path('ear/assignment/<str:token>/<str:response>/', ear_assignment_response, name="ear_assignment_response"),

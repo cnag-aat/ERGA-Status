@@ -1934,6 +1934,8 @@ class EARComment(models.Model):
         verbose_name='Reply to'
     )
     is_system = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
+    edited_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

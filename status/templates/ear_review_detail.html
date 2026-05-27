@@ -231,7 +231,7 @@
   {% endif %}
 
   {% for comment in comments %}
-    <div class="comment-card{% if comment.parent %} reply{% endif %}{% if comment.is_system %} system-comment{% endif %}" id="comment-{{ comment.pk }}">
+    <div class="comment-card{% if comment.parent %} reply{% endif %}{% if comment.is_system %} system-comment{% endif %}{% if comment.is_deleted %} deleted-comment{% endif %}" id="comment-{{ comment.pk }}">
       <div class="comment-meta">
         {% if comment.is_system %}
           <i class="fas fa-sync-alt"></i> <em>System</em>
@@ -239,26 +239,50 @@
           <strong>{{ comment.author.get_full_name|default:comment.author.username|default:"unknown" }}</strong>
         {% endif %}
         · {{ comment.created_at|date:"Y-m-d H:i" }}
+        {% if comment.edited_at and not comment.is_deleted %}
+          · <span class="text-muted" title="Edited {{ comment.edited_at|date:'Y-m-d H:i' }}"><em>(edited)</em></span>
+        {% endif %}
         {% if comment.parent %}
           · <em class="text-muted">in reply to {{ comment.parent.author.get_full_name|default:comment.parent.author.username }}</em>
         {% endif %}
-        {% if can_post and not comment.is_system %}
+        {% if can_post and not comment.is_system and not comment.is_deleted %}
           · <a href="#comment-form" onclick="setReplyParent({{ comment.pk }}, '{{ comment.author.get_full_name|default:comment.author.username|escapejs }}')">Reply</a>
         {% endif %}
+        {% if request.user.is_authenticated and comment.author_id == request.user.id and not comment.is_system and not comment.is_deleted %}
+          · <a href="#" onclick="toggleEditComment({{ comment.pk }}); return false;">Edit</a>
+          · <a href="#" onclick="deleteComment({{ comment.pk }}); return false;" class="text-danger">Delete</a>
+        {% endif %}
       </div>
-      <div class="comment-body">{{ comment.body|linebreaks }}</div>
-      {% if comment.attachments.all %}
-        <div class="comment-attachments">
-          {% for att in comment.attachments.all %}
-            {% with name=att.file.name %}
-              {% if name|lower|slice:"-4:" == ".png" or name|lower|slice:"-4:" == ".jpg" or name|lower|slice:"-5:" == ".jpeg" or name|lower|slice:"-4:" == ".gif" %}
-                <a href="{{ att.file.url }}" target="_blank"><img src="{{ att.file.url }}" alt=""></a>
-              {% else %}
-                <a href="{{ att.file.url }}" download><i class="fas fa-paperclip"></i> {{ name }}</a><br>
-              {% endif %}
-            {% endwith %}
-          {% endfor %}
-        </div>
+      {% if comment.is_deleted %}
+        <div class="comment-body text-muted"><em>[deleted by author]</em></div>
+      {% else %}
+        <div class="comment-body" id="comment-body-{{ comment.pk }}">{{ comment.body|linebreaks }}</div>
+        {% if request.user.is_authenticated and comment.author_id == request.user.id %}
+          <form method="post" action="{% url 'ear_comment_edit' comment.pk %}" id="comment-edit-form-{{ comment.pk }}" style="display:none;" class="mt-2">
+            {% csrf_token %}
+            <div class="form-group">
+              <textarea name="body" rows="4" class="form-control">{{ comment.body }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Save</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="toggleEditComment({{ comment.pk }})">Cancel</button>
+          </form>
+          <form method="post" action="{% url 'ear_comment_delete' comment.pk %}" id="comment-delete-form-{{ comment.pk }}" style="display:none;">
+            {% csrf_token %}
+          </form>
+        {% endif %}
+        {% if comment.attachments.all %}
+          <div class="comment-attachments">
+            {% for att in comment.attachments.all %}
+              {% with name=att.file.name %}
+                {% if name|lower|slice:"-4:" == ".png" or name|lower|slice:"-4:" == ".jpg" or name|lower|slice:"-5:" == ".jpeg" or name|lower|slice:"-4:" == ".gif" %}
+                  <a href="{{ att.file.url }}" target="_blank"><img src="{{ att.file.url }}" alt=""></a>
+                {% else %}
+                  <a href="{{ att.file.url }}" download><i class="fas fa-paperclip"></i> {{ name }}</a><br>
+                {% endif %}
+              {% endwith %}
+            {% endfor %}
+          </div>
+        {% endif %}
       {% endif %}
     </div>
   {% empty %}
@@ -344,6 +368,21 @@
   {% endif %}
 
 </div>
+
+<script>
+  function toggleEditComment(id) {
+    var body = document.getElementById('comment-body-' + id);
+    var form = document.getElementById('comment-edit-form-' + id);
+    if (!form) return;
+    var showing = form.style.display === 'none' || form.style.display === '';
+    form.style.display = showing ? 'block' : 'none';
+    if (body) body.style.display = showing ? 'none' : 'block';
+  }
+  function deleteComment(id) {
+    if (!confirm('Delete this comment? It will be hidden from the thread.')) return;
+    document.getElementById('comment-delete-form-' + id).submit();
+  }
+</script>
 
 {% if can_replace_pdf %}
 <script>

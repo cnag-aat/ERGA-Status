@@ -53,7 +53,7 @@ from django.shortcuts import get_object_or_404
 from status.forms import ProfileUpdateForm
 # from status.forms import NewSpeciesForm
 from status.forms import NewSpeciesListForm
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from status.filters import GenomeTeamFilter
 from status.filters import OverviewSpeciesFilter
 from status.filters import SpeciesFilter
@@ -2208,3 +2208,46 @@ def ear_review_replace_pdf(request, pk):
     ear_logic.notify_pdf_replaced(review, request.user, note)
     messages.success(request, 'EAR PDF replaced successfully.')
     return redirect('ear_review_detail', pk=pk)
+
+
+def _can_modify_comment(user, comment):
+    return (
+        user.is_authenticated
+        and not comment.is_system
+        and not comment.is_deleted
+        and comment.author_id == user.id
+    )
+
+
+@login_required
+@require_POST
+def ear_comment_edit(request, pk):
+    """Edit own comment body. Sets edited_at marker."""
+    from django.utils import timezone
+    comment = get_object_or_404(EARComment, pk=pk)
+    if not _can_modify_comment(request.user, comment):
+        messages.error(request, "You can't edit this comment.")
+        return redirect('ear_review_detail', pk=comment.review_id)
+    new_body = request.POST.get('body', '').strip()
+    if not new_body:
+        messages.error(request, "Comment body is empty.")
+        return redirect('ear_review_detail', pk=comment.review_id)
+    comment.body = new_body
+    comment.edited_at = timezone.now()
+    comment.save(update_fields=['body', 'edited_at'])
+    messages.success(request, "Comment updated.")
+    return redirect(f"{reverse('ear_review_detail', kwargs={'pk': comment.review_id})}#comment-{comment.pk}")
+
+
+@login_required
+@require_POST
+def ear_comment_delete(request, pk):
+    """Soft-delete own comment (row remains; body hidden in template)."""
+    comment = get_object_or_404(EARComment, pk=pk)
+    if not _can_modify_comment(request.user, comment):
+        messages.error(request, "You can't delete this comment.")
+        return redirect('ear_review_detail', pk=comment.review_id)
+    comment.is_deleted = True
+    comment.save(update_fields=['is_deleted'])
+    messages.success(request, "Comment deleted.")
+    return redirect('ear_review_detail', pk=comment.review_id)
