@@ -144,7 +144,7 @@
         {% endif %}
         {% if review.pretext_file %}
           <li>
-            <a href="{{ review.pretext_file.url }}">
+            <a href="{{ review.pretext_file.url }}" download>
               <i class="fas fa-download"></i> Pretext map
             </a>
             <small class="text-muted d-block">(deleted automatically when accepted)</small>
@@ -254,7 +254,7 @@
               {% if name|lower|slice:"-4:" == ".png" or name|lower|slice:"-4:" == ".jpg" or name|lower|slice:"-5:" == ".jpeg" or name|lower|slice:"-4:" == ".gif" %}
                 <a href="{{ att.file.url }}" target="_blank"><img src="{{ att.file.url }}" alt=""></a>
               {% else %}
-                <a href="{{ att.file.url }}"><i class="fas fa-paperclip"></i> {{ name }}</a><br>
+                <a href="{{ att.file.url }}" download><i class="fas fa-paperclip"></i> {{ name }}</a><br>
               {% endif %}
             {% endwith %}
           {% endfor %}
